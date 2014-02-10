@@ -1,7 +1,7 @@
 #!/bin/bash
 
-datasets="characters creators events series comics stories"
+datasets="characters creators events series comics" # stories"
 for d in $datasets; do
-  bin/get_dataset.sh $d
+  bin/get_dataset.sh $d &
 done
 
