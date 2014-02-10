@@ -30,4 +30,4 @@ for jsonfile in os.listdir(jsondir):
     res += data['results']
 
 print json.dumps(res, ensure_ascii=False).encode('utf8')
-
+sys.stderr.write(" -> Saved a total of %s\n" % len(res))
