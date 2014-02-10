@@ -25,6 +25,6 @@ while [ $i -lt $max ]; do
   i=$(($i+1))
 done
 echo " -> Assemble all jsons into data/$dataset.json"
-./bin/assemble_jsons.py data/characters > data/characters.json
+./bin/assemble_jsons.py data/$dataset > data/$dataset.json
 echo
 

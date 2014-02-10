@@ -29,5 +29,5 @@ for jsonfile in os.listdir(jsondir):
     total = data['total']
     res += data['results']
 
-print json.dumps({'characters': res}, ensure_ascii=False).encode('utf8')
+print json.dumps(res, ensure_ascii=False).encode('utf8')
 
