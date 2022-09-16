@@ -1,4 +1,5 @@
 api_key:
 api_secret:
-cooccurrence_threshold: 15
-
+cooccurrence_threshold: 20
+min_comics_for_characters: 35
+min_comics_for_creators: 35
