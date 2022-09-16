@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import yaml
+import shutil
 import requests
 from time import time
 from hashlib import md5
@@ -40,7 +41,7 @@ def auth():
     hashmd5 = md5((ts + CONF["api_secret"] + CONF["api_key"]).encode('utf-8')).hexdigest()
     return "ts={}&apikey={}&hash={}".format(ts, CONF["api_key"], hashmd5)
 
-def complete_data(data, cache_file):
+def complete_data(data):
     for item in data["data"]["results"]:
         for key in ["creators", "characters"]:
             if item[key]["available"] != item[key]["returned"]:
@@ -59,8 +60,26 @@ def complete_data(data, cache_file):
                             "name": obj.get("name", obj.get("fullName"))
                         })
                     page += 1
-    with open(cache_file, "w") as f:
-        json.dump(data, f)
+    return data
+
+def download_thumbnails(entity, data):
+    for item in data["data"]["results"]:
+        if item.get("image") and os.path.exists(item["image"]):
+            continue
+        if "image_not_available" in item["thumbnail"]["path"]:
+            item["image"] = "./images/not_available.gif"
+            continue
+        thumbnail_url = item["thumbnail"]["path"] + "/standard_small." + item["thumbnail"]["extension"]
+        thumbnail_file = os.path.join("images", entity, "%s.%s" % (item["id"], item["thumbnail"]["extension"]))
+        if not os.path.exists(thumbnail_file):
+            print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
+            res = requests.get(thumbnail_url, stream=True)
+            if res.status_code == 200:
+                with open(thumbnail_file, 'wb') as img_file:
+                    shutil.copyfileobj(res.raw, img_file)
+            else:
+                item["image"] = "./images/not_available.gif"
+        item["image"] = "./" + thumbnail_file
     return data
 
 def process_api_page(entity, args={}, page=0):
@@ -79,18 +98,27 @@ def process_api_page(entity, args={}, page=0):
 
     data = cache_download(url, cache_file)
     if entity == "comics":
-        data = complete_data(data, cache_file)
+        data = complete_data(data)
+    elif entity in ["creators", "characters"]:
+        data = download_thumbnails(entity, data)
+    with open(cache_file, "w") as f:
+        json.dump(data, f)
     return data
 
 def download_entity(entity, options):
     if not os.path.exists(".cache"):
         os.makedirs(".cache")
+    if not os.path.exists("images"):
+        os.makedirs("images")
     extra_dir = os.path.join(".cache", "extra")
     if not os.path.exists(extra_dir):
         os.makedirs(extra_dir)
     entity_dir = os.path.join(".cache", entity)
     if not os.path.exists(entity_dir):
         os.makedirs(entity_dir)
+    entity_img_dir = os.path.join("images", entity)
+    if not os.path.exists(entity_img_dir):
+        os.makedirs(entity_img_dir)
 
     first_results = process_api_page(entity, options)
     total_results = first_results["data"]["total"]
@@ -110,7 +138,8 @@ def build_graph(nodes_type, comics, nodes):
         attrs = {
             "id": n["id"],
             "resourceURI": n["resourceURI"],
-            "thumbnail": n["thumbnail"]["path"] + "/standard_amazing" + n["thumbnail"]["extension"] if "image_not_available" not in n["thumbnail"]["path"] else "",
+            "image": n["image"],
+            "image_url": n["thumbnail"]["path"] + "." + n["thumbnail"]["extension"],
             "url": n["urls"][0]["url"],
             "comics": 0
         }
