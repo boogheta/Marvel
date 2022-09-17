@@ -12,13 +12,17 @@ import networkx as nx
 
 def retry_get(url, stream=False, retries=5):
     try:
-        return requests.get(url, stream=stream)
-    except ConnectionResetError as e:
+        res = requests.get(url, stream=stream)
+        assert(res.status_code == 200)
+        return res
+    except (ConnectionResetError, AssertionError as e):
         if retries:
             time.sleep(15 - 2 * retries)
             print("...retrying...")
             return retry_get(url, stream=stream, retries=retries-1)
-        raise(e)
+        print("Error with url " + url, res)
+        print("%s: %s" % (type(e), e))
+        sys.exit(1)
 
 def cache_download(url, cache_file):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
@@ -27,19 +31,10 @@ def cache_download(url, cache_file):
 
     print("Calling " + url)
     res = retry_get(url)
-    if res.status_code == 200:
-        data = res.json()
-        with open(cache_file, "w") as f:
-            json.dump(data, f)
-        return data
-    elif res.status_code == "429":
-        print("Rate limit reached")
-        print(res)
-        sys.exit(1)
-    else:
-        print("Error with url " + url)
-        print(res)
-        sys.exit(1)
+    data = res.json()
+    with open(cache_file, "w") as f:
+        json.dump(data, f)
+    return data
 
 CONF = None
 def auth():
