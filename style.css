@@ -34,16 +34,19 @@ h1 {
   margin-top: 10px;
   border-top: 1px solid grey;
   padding: 5px;
+  text-align: center;
 }
 #node-label {
   width: 100%;
-  text-align: center;
 }
 #node-img {
   max-width: 75%;
   max-height: 400px;
 }
 #node-extra {
+}
+#node-extra a, #node-extra a:visited {
+  color: #ec1d24;
 }
 #sigma-container {
   width: 80%;

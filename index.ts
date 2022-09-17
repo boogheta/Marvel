@@ -1,5 +1,5 @@
 /* TODO:
-- add extra info on click nodes
+- try color edge with target color instead on click
 - test data with stories instead of comics
 - fullscreen button
 - add title/credits
@@ -195,14 +195,17 @@ function loadNetwork() {
       const attrs = graph.getNodeAttributes(node);
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
-      //nodeExtra.innerHTML = "";
+      nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
+      nodeExtra.innerHTML += "<p>Accounted in " + attrs.comics + " issues shared with " + graph.degree(node) + " other " + entity + "</p>";
+      if (attrs.url)
+        nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com...</a></p>';
 
       renderer.setSetting(
         "nodeReducer", (n, data) =>
           n === node ||
           graph.hasEdge(n, node)
             ? { ...data, zIndex: 1 }
-            : { ...data, zIndex: 0, label: "", color: "#1A1A1A", thumbnail: null, highlighted: false }
+            : { ...data, zIndex: 0, label: "", hidden: true }
       );
       renderer.setSetting(
         "edgeReducer", (edge, data) =>

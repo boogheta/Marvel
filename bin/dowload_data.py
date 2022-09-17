@@ -139,6 +139,7 @@ def build_graph(nodes_type, comics, nodes):
         attrs = {
             "id": n["id"],
             "resourceURI": n["resourceURI"],
+            "description": n.get("description", ""),
             "image": n["image"],
             "image_url": n["thumbnail"]["path"] + "." + n["thumbnail"]["extension"],
             "url": n["urls"][0]["url"],
