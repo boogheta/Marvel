@@ -1,7 +1,7 @@
 /* TODO:
+- add extra info on click nodes
+- test data with stories instead of comics
 - fullscreen button
-- hover nodes
-- click nodes with detailed window
 - add title/credits
 - option full networks with no thumbnails
 - creators categories based on type of creator instead
@@ -106,13 +106,23 @@ const clusters = {
 }
 
 const container = document.getElementById("sigma-container") as HTMLElement,
-  loader = document.getElementById("loader") as HTMLElement;
+  loader = document.getElementById("loader") as HTMLElement,
+  nodeLabel = document.getElementById("node-label") as HTMLElement,
+  nodeImg = document.getElementById("node-img") as HTMLImageElement,
+  nodeExtra = document.getElementById("node-extra") as HTMLElement,
+  zoomInBtn = document.getElementById("zoom-in") as HTMLElement,
+  zoomOutBtn = document.getElementById("zoom-out") as HTMLElement,
+  zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement;
+
 let renderer = null;
 
 function loadNetwork() {
   if (renderer) renderer.kill();
   container.innerHTML = '';
   loader.style.display = "block";
+  nodeLabel.innerHTML = "";
+  nodeImg.src = "";
+  nodeExtra.innerHTML = "";
   
   fetch("./Marvel_" + entity + ".gexf")
   .then((res) => res.text())
@@ -133,21 +143,16 @@ function loadNetwork() {
         y: circularPositions[node].y,
         size: Math.pow(comics, 0.2) * 4,
         color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color,
-        //color: clusters.communities[communities[node]].color,
         type: "thumbnail"
       });
     });
     /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
+      graph.mergeEdgeAttributes(edge, {size: 0.5});
       if (n1_attrs.color === n2_attrs.color)
         graph.setEdgeAttribute(edge, 'color', n1_attrs.color);
     });*/
 
-    // Retrieve some useful DOM elements:
-    const zoomInBtn = document.getElementById("zoom-in") as HTMLElement;
-    const zoomOutBtn = document.getElementById("zoom-out") as HTMLElement;
-    const zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement;
-
-    // Instanciate sigma:
+    // Instantiate sigma:
     renderer = new Sigma(graph, container, {
       minCameraRatio: 0.08,
       maxCameraRatio: 1.2,
@@ -160,9 +165,9 @@ function loadNetwork() {
         thumbnail: getNodeProgramImage()
       }
     });
-    const camera = renderer.getCamera();
 
     // Bind zoom manipulation buttons
+    const camera = renderer.getCamera();
     zoomInBtn.addEventListener("click", () => {
       camera.animatedZoom({ duration: 600 });
     });
@@ -171,6 +176,47 @@ function loadNetwork() {
     });
     zoomResetBtn.addEventListener("click", () => {
       camera.animatedReset({ duration: 600 });
+    });
+
+    // Handle clicks on nodes
+    const clickNode = (node) => {
+      if (!node) {
+        nodeLabel.innerHTML = "";
+        nodeImg.src = "";
+        nodeExtra.innerHTML = "";
+        renderer.setSetting(
+          "nodeReducer", (n, data) => data
+        );
+        renderer.setSetting(
+          "edgeReducer", (edge, data) => data
+        );
+        return;
+      }
+      const attrs = graph.getNodeAttributes(node);
+      nodeLabel.innerHTML = attrs.label;
+      nodeImg.src = attrs.image_url;
+      //nodeExtra.innerHTML = "";
+
+      renderer.setSetting(
+        "nodeReducer", (n, data) =>
+          n === node ||
+          graph.hasEdge(n, node)
+            ? { ...data, zIndex: 1 }
+            : { ...data, zIndex: 0, label: "", color: "#1A1A1A", thumbnail: null, highlighted: false }
+      );
+      renderer.setSetting(
+        "edgeReducer", (edge, data) =>
+          graph.hasExtremity(edge, node)
+            ? { ...data, color: graph.getNodeAttribute(node, 'color')}
+            : { ...data, color: "#FFF", hidden: true }
+      );
+    };
+    renderer.on("clickNode", (event) => {
+      //event.preventDefault();
+      setTimeout(() => clickNode(event.node), 50);
+    });
+    container.addEventListener("click", (e) =>  {
+      clickNode(null);
     });
 
     // Setup nodes search
@@ -194,6 +240,7 @@ function loadNetwork() {
           selectedNode = suggestions[0].node;
           suggestions = [];
           graph.setNodeAttribute(selectedNode, "highlighted", true);
+          clickNode(selectedNode);
           // Move the camera to center it on the selected node:
           const nodePosition = renderer.getNodeDisplayData(selectedNode) as Coordinates;
           renderer.getCamera().animate(nodePosition, {

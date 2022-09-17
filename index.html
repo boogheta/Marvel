@@ -8,6 +8,15 @@
   </head>
   <body>
     <link rel="stylesheet" href="./style.css">
+    <div id="sidebar">
+      <h1>MARVEL networks</h1>
+      <button id="switch" title="Load the characters or creators network">SWITCH NETWORK</button>
+      <div id="node-details">
+        <h2 id="node-label"></h2>
+        <img id="node-img"/>
+        <div id="node-extra"></div>
+      </div>
+    </div>
     <div id="sigma-container"></div>
     <div id="controls">
       <div class="input"><button id="zoom-reset" title="Reset zoom">⊙</button></div>
@@ -17,7 +26,6 @@
         <input type="search" id="search-input" list="suggestions" placeholder="Search..." />
         <datalist id="suggestions"></datalist>
       </div>
-      <button id="switch" title="Load the characters or creators network">Switch network</button>
     </div>
     <div id="loader"><img src="./images/loader.gif"/></div>
     <script src="build/bundle.js"></script>

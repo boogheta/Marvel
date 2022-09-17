@@ -1,5 +1,52 @@
-html, body, #sigma-container, #loader {
+html, body {
   width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  background-color: black;
+}
+#sidebar {
+  width: 20%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: monospace;
+  background-color: #222;
+  color: #ec1d24;
+  float: left;
+}
+h1 {
+  width: 100%;
+  text-align: center;
+  background-color: #ec1d24;
+  color: white;
+  padding: 10px 0px;
+  margin: 0;
+}
+#switch {
+  display: block;
+  width: 100%;
+  padding: 5px;
+}
+#node-details {
+  margin-top: 10px;
+  border-top: 1px solid grey;
+  padding: 5px;
+}
+#node-label {
+  width: 100%;
+  text-align: center;
+}
+#node-img {
+  max-width: 75%;
+  max-height: 400px;
+}
+#node-extra {
+}
+#sigma-container {
+  width: 80%;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -10,7 +57,7 @@ html, body, #sigma-container, #loader {
 #loader {
   position: absolute;
   top: 45%;
-  left: 48%;
+  left: 58%;
   z-index: 10;
   display: none;
 }
@@ -20,16 +67,10 @@ html, body, #sigma-container, #loader {
 }
 #controls {
   position: absolute;
-  left: 1em;
+  right: 1em;
   top: 1em;
   text-align: right;
   width: 109px;
-}
-#switch {
-  display: block;
-  width: 100%;
-  padding: 5px;
-  margin-bottom: 5px;
 }
 .input {
   position: relative;
@@ -38,19 +79,6 @@ html, body, #sigma-container, #loader {
 }
 .input:not(:hover) label {
   display: none;
-}
-.input label {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: black;
-  color: white;
-  padding: 0.2em;
-  border-radius: 2px;
-  margin-top: 0.3em;
-  font-size: 0.8em;
-  white-space: nowrap;
 }
 .input button {
   width: 2.5em;
