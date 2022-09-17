@@ -15,7 +15,7 @@ def retry_get(url, stream=False, retries=5):
         res = requests.get(url, stream=stream)
         assert(res.status_code == 200)
         return res
-    except (ConnectionResetError, AssertionError as e):
+    except (ConnectionResetError, AssertionError) as e:
         if retries:
             time.sleep(15 - 2 * retries)
             print("...retrying...")
