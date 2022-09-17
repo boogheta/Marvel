@@ -1,11 +1,10 @@
 /* TODO:
 - fullscreen button
-- add switch network button
-- use loader ?
 - hover nodes
 - click nodes with detailed window
 - add title/credits
 - option full networks with no thumbnails
+- creators categories based on type of creator instead
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
 - filter overconnected
@@ -25,8 +24,14 @@ import FA2Layout from "graphology-layout-forceatlas2/worker";
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 
-const entity = "characters";
-//entity = "creators";
+let entity = "characters";
+const switchBtn = document.getElementById("switch") as HTMLElement;
+switchBtn.addEventListener("click", () => {
+  if (entity === "characters")
+    entity = "creators";
+  else entity = "characters";
+  loadNetwork();
+});
 
 const fixedPalette = [
   "#5fb1ff",
@@ -60,7 +65,7 @@ const clusters = {
     },
     "Modern Age": {
       match: "Donny Cates",
-      color: "#822e23"
+      color: "#A22e23"
     }
   },
   characters: {
@@ -99,8 +104,17 @@ const clusters = {
   },
   communities: {}
 }
-// Load external GEXF file:
-fetch("./Marvel_" + entity + ".gexf")
+
+const container = document.getElementById("sigma-container") as HTMLElement,
+  loader = document.getElementById("loader") as HTMLElement;
+let renderer = null;
+
+function loadNetwork() {
+  if (renderer) renderer.kill();
+  container.innerHTML = '';
+  loader.style.display = "block";
+  
+  fetch("./Marvel_" + entity + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
@@ -129,13 +143,12 @@ fetch("./Marvel_" + entity + ".gexf")
     });*/
 
     // Retrieve some useful DOM elements:
-    const container = document.getElementById("sigma-container") as HTMLElement;
     const zoomInBtn = document.getElementById("zoom-in") as HTMLElement;
     const zoomOutBtn = document.getElementById("zoom-out") as HTMLElement;
     const zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement;
 
     // Instanciate sigma:
-    const renderer = new Sigma(graph, container, {
+    renderer = new Sigma(graph, container, {
       minCameraRatio: 0.08,
       maxCameraRatio: 1.2,
       defaultEdgeColor: '#1A1A1A',
@@ -214,10 +227,12 @@ fetch("./Marvel_" + entity + ".gexf")
       settings: sensibleSettings,
     });
     fa2Layout.start();
+    loader.style.display = "none";
     setTimeout(() => {
       fa2Layout.stop();
       noverlap.assign(graph);
     }, 5000);
 
   });
-
+}
+loadNetwork();

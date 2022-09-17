@@ -10,15 +10,16 @@
     <link rel="stylesheet" href="./style.css">
     <div id="sigma-container"></div>
     <div id="controls">
-      <div class="input"><label for="zoom-in">Zoom in</label><button id="zoom-in">+</button></div>
-      <div class="input"><label for="zoom-out">Zoom out</label><button id="zoom-out">-</button></div>
-      <div class="input"><label for="zoom-reset">Reset zoom</label><button id="zoom-reset">⊙</button></div>
-      <div id="search">
-        <input type="search" id="search-input" list="suggestions" placeholder="Search a node..." />
+      <div class="input"><button id="zoom-reset" title="Reset zoom">⊙</button></div>
+      <div class="input"><button id="zoom-out" title="Zoom out">-</button></div>
+      <div class="input"><button id="zoom-in" title="Zoom in">+</button></div>
+      <div id="search" title="Search a character or a creator">
+        <input type="search" id="search-input" list="suggestions" placeholder="Search..." />
         <datalist id="suggestions"></datalist>
       </div>
+      <button id="switch" title="Load the characters or creators network">Switch network</button>
     </div>
-    <div id="loader"><img src="./loader.gif"/></div>
+    <div id="loader"><img src="./images/loader.gif"/></div>
     <script src="build/bundle.js"></script>
   </body>
 </html>
