@@ -92,7 +92,7 @@ def download_thumbnails(entity, data):
         item["image"] = "./" + thumbnail_file
     return data
 
-def process_api_page(entity, args={}, page=0):
+def process_api_page(entity, args={}, filters={}, page=0):
     url_args = {
         "entity": entity,
         "query_args": "&".join("%s=%s" % (k, "%2C".join(v) if type(v) == list else v) for k, v in args.items()).replace(" ", "%20"),
@@ -107,6 +107,8 @@ def process_api_page(entity, args={}, page=0):
         cache_file = os.path.join(".cache", entity, "{}_{:05d}.json".format(url_args["query_args"].replace("&", "_"), page))
 
     data = cache_download(url, cache_file)
+    for filter_key, filter_value in filters.items():
+        data["data"]["results"] = [r for r in data["data"]["results"] if r[filter_key] == filter_value]
     if entity == "comics":
         data = complete_data(data)
     elif entity in ["creators", "characters"]:
@@ -115,7 +117,7 @@ def process_api_page(entity, args={}, page=0):
         json.dump(data, f)
     return data
 
-def download_entity(entity, options):
+def download_entity(entity, options, filters={}):
     if not os.path.exists(".cache"):
         os.makedirs(".cache")
     if not os.path.exists("images"):
@@ -131,12 +133,12 @@ def download_entity(entity, options):
         if not os.path.exists(entity_img_dir):
             os.makedirs(entity_img_dir)
 
-    first_results = process_api_page(entity, options)
+    first_results = process_api_page(entity, options, filters=filters)
     total_results = first_results["data"]["total"]
     entities = first_results["data"]["results"]
     page = 1
     while 100 * page < total_results:
-        results = process_api_page(entity, options, page=page)
+        results = process_api_page(entity, options, filters=filters, page=page)
         entities += results["data"]["results"]
         page += 1
     return entities
@@ -198,6 +200,12 @@ def build_graph(nodes_type, comics, nodes):
     nx.write_gexf(G, os.path.join("data", "Marvel_%s.gexf" % nodes_type))
     return G
 
+def build_csv(entity, rows, fields):
+    with open(os.path.join("data", "Marvel_%s.csv" % entity), "w") as csvf:
+        writer = csv.writer(csvf)
+        writer.writerow(fields)
+        for row in rows:
+            writer.writerow([row[f] for f in fields])
 
 if __name__ == "__main__":
     comics = []
@@ -207,7 +215,10 @@ if __name__ == "__main__":
             "noVariants": "true",
             "orderBy": ["title", "issueNumber"]
         })
+    stories = download_entity("stories", {"orderBy": "id"}, {"type": "story"})
     characters = download_entity("characters", {"orderBy": "name"})
     creators = download_entity("creators", {"orderBy": ["lastName", "firstName"]})
     build_graph("characters", comics, characters)
     build_graph("creators", comics, creators)
+    build_csv("comics", comics, [])
+    build_csv("stories", stories, [])

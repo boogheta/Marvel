@@ -1,12 +1,12 @@
 /* TODO:
+- test data with stories instead of comics
+- option full networks with no thumbnails
 - display typeof creator in sidebar (donut?)
 - read url arguments (entity, selectedNode)
-- test data with stories instead of comics
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - fullscreen button
-- add disclaimer/readme
-- option full networks with no thumbnails
+- add disclaimer/methodo
 - creators categories based on type of creator instead
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
