@@ -1,5 +1,4 @@
 /* TODO:
-- try color edge with target color instead on click
 - display typeof creator in sidebar (donut?)
 - test data with stories instead of comics
 - fullscreen button
@@ -149,7 +148,7 @@ function loadNetwork() {
       });
     });
     /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
-      graph.mergeEdgeAttributes(edge, {size: 0.5});
+      graph.mergeEdgeAttributes(edge, {size: 1});
       if (n1_attrs.color === n2_attrs.color)
         graph.setEdgeAttribute(edge, 'color', n1_attrs.color);
     });*/
@@ -214,7 +213,7 @@ function loadNetwork() {
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
-            ? { ...data, color: graph.getNodeAttribute(node, 'color')}
+            ? { ...data, color: graph.getNodeAttribute(graph.opposite(node, edge), 'color'), size: Math.log(graph.getEdgeAttribute(edge, 'weight'))}
             : { ...data, color: "#FFF", hidden: true }
       );
     };
