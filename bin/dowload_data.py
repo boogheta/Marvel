@@ -10,13 +10,23 @@ from time import time
 from hashlib import md5
 import networkx as nx
 
+def retry_get(url, stream=False, retries=5):
+    try:
+        return requests.get(url, stream=stream)
+    except ConnectionResetError as e:
+        if retries:
+            time.sleep(15 - 2 * retries)
+            print("...retrying...")
+            return retry_get(url, stream=stream, retries=retries-1)
+        raise(e)
+
 def cache_download(url, cache_file):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
         with open(cache_file) as f:
             return json.load(f)
 
     print("Calling " + url)
-    res = requests.get(url)
+    res = retry_get(url)
     if res.status_code == 200:
         data = res.json()
         with open(cache_file, "w") as f:
@@ -73,7 +83,7 @@ def download_thumbnails(entity, data):
         thumbnail_file = os.path.join("images", entity, "%s.%s" % (item["id"], item["thumbnail"]["extension"]))
         if not os.path.exists(thumbnail_file):
             print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
-            res = requests.get(thumbnail_url, stream=True)
+            res = retry_get(thumbnail_url, stream=True)
             if res.status_code == 200:
                 with open(thumbnail_file, 'wb') as img_file:
                     shutil.copyfileobj(res.raw, img_file)
