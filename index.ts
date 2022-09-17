@@ -29,20 +29,20 @@ let entity = "characters",
   network_size = "small";
 const switchBtn = document.getElementById("switch") as HTMLElement;
 switchBtn.addEventListener("click", () => {
+  switchBtn.innerHTML = 'Switch to ' + entity + ' network';
+  switchBtn.title = 'Load the ' + entity + ' network instead';
   if (entity === "characters")
     entity = "creators";
   else entity = "characters";
-  switchBtn.innerHTML = 'Switch to ' + entity + ' network';
-  switchBtn.title = 'Load the ' + entity + ' network instead';
   loadNetwork();
 });
 const switchSizeBtn = document.getElementById("switch-size") as HTMLElement;
 switchSizeBtn.addEventListener("click", () => {
+  switchSizeBtn.innerHTML = 'Switch to ' + network_size + ' network';
+  switchSizeBtn.title = 'Load the ' + network_size + ' network instead';
   if (network_size === "complete")
     network_size = "small";
   else network_size = "complete";
-  switchSizeBtn.innerHTML = 'Switch to ' + network_size + ' network';
-  switchSizeBtn.title = 'Load the ' + network_size + ' network instead';
   loadNetwork();
 });
 

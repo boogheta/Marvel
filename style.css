@@ -56,6 +56,7 @@ h1 {
 #footer p {
   padding-top: 5px;
   border-top: 1px solid #555;
+  margin: 0px 0px 10px 0px;
 }
 #sigma-container {
   width: 80%;
