@@ -17,8 +17,8 @@ def retry_get(url, stream=False, retries=5):
         return res
     except (ConnectionResetError, AssertionError, requests.exceptions.ConnectionError) as e:
         if retries:
+            print("...call failed, will retry in a few seconds...")
             sleep(15 - 2 * retries)
-            print("...retrying...")
             return retry_get(url, stream=stream, retries=retries-1)
         print("Error with url " + url, res)
         print("%s: %s" % (type(e), e))

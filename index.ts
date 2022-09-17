@@ -1,4 +1,5 @@
 /* TODO:
+- add click pic for modal full size
 - test data with stories instead of comics
 - display typeof creator in sidebar (donut?)
 - read url arguments (entity, selectedNode)
@@ -135,6 +136,7 @@ function loadNetwork() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
+  clusters.communities = {};
   
   fetch("./data/Marvel_" + entity + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
