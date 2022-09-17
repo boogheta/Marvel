@@ -194,6 +194,7 @@ def build_graph(nodes_type, comics, nodes):
                     G.edges[c1id, c2id]["weight"] += 1
                 else:
                     G.add_edge(c1id, c2id, weight=1)
+    nx.write_gexf(G, os.path.join("data", "Marvel_%s_full.gexf" % nodes_type))
     for node in list(G.nodes):
         if G.nodes[node]["comics"] < CONF["min_comics_for_" + nodes_type]:
             G.remove_node(node)
