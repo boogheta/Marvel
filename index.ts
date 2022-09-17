@@ -25,7 +25,7 @@ import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 
 let entity = "characters",
-  network_size = "";
+  network_size = "small";
 const switchBtn = document.getElementById("switch") as HTMLElement;
 switchBtn.addEventListener("click", () => {
   if (entity === "characters")
@@ -37,9 +37,11 @@ switchBtn.addEventListener("click", () => {
 });
 const switchSizeBtn = document.getElementById("switch-size") as HTMLElement;
 switchSizeBtn.addEventListener("click", () => {
-  if (network_size === "_full")
-    network_size = "";
-  else network_size = "_full";
+  if (network_size === "complete")
+    network_size = "small";
+  else network_size = "complete";
+  switchSizeBtn.innerHTML = 'Switch to ' + network_size + ' network';
+  switchSizeBtn.title = 'Load the ' + network_size + ' network instead';
   loadNetwork();
 });
 
@@ -134,7 +136,7 @@ function loadNetwork() {
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
   
-  fetch("./data/Marvel_" + entity + network_size + ".gexf")
+  fetch("./data/Marvel_" + entity + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
@@ -155,7 +157,7 @@ function loadNetwork() {
         size: Math.pow(comics, 0.2) * 4,
         color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color
       });
-      if (network_size == "")
+      if (network_size == "small")
         graph.setNodeAttribute(node, "type", "thumbnail");
     });
     /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
@@ -174,8 +176,8 @@ function loadNetwork() {
       labelColor: {attribute: 'color'},
       labelRenderedSizeThreshold: 11
     };
-    if (network_size == "")
-      sigmaSettings.nodeProgramClasses = {
+    if (network_size == "small")
+      sigmaSettings["nodeProgramClasses"] = {
         thumbnail: getNodeProgramImage()
       };
     renderer = new Sigma(graph, container, sigmaSettings);
