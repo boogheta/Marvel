@@ -163,7 +163,7 @@ function loadNetwork() {
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
-        size: Math.pow(comics, 0.2) * 4,
+        size: Math.pow(comics, 0.2) * (network_size === "small" ? 4 : 2),
         color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color
       });
       if (network_size == "small")
@@ -182,8 +182,8 @@ function loadNetwork() {
       defaultEdgeColor: '#1A1A1A',
       labelWeight: 'bold',
       labelFont: 'monospace',
-      labelColor: {attribute: 'color'},
-      labelRenderedSizeThreshold: 11
+      labelColor: network_size === "small" ? {attribute: 'color'} : {color: '#999'},
+      labelRenderedSizeThreshold: network_size === "small" ? 11 : 6
     };
     if (network_size == "small")
       sigmaSettings["nodeProgramClasses"] = {
@@ -241,7 +241,7 @@ function loadNetwork() {
           n === node ||
           graph.hasEdge(n, node)
             ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1)}
-            : { ...data, zIndex: 0, color: "#1A1A1A", image: null, size: 5 }
+            : { ...data, zIndex: 0, color: "#1A1A1A", image: null, size: network_size === "small" ? 5 : 2 }
       );
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
@@ -317,7 +317,7 @@ function loadNetwork() {
     setTimeout(() => {
       fa2Layout.stop();
       noverlap.assign(graph);
-    }, 5000);
+    }, network_size === "small" ? 6000 : 60000);
 
   });
 }
