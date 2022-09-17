@@ -16,10 +16,10 @@ html, body {
   background-color: #222;
   color: #ec1d24;
   float: left;
+  text-align: center;
 }
 h1 {
   width: 100%;
-  text-align: center;
   background-color: #ec1d24;
   color: white;
   padding: 10px 0px;
@@ -32,11 +32,11 @@ h1 {
 }
 #node-details {
   margin-top: 10px;
-  border-top: 1px solid grey;
   padding: 5px;
   text-align: center;
 }
 #node-label {
+  margin: 0px 0px 5px 0px;
   width: 100%;
 }
 #node-img {
@@ -45,8 +45,17 @@ h1 {
 }
 #node-extra {
 }
-#node-extra a, #node-extra a:visited {
+#sidebar a, #sidebar a:visited {
   color: #ec1d24;
+}
+#footer {
+  position: absolute;
+  bottom: 0px;
+  width: 20%;
+}
+#footer p {
+  padding-top: 5px;
+  border-top: 1px solid #555;
 }
 #sigma-container {
   width: 80%;

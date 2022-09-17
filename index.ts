@@ -1,5 +1,6 @@
 /* TODO:
 - try color edge with target color instead on click
+- display typeof creator in sidebar (donut?)
 - test data with stories instead of comics
 - fullscreen button
 - add title/credits
@@ -69,19 +70,19 @@ const clusters = {
     }
   },
   characters: {
-    Avengers: {
+    "Avengers": {
       match: "Avengers",
       color: "#2b6718"
     },
-    Champions: {
+    "Champions": {
       match: "Spider-Man (Miles Morales)",
       color: "#57b23d"
     },
-    "Fantastic Four": {
+    "Fantastic Four & Cosmic Heroes": {
       match: "Fantastic Four",
       color: "#234fac"
     },
-    "Spider-Man": {
+    "Spider-Man & Marvel Knights": {
       match: "Spider-Man (Peter Parker)",
       color: "#822e23"
     },
@@ -89,7 +90,7 @@ const clusters = {
       match: "X-Men",
       color: "#d4a129"
     },
-    "X-Force": {
+    "X-Factor & X-Force": {
       match: "X-Force",
       color: "#d97a2d"
     },
@@ -97,7 +98,7 @@ const clusters = {
       match: "Alpha Flight",
       color: "#8d32a7"
     },
-    Ultimate: {
+    "Ultimate Universe": {
       match: "Ultimates",
       color: "#424c9b"
     },
@@ -135,6 +136,7 @@ function loadNetwork() {
         if (label === clusters[entity][cluster].match) {
           clusters[entity][cluster].community = communities[node];
         clusters.communities[communities[node]] = clusters[entity][cluster];
+        clusters.communities[communities[node]].cluster = cluster;
         }
     });
     graph.forEachNode((node, {comics, thumbnail}) => {
@@ -196,9 +198,11 @@ function loadNetwork() {
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-      nodeExtra.innerHTML += "<p>Accounted in " + attrs.comics + " issues shared with " + graph.degree(node) + " other " + entity + "</p>";
+      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " issues</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+      if (clusters.communities[communities[node]])
+        nodeExtra.innerHTML += '<p>Attached to the <b><span style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</span></b> community<sup>*</sup></p>';
       if (attrs.url)
-        nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com...</a></p>';
+        nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
       renderer.setSetting(
         "nodeReducer", (n, data) =>
