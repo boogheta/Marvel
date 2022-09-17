@@ -1,4 +1,9 @@
-/* Interactions ideas
+/* TODO:
+- branch search node
+- branch or adjust label rate
+- add switch network button
+- use loader ?
+- add title/credits
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
 - filter overconnected
@@ -19,6 +24,8 @@ import FA2Layout from "graphology-layout-forceatlas2/worker";
 import louvain from 'graphology-communities-louvain';
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
+const entity = "creators";
+
 const fixedPalette = [
   "#5fb1ff",
   "#ff993e",
@@ -32,7 +39,32 @@ const fixedPalette = [
   "#904f13",
 ];
 const clusters = {
-  creators: {},
+  resolutions: {
+    creators: 0.8,
+    characters: 1.2
+  },
+  creators: {
+    "Silver Age": {
+      match: "Stan Lee",
+      color: "#555555"
+    },
+    "Bronze Age": {
+      match: "Chris Claremont",
+      color: "#d4a129"
+    },
+    "Dark Age": {
+      match: "Peter David",
+      color: "#8d32a7"
+    },
+    "Millenium Age": {
+      match: "Brian Michael Bendis",
+      color: "#234fac"
+    },
+    "Modern Age": {
+      match: "Dan Slott",
+      color: "#822e23"
+    }
+  },
   characters: {
     Avengers: {
       match: "Avengers",
@@ -69,15 +101,13 @@ const clusters = {
   },
   communities: {}
 }
-const entity = "characters";
-
 // Load external GEXF file:
 fetch("./Marvel_" + entity + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
     const circularPositions = circular(graph, { scale: 50 });
-    const communities = louvain(graph, {resolution: 1.2});
+    const communities = louvain(graph, {resolution: clusters.resolutions[entity]});
     graph.forEachNode((node, {label}) => {
       for (var cluster in clusters[entity])
         if (label === clusters[entity][cluster].match) {
@@ -109,11 +139,11 @@ fetch("./Marvel_" + entity + ".gexf")
 
     // Instanciate sigma:
     const renderer = new Sigma(graph, container, {
-      minCameraRatio: 0.001,
-      maxCameraRatio: 1000,
+      minCameraRatio: 0.08,
+      maxCameraRatio: 1.2,
       defaultEdgeColor: '#1A1A1A',
       labelWeight: 'bold',
-      labelColor: {attribute: 'color', color: '#555555'},
+      labelColor: {attribute: 'color'},
       nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
       }
