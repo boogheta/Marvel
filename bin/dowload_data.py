@@ -114,7 +114,7 @@ def process_api_page(entity, args={}, filters={}, page=0):
     with open(cache_file, "w") as f:
         json.dump(data, f)
     for filter_key, filter_value in filters.items():
-        data["data"]["results"] = [r for r in data["data"]["results"] if r[filter_key] == filter_value]
+        data["data"]["results"] = [r for r in data["data"]["results"] if (type(filter_value) == list and r[filter_key] in filter_value) or r[filter_key] == filter_value]
     return data
 
 def download_entity(entity, options, filters={}):
