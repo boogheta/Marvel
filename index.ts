@@ -1,10 +1,7 @@
 /* TODO:
-- autostop FA2 + add noverlap
 - branch search node
-- branch or adjust label rate
 - add switch network button
 - use loader ?
-- label font?
 - fullscreen button
 - add title/credits
 - hover nodes
@@ -144,6 +141,7 @@ fetch("./Marvel_" + entity + ".gexf")
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: {attribute: 'color'},
+      labelRenderedSizeThreshold: 11,
       nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
       }

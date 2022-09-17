@@ -10,16 +10,12 @@
     <link rel="stylesheet" href="./style.css">
     <div id="sigma-container"></div>
     <div id="controls">
-      <div id="search">
-        <input type="search" id="search-input" list="suggestions" placeholder="Search a node..." />
-        <datalist id="suggestions"></datalist>
-      </div>
       <div class="input"><label for="zoom-in">Zoom in</label><button id="zoom-in">+</button></div>
       <div class="input"><label for="zoom-out">Zoom out</label><button id="zoom-out">-</button></div>
       <div class="input"><label for="zoom-reset">Reset zoom</label><button id="zoom-reset">⊙</button></div>
-      <div id="labels-input" class="input">
-        <label for="labels-threshold">Labels density</label>
-        <input id="labels-threshold" type="range" min="-10" max="0" step="1" />
+      <div id="search">
+        <input type="search" id="search-input" list="suggestions" placeholder="Search a node..." />
+        <datalist id="suggestions"></datalist>
       </div>
     </div>
     <div id="loader"><img src="./loader.gif"/></div>
