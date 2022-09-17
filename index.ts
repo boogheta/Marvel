@@ -1,5 +1,4 @@
 /* TODO:
-- add click pic for modal full size
 - test data with stories instead of comics
 - display typeof creator in sidebar (donut?)
 - read url arguments (entity, selectedNode)
@@ -120,6 +119,9 @@ const clusters = {
 
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
+  modal = document.getElementById("modal") as HTMLElement,
+  modalImg = document.getElementById("modal-img") as HTMLImageElement,
+  explanations = document.getElementById("explanations") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
@@ -129,10 +131,15 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 let renderer = null;
 
+modal.addEventListener("click", () => modal.style.display = "none");
+
 function loadNetwork() {
   if (renderer) renderer.kill();
   container.innerHTML = '';
   loader.style.display = "block";
+  explanations.style.display = "block";
+  modal.style.display = "none";
+  modalImg.src = "";
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
@@ -199,6 +206,8 @@ function loadNetwork() {
     // Handle clicks on nodes
     const clickNode = (node) => {
       if (!node) {
+        explanations.style.display = "block";
+        modal.style.display = "none";
         nodeLabel.innerHTML = "";
         nodeImg.src = "";
         nodeExtra.innerHTML = "";
@@ -211,8 +220,13 @@ function loadNetwork() {
         return;
       }
       const attrs = graph.getNodeAttributes(node);
+      explanations.style.display = "none";
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
+      modalImg.src = attrs.image_url;
+      nodeImg.addEventListener("click", () => {
+        modal.style.display = "block";
+      });
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
       nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " issues</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
       if (clusters.communities[communities[node]])
@@ -236,7 +250,7 @@ function loadNetwork() {
     };
     renderer.on("clickNode", (event) => {
       //event.preventDefault();
-      setTimeout(() => clickNode(event.node), 50);
+      setTimeout(() => clickNode(event.node), 5);
     });
     container.addEventListener("click", (e) =>  {
       clickNode(null);
