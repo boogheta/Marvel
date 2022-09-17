@@ -107,14 +107,14 @@ def process_api_page(entity, args={}, filters={}, page=0):
         cache_file = os.path.join(".cache", entity, "{}_{:05d}.json".format(url_args["query_args"].replace("&", "_"), page))
 
     data = cache_download(url, cache_file)
-    for filter_key, filter_value in filters.items():
-        data["data"]["results"] = [r for r in data["data"]["results"] if r[filter_key] == filter_value]
     if entity == "comics":
         data = complete_data(data)
     elif entity in ["creators", "characters"]:
         data = download_thumbnails(entity, data)
     with open(cache_file, "w") as f:
         json.dump(data, f)
+    for filter_key, filter_value in filters.items():
+        data["data"]["results"] = [r for r in data["data"]["results"] if r[filter_key] == filter_value]
     return data
 
 def download_entity(entity, options, filters={}):
