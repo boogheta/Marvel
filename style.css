@@ -62,14 +62,6 @@ html, body, #sigma-container, #loader {
   border-radius: 2px;
   cursor: pointer;
 }
-#labels-input {
-  position: absolute;
-  top: 3em;
-  left: 0;
-}
-#labels-threshold {
-  width: 100%;
-}
 #search {
   position: absolute;
   left: 0;
@@ -77,97 +69,4 @@ html, body, #sigma-container, #loader {
 }
 #search input {
   width: 100%;
-}
-#save-as-png {
-  position: absolute;
-  left: 0;
-  top: 8.5em;
-  width: 100%;
-  background: white;
-}
-.menu {
-  position: absolute;
-  right: 1em;
-  border: 1px black solid;
-  background-color: #888;
-  color: white;
-  padding: 8px;
-  line-height: 22px;
-}
-#load {
-  top: 1em;
-}
-#load label .code, #loadMetadata label .code {
-  padding-left: 10px;
-}
-#nodes, #edges, #loadEdges {
-  display: none;
-}
-.code {
-  font-family: monospace;
-  font-weight: bold;
-}
-.code ul {
-  margin: 0;
-  padding: 0;
-}
-.code option, .code li {
-  list-style-type: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.aligncenter {
-  text-align: center;
-  width: 100%;
-}
-h4 {
-  margin: 0;
-}
-#colors {
-  bottom: 1em;
-  display: none;
-}
-#colorChoice {
-  width: 100%;
-  text-align: center;
-  font-weight: bold;
-  height: 25px;
-  margin-top: 5px;
-}
-#legend {
-  display: none;
-  background-color: white;
-  border: 1px black solid;
-  padding: 5px;
-  color: black;
-  font-weight: bold;
-  font-family: monospace;
-}
-#grad {
-  width: 90%;
-  height: 20px;
-  margin: 5px 5% 25px 5%;
-}
-.colorbox {
-  width: 20px;
-  height: 20px;
-  margin: 5px 10px;
-  display: inline-block;
-  vertical-align: middle;
-  border: 1px black solid;
-}
-#legend span {
-  position: absolute;
-  top: 90px;
-  text-align: center;
-}
-#minval {
-  left: 5%;
-}
-#midval {
-  right: 45%;
-}
-#maxval {
-  right: 5%;
 }

@@ -142,6 +142,7 @@ fetch("./Marvel_" + entity + ".gexf")
       maxCameraRatio: 1.2,
       defaultEdgeColor: '#1A1A1A',
       labelWeight: 'bold',
+      labelFont: 'monospace',
       labelColor: {attribute: 'color'},
       nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
