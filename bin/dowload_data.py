@@ -172,7 +172,7 @@ def build_graph(nodes_type, comics, nodes):
                 G.nodes[c1id][role_key] += 1
             G.nodes[c1id]["comics"] += 1
             for c2 in comic[nodes_type]["items"][i+1:]:
-                if nodes_type == "creator":
+                if nodes_type == "creators":
                     role = c2.get("role", "").lower().strip()
                     if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
                         continue
@@ -182,7 +182,7 @@ def build_graph(nodes_type, comics, nodes):
                 else:
                     G.add_edge(c1id, c2id, weight=1)
     for node in list(G.nodes):
-        if G.nodes[node]["comics"] < CONF["min_comics_for_" + entity]:
+        if G.nodes[node]["comics"] < CONF["min_comics_for_" + nodes_type]:
             G.remove_node(node)
     nx.write_gexf(G, "Marvel_%s.gexf" % nodes_type)
     return G
