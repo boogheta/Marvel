@@ -1,15 +1,16 @@
 /* TODO:
 - display typeof creator in sidebar (donut?)
+- read url arguments (entity, selectedNode)
 - test data with stories instead of comics
+- list comics associated with clicked node
+- click comic to show only attached nodes
 - fullscreen button
-- add title/credits
+- add disclaimer/readme
 - option full networks with no thumbnails
 - creators categories based on type of creator instead
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
 - filter overconnected
-- add border colors ? 
-- add cluster labels ? https://codesandbox.io/s/github/jacomyal/sigma.js/tree/main/examples/clusters-labels
 */
 
 import {Sigma} from "sigma";
