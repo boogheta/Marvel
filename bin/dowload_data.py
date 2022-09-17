@@ -116,9 +116,10 @@ def download_entity(entity, options):
     entity_dir = os.path.join(".cache", entity)
     if not os.path.exists(entity_dir):
         os.makedirs(entity_dir)
-    entity_img_dir = os.path.join("images", entity)
-    if not os.path.exists(entity_img_dir):
-        os.makedirs(entity_img_dir)
+    if entity != "comics":
+        entity_img_dir = os.path.join("images", entity)
+        if not os.path.exists(entity_img_dir):
+            os.makedirs(entity_img_dir)
 
     first_results = process_api_page(entity, options)
     total_results = first_results["data"]["total"]
