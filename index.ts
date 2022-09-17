@@ -125,7 +125,7 @@ function loadNetwork() {
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
   
-  fetch("./Marvel_" + entity + ".gexf")
+  fetch("./data/Marvel_" + entity + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);

@@ -185,7 +185,7 @@ def build_graph(nodes_type, comics, nodes):
     for node in list(G.nodes):
         if G.nodes[node]["comics"] < CONF["min_comics_for_" + nodes_type]:
             G.remove_node(node)
-    nx.write_gexf(G, "Marvel_%s.gexf" % nodes_type)
+    nx.write_gexf(G, os.path.join("data", "Marvel_%s.gexf" % nodes_type))
     return G
 
 
