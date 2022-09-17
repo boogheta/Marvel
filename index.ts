@@ -40,28 +40,24 @@ const fixedPalette = [
 ];
 const clusters = {
   resolutions: {
-    creators: 0.8,
+    creators: 0.85,
     characters: 1.2
   },
   creators: {
     "Silver Age": {
       match: "Stan Lee",
-      color: "#555555"
+      color: "#CCC"
     },
     "Bronze Age": {
       match: "Chris Claremont",
       color: "#d4a129"
     },
-    "Dark Age": {
-      match: "Peter David",
-      color: "#8d32a7"
-    },
     "Millenium Age": {
       match: "Brian Michael Bendis",
-      color: "#234fac"
+      color: "#8d32a7"
     },
     "Modern Age": {
-      match: "Dan Slott",
+      match: "Donny Cates",
       color: "#822e23"
     }
   },
