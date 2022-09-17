@@ -222,8 +222,8 @@ function loadNetwork() {
         "nodeReducer", (n, data) =>
           n === node ||
           graph.hasEdge(n, node)
-            ? { ...data, zIndex: 1 }
-            : { ...data, zIndex: 0, label: "", hidden: true }
+            ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1)}
+            : { ...data, zIndex: 0, color: "#1A1A1A", image: null, size: 5 }
       );
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
