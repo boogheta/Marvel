@@ -2,6 +2,7 @@
 
 import os
 import sys
+import csv
 import json
 import yaml
 import shutil
@@ -189,6 +190,9 @@ def build_graph(nodes_type, comics, nodes):
                     G.edges[c1id, c2id]["weight"] += 1
                 else:
                     G.add_edge(c1id, c2id, weight=1)
+    for node in list(G.nodes):
+        if G.degree(node) < 2:
+            G.remove_node(node)
     nx.write_gexf(G, os.path.join("data", "Marvel_%s_full.gexf" % nodes_type))
     for node in list(G.nodes):
         if G.nodes[node]["comics"] < CONF["min_comics_for_" + nodes_type]:

@@ -229,6 +229,8 @@ function loadNetwork() {
       });
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
       nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " issues</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+      if (entity === "creators")
+        nodeExtra.innerHTML += "<p>Including <b>" + attrs.writer + " as writer</b> and <b>" + attrs.artist + " as artist</b></p>";
       if (clusters.communities[communities[node]])
         nodeExtra.innerHTML += '<p>Attached to the <b><span style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</span></b> community<sup>*</sup></p>';
       if (attrs.url)
