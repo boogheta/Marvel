@@ -1,0 +1,173 @@
+html, body, #sigma-container, #loader {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  background-color: black;
+}
+#loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: none;
+}
+#loader img {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  background-color: #eee;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  opacity: 0.85;
+}
+#controls {
+  position: absolute;
+  left: 1em;
+  top: 1em;
+  text-align: right;
+}
+.input {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.input:not(:hover) label {
+  display: none;
+}
+.input label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: black;
+  color: white;
+  padding: 0.2em;
+  border-radius: 2px;
+  margin-top: 0.3em;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+.input button {
+  width: 2.5em;
+  height: 2.5em;
+  display: inline-block;
+  text-align: center;
+  background: white;
+  outline: none;
+  border: 1px solid dimgrey;
+  border-radius: 2px;
+  cursor: pointer;
+}
+#labels-input {
+  position: absolute;
+  top: 3em;
+  left: 0;
+}
+#labels-threshold {
+  width: 100%;
+}
+#search {
+  position: absolute;
+  left: 0;
+  top: 5em;
+}
+#search input {
+  width: 100%;
+}
+#save-as-png {
+  position: absolute;
+  left: 0;
+  top: 8.5em;
+  width: 100%;
+  background: white;
+}
+.menu {
+  position: absolute;
+  right: 1em;
+  border: 1px black solid;
+  background-color: #888;
+  color: white;
+  padding: 8px;
+  line-height: 22px;
+}
+#load {
+  top: 1em;
+}
+#load label .code, #loadMetadata label .code {
+  padding-left: 10px;
+}
+#nodes, #edges, #loadEdges {
+  display: none;
+}
+.code {
+  font-family: monospace;
+  font-weight: bold;
+}
+.code ul {
+  margin: 0;
+  padding: 0;
+}
+.code option, .code li {
+  list-style-type: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.aligncenter {
+  text-align: center;
+  width: 100%;
+}
+h4 {
+  margin: 0;
+}
+#colors {
+  bottom: 1em;
+  display: none;
+}
+#colorChoice {
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  height: 25px;
+  margin-top: 5px;
+}
+#legend {
+  display: none;
+  background-color: white;
+  border: 1px black solid;
+  padding: 5px;
+  color: black;
+  font-weight: bold;
+  font-family: monospace;
+}
+#grad {
+  width: 90%;
+  height: 20px;
+  margin: 5px 5% 25px 5%;
+}
+.colorbox {
+  width: 20px;
+  height: 20px;
+  margin: 5px 10px;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px black solid;
+}
+#legend span {
+  position: absolute;
+  top: 90px;
+  text-align: center;
+}
+#minval {
+  left: 5%;
+}
+#midval {
+  right: 45%;
+}
+#maxval {
+  right: 5%;
+}

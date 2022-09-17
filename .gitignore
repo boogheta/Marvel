@@ -1,3 +1,6 @@
 data
 config.yml
 .cache
+node_modules
+package-lock.json
+build
