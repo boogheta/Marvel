@@ -72,7 +72,7 @@ const clusters = {
 const entity = "characters";
 
 // Load external GEXF file:
-fetch("./Marvel_characters.gexf")
+fetch("./Marvel_" + entity + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
@@ -91,8 +91,8 @@ fetch("./Marvel_characters.gexf")
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         size: Math.pow(comics, 0.2) * 4,
-        //color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color,
-        color: clusters.communities[communities[node]].color,
+        color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color,
+        //color: clusters.communities[communities[node]].color,
         type: "thumbnail"
       });
     });
