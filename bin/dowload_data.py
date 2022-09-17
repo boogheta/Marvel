@@ -6,7 +6,7 @@ import json
 import yaml
 import shutil
 import requests
-from time import time
+from time import time, sleep
 from hashlib import md5
 import networkx as nx
 
@@ -17,7 +17,7 @@ def retry_get(url, stream=False, retries=5):
         return res
     except (ConnectionResetError, AssertionError, requests.exceptions.ConnectionError) as e:
         if retries:
-            time.sleep(15 - 2 * retries)
+            sleep(15 - 2 * retries)
             print("...retrying...")
             return retry_get(url, stream=stream, retries=retries-1)
         print("Error with url " + url, res)
