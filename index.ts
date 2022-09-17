@@ -1,6 +1,5 @@
 /* TODO:
 - test data with stories instead of comics
-- option full networks with no thumbnails
 - display typeof creator in sidebar (donut?)
 - read url arguments (entity, selectedNode)
 - list comics associated with clicked node
@@ -25,12 +24,22 @@ import FA2Layout from "graphology-layout-forceatlas2/worker";
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 
-let entity = "characters";
+let entity = "characters",
+  network_size = "";
 const switchBtn = document.getElementById("switch") as HTMLElement;
 switchBtn.addEventListener("click", () => {
   if (entity === "characters")
     entity = "creators";
   else entity = "characters";
+  switchBtn.innerHTML = 'Switch to ' + entity + ' network';
+  switchBtn.title = 'Load the ' + entity + ' network instead';
+  loadNetwork();
+});
+const switchSizeBtn = document.getElementById("switch-size") as HTMLElement;
+switchSizeBtn.addEventListener("click", () => {
+  if (network_size === "_full")
+    network_size = "";
+  else network_size = "_full";
   loadNetwork();
 });
 
@@ -125,7 +134,7 @@ function loadNetwork() {
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
   
-  fetch("./data/Marvel_" + entity + ".gexf")
+  fetch("./data/Marvel_" + entity + network_size + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
@@ -144,9 +153,10 @@ function loadNetwork() {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         size: Math.pow(comics, 0.2) * 4,
-        color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color,
-        type: "thumbnail"
+        color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color
       });
+      if (network_size == "")
+        graph.setNodeAttribute(node, "type", "thumbnail");
     });
     /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
       graph.mergeEdgeAttributes(edge, {size: 1});
@@ -155,18 +165,20 @@ function loadNetwork() {
     });*/
 
     // Instantiate sigma:
-    renderer = new Sigma(graph, container, {
+    let sigmaSettings = {
       minCameraRatio: 0.08,
       maxCameraRatio: 1.2,
       defaultEdgeColor: '#1A1A1A',
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: {attribute: 'color'},
-      labelRenderedSizeThreshold: 11,
-      nodeProgramClasses: {
+      labelRenderedSizeThreshold: 11
+    };
+    if (network_size == "")
+      sigmaSettings.nodeProgramClasses = {
         thumbnail: getNodeProgramImage()
-      }
-    });
+      };
+    renderer = new Sigma(graph, container, sigmaSettings);
 
     // Bind zoom manipulation buttons
     const camera = renderer.getCamera();

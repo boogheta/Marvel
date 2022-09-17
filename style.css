@@ -25,7 +25,7 @@ h1 {
   padding: 10px 0px;
   margin: 0;
 }
-#switch {
+#switch, #switch-size {
   display: block;
   width: 100%;
   padding: 5px;
