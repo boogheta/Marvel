@@ -1,18 +1,20 @@
 /* TODO:
+- autostop FA2 + add noverlap
 - branch search node
 - branch or adjust label rate
 - add switch network button
 - use loader ?
+- label font?
+- fullscreen button
 - add title/credits
+- hover nodes
+- click nodes with detailed window
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
 - filter overconnected
-- click to hover connected ones 
-- set louvain colors to main communities (Avengers/Cosmic/X-Men/Spider-Man/Ultimate)
 - add border colors ?
 - add cluster labels https://codesandbox.io/s/github/jacomyal/sigma.js/tree/main/examples/clusters-labels
-
-
+- option full networks with no thumbnails
 */
 
 import {Sigma} from "sigma";
@@ -21,6 +23,7 @@ import { parse } from "graphology-gexf";
 import { circular } from "graphology-layout";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
+import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
@@ -157,11 +160,15 @@ fetch("./Marvel_" + entity + ".gexf")
       camera.animatedReset({ duration: 600 });
     });
 
-  const sensibleSettings = forceAtlas2.inferSettings(graph);
-  const fa2Layout = new FA2Layout(graph, {
-    settings: sensibleSettings,
-  });
-  fa2Layout.start();
+    const sensibleSettings = forceAtlas2.inferSettings(graph);
+    const fa2Layout = new FA2Layout(graph, {
+      settings: sensibleSettings,
+    });
+    fa2Layout.start();
+    setTimeout(() => {
+      fa2Layout.stop();
+      noverlap.assign(graph);
+    }, 5000);
 
   });
 
