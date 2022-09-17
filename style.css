@@ -65,7 +65,7 @@ html, body, #sigma-container, #loader {
 #search {
   position: absolute;
   left: 0;
-  top: 5em;
+  top: 3em;
 }
 #search input {
   width: 100%;

@@ -1,20 +1,22 @@
 /* TODO:
-- branch search node
+- fullscreen button
 - add switch network button
 - use loader ?
-- fullscreen button
-- add title/credits
 - hover nodes
 - click nodes with detailed window
+- add title/credits
+- option full networks with no thumbnails
 - filter unconnected nodes
 - filter less connected nodes (and those without pic)
 - filter overconnected
-- add border colors ?
-- add cluster labels https://codesandbox.io/s/github/jacomyal/sigma.js/tree/main/examples/clusters-labels
-- option full networks with no thumbnails
+- add border colors ? 
+- add cluster labels ? https://codesandbox.io/s/github/jacomyal/sigma.js/tree/main/examples/clusters-labels
 */
 
 import {Sigma} from "sigma";
+import { Coordinates, EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
+
 import Graph from "graphology";
 import { parse } from "graphology-gexf";
 import { circular } from "graphology-layout";
@@ -22,9 +24,9 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
-import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
-const entity = "creators";
+const entity = "characters";
+//entity = "creators";
 
 const fixedPalette = [
   "#5fb1ff",
@@ -111,7 +113,6 @@ fetch("./Marvel_" + entity + ".gexf")
         clusters.communities[communities[node]] = clusters[entity][cluster];
         }
     });
-    console.log(clusters);
     graph.forEachNode((node, {comics, thumbnail}) => {
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
@@ -157,6 +158,55 @@ fetch("./Marvel_" + entity + ".gexf")
     });
     zoomResetBtn.addEventListener("click", () => {
       camera.animatedReset({ duration: 600 });
+    });
+
+    // Setup nodes search
+    const searchInput = document.getElementById("search-input") as HTMLInputElement;
+    const searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
+    let selectedNode = null,
+      suggestions = [];
+    const setSearchQuery = (query) => {
+      if (searchInput.value !== query) searchInput.value = query;
+      if (query.length > 1) {
+        const lcQuery = query.toLowerCase();
+        suggestions = [];
+        graph.forEachNode((node, {label}) => {
+          if (label.toLowerCase().includes(lcQuery))
+            suggestions.push({node: node, label: label});
+        });
+
+        if (suggestions.length === 1 && suggestions[0].label === query) {
+          if (selectedNode)
+            graph.setNodeAttribute(selectedNode, "highlighted", false);
+          selectedNode = suggestions[0].node;
+          suggestions = [];
+          graph.setNodeAttribute(selectedNode, "highlighted", true);
+          // Move the camera to center it on the selected node:
+          const nodePosition = renderer.getNodeDisplayData(selectedNode) as Coordinates;
+          renderer.getCamera().animate(nodePosition, {
+            duration: 500,
+          });
+        } else if (selectedNode) {
+          graph.setNodeAttribute(selectedNode, "highlighted", false);
+          selectedNode = null;
+        }
+      } else if (selectedNode) {
+        graph.setNodeAttribute(selectedNode, "highlighted", false);
+        selectedNode = null;
+        suggestions = [];
+      }
+      searchSuggestions.innerHTML = suggestions
+        .sort()
+        .map((node) => "<option>" + node.label + "</option>")
+        .join("\n");
+      // Refresh rendering:
+      renderer.refresh();
+    }
+    searchInput.addEventListener("input", () => {
+      setSearchQuery(searchInput.value || "");
+    });
+    searchInput.addEventListener("blur", () => {
+      setSearchQuery("");
     });
 
     const sensibleSettings = forceAtlas2.inferSettings(graph);
