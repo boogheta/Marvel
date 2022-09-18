@@ -8,8 +8,7 @@ html, body {
   background-color: black;
 }
 #sidebar {
-  width: 20%;
-  min-width: 275px;
+  width: 275px;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -20,13 +19,17 @@ html, body {
   text-align: center;
 }
 h1 {
-  width: 100%;
+  font-size: 26px;
   background-color: #ec1d24;
   color: white;
   padding: 10px 0px;
   margin: 0;
 }
-#switch, #switch-size {
+h2 {
+  font-size: 16px;
+}
+.switch {
+  font-size: 14px;
   display: block;
   width: 100%;
   padding: 5px;
@@ -34,10 +37,15 @@ h1 {
   font-family: monospace;
   font-weight: bold;
 }
+#switch-characters, #switch-small {
+  display: none;
+}
 #node-details {
   margin-top: 10px;
   padding: 5px;
   text-align: center;
+  overflow-y: auto;
+  max-height: 60%;
 }
 #node-label {
   margin: 0px 0px 5px 0px;
@@ -57,15 +65,15 @@ h1 {
   position: absolute;
   bottom: 0px;
   width: 20%;
-  min-width: 275px;
+  width: 275px;
 }
 #footer p {
+  font-size: 12px;
   padding: 5px 0px;
   border-top: 1px solid #555;
   margin: 0;
 }
 #sigma-container {
-  max-width: 80%;
   height: 100%;
   margin: 0;
   padding: 0;
