@@ -1,5 +1,5 @@
 /* TODO:
-- display typeof creator in sidebar (donut?)
+- display typeof creator in sidebar (donut ?)
 - creators categories based on type of creator instead
 - read url arguments (entity, selectedNode)
 - list comics associated with clicked node
@@ -224,7 +224,7 @@ function loadNetwork() {
         modal.style.display = "block";
       });
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " issues</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
       if (entity === "creators")
         nodeExtra.innerHTML += "<p>Including <b>" + attrs.writer + " as writer</b> and <b>" + attrs.artist + " as artist</b></p>";
       if (clusters.communities[communities[node]])
