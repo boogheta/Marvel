@@ -190,17 +190,13 @@ def build_graph(nodes_type, links_type, comics, nodes):
                     G.edges[c1id, c2id]["weight"] += 1
                 else:
                     G.add_edge(c1id, c2id, weight=1)
-    for node in list(G.nodes):
-        if G.degree(node) < 2:
-            G.remove_node(node)
-    nx.write_gexf(G, os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
+    biggest_component = max(nx.connected_components(G), key=len)
+    nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
     for node in list(G.nodes):
         if G.nodes[node]["comics"] < CONF["min_" + links_type + "_for_" + nodes_type]:
             G.remove_node(node)
-    for node in list(G.nodes):
-        if G.degree(node) < 2:
-            G.remove_node(node)
-    nx.write_gexf(G, os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
+    biggest_component = max(nx.connected_components(G), key=len)
+    nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
 def build_csv(entity, rows, fields):
