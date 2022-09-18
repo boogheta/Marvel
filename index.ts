@@ -1,4 +1,5 @@
 /* TODO:
+- add network titles + put it in page's title
 - prespatialize networks
 - improve display of creator type in sidebar ?
 - adjust communities colors
@@ -7,6 +8,7 @@
 - click comic to show only attached nodes
 - fullscreen button
 - add disclaimer/methodo
+- add social network cards
 */
 
 import {Sigma} from "sigma";
@@ -254,10 +256,15 @@ function loadNetwork() {
       });
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
       nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
-      if (entity === "creators")
-        nodeExtra.innerHTML += "<p>Including <b>" + attrs.writer + " as writer</b> and <b>" + attrs.artist + " as artist</b></p>";
+      if (entity === "creators") {
+        if (attrs.writer === 0 && attrs.artist)
+          nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.artist + '">artist</b></p>';
+        else if (attrs.artist === 0 && attrs.writer)
+          nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.writer + '">writer</b></p>';
+        else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
+      }
       if (clusters.communities[communities[node]])
-        nodeExtra.innerHTML += '<p>Attached to the <b><span style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</span></b> community<sup>*</sup></p>';
+        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</b> community<sup>*</sup></p>';
       if (attrs.url)
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
@@ -342,7 +349,7 @@ function loadNetwork() {
     setTimeout(() => {
       fa2Layout.stop();
       noverlap.assign(graph);
-    }, network_size === "small" ? 6000 : 60000);
+    }, network_size === "small" ? 15000 : 90000);
 
   });
 }
