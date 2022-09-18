@@ -1,4 +1,5 @@
 /* TODO:
+- add network titles + put it in page's title
 - prespatialize networks
 - improve display of creator type in sidebar ?
 - adjust communities colors
@@ -7,6 +8,7 @@
 - click comic to show only attached nodes
 - fullscreen button
 - add disclaimer/methodo
+- add social network cards
 */
 
 import {Sigma} from "sigma";
@@ -342,7 +344,7 @@ function loadNetwork() {
     setTimeout(() => {
       fa2Layout.stop();
       noverlap.assign(graph);
-    }, network_size === "small" ? 6000 : 60000);
+    }, network_size === "small" ? 15000 : 90000);
 
   });
 }
