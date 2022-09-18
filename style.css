@@ -14,7 +14,7 @@ html, body {
   overflow: hidden;
   font-family: monospace;
   background-color: #222;
-  color: #ec1d24;
+  color: dimgrey;
   float: left;
   text-align: center;
 }
@@ -27,6 +27,7 @@ h1 {
 }
 h2 {
   font-size: 16px;
+  color: #ec1d24;
 }
 .switch {
   font-size: 14px;
@@ -59,12 +60,11 @@ h2 {
 #node-extra {
 }
 #sidebar a, #sidebar a:visited {
-  color: #ec1d24;
+  color: #af4f4f;
 }
 #footer {
   position: absolute;
   bottom: 0px;
-  width: 20%;
   width: 275px;
 }
 #footer p {
