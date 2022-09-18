@@ -9,6 +9,7 @@ html, body {
 }
 #sidebar {
   width: 20%;
+  min-width: 275px;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -56,14 +57,15 @@ h1 {
   position: absolute;
   bottom: 0px;
   width: 20%;
+  min-width: 275px;
 }
 #footer p {
-  padding-top: 5px;
+  padding: 5px 0px;
   border-top: 1px solid #555;
-  margin: 0px 0px 10px 0px;
+  margin: 0;
 }
 #sigma-container {
-  width: 80%;
+  max-width: 80%;
   height: 100%;
   margin: 0;
   padding: 0;
