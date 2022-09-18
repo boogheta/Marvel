@@ -4,21 +4,24 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MARVEL networks</title>
+    <title>MARVEL networks &mdash; Graph of main characters featuring in same stories</title>
   </head>
   <body>
     <link rel="stylesheet" href="./style.css">
     <div id="sidebar">
       <h1>MARVEL networks</h1>
+      <h2 id="title"></h2>
+      <button class="switch" id="switch-creators" title="Load the creators network instead">See the creators network</button>
+      <button class="switch" id="switch-characters" title="Load the characters network instead">See the characters network</button>
+      <button class="switch" id="switch-small" title="Load the small network instead">See the small network</button>
+      <button class="switch" id="switch-full" title="Load the full network instead">See the full network</button>
       <div id="explanations"></div>
       <div id="node-details">
-        <h2 id="node-label"></h2>
+        <h3 id="node-label"></h2>
         <img id="node-img"/>
         <div id="node-extra"></div>
       </div>
       <div id="footer">
-        <button id="switch" title="Load the creators network instead">Switch to creators network</button>
-        <button id="switch-size" title="Load the full network instead">Switch to complete network</button>
         <p><sup>*</sup> Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>, they can be imprecise</p>
         <p>Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a> and published on <a href="https://github.com/boogheta/Marvel" target="_blank">Github</a> as free open source software (AGPL v3).<br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
         <p>Data provided by <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a><br/>© 2022 MARVEL</p>

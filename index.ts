@@ -1,13 +1,10 @@
 /* TODO:
-- add network titles + put it in page's title
+- add disclaimer/methodo
 - prespatialize networks
-- improve display of creator type in sidebar ?
 - adjust communities colors
-- read url arguments (entity, selectedNode)
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - fullscreen button
-- add disclaimer/methodo
 - add social network cards
 */
 
@@ -22,27 +19,6 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
-
-let entity = "characters",
-  network_size = "small";
-const switchBtn = document.getElementById("switch") as HTMLElement;
-switchBtn.addEventListener("click", () => {
-  switchBtn.innerHTML = 'Switch to ' + entity + ' network';
-  switchBtn.title = 'Load the ' + entity + ' network instead';
-  if (entity === "characters")
-    entity = "creators";
-  else entity = "characters";
-  loadNetwork();
-});
-const switchSizeBtn = document.getElementById("switch-size") as HTMLElement;
-switchSizeBtn.addEventListener("click", () => {
-  switchSizeBtn.innerHTML = 'Switch to ' + network_size + ' network';
-  switchSizeBtn.title = 'Load the ' + network_size + ' network instead';
-  if (network_size === "complete")
-    network_size = "small";
-  else network_size = "complete";
-  loadNetwork();
-});
 
 const fixedPalette = [
   "#5fb1ff",
@@ -143,7 +119,6 @@ const lighten = function(col, amt) {
 
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
-  modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
@@ -151,13 +126,16 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   zoomInBtn = document.getElementById("zoom-in") as HTMLElement,
   zoomOutBtn = document.getElementById("zoom-out") as HTMLElement,
-  zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement;
-
-let renderer = null;
+  zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement,
+  modal = document.getElementById("modal") as HTMLElement;
 
 modal.addEventListener("click", () => modal.style.display = "none");
 
+let renderer = null;
+
 function loadNetwork() {
+  setTitle();
+  
   if (renderer) renderer.kill();
   container.innerHTML = '';
   loader.style.display = "block";
@@ -353,4 +331,57 @@ function loadNetwork() {
 
   });
 }
-loadNetwork();
+
+let entity = "characters",
+  network_size = "small";
+
+const pageTitle = document.querySelector("title") as HTMLElement;
+const h2Title = document.getElementById("title") as HTMLElement;
+const setTitle = function() {
+  window.location.hash = entity + "/" + network_size;
+  const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featuring together within same stories";
+  pageTitle.innerHTML = "MARVEL networks &mdash; G" + title;
+  h2Title.innerHTML = "This is a g" + title;
+}
+
+const switchCharacters = document.getElementById("switch-characters") as HTMLElement;
+const switchCreators = document.getElementById("switch-creators") as HTMLElement;
+const switchSmall = document.getElementById("switch-small") as HTMLElement;
+const switchFull = document.getElementById("switch-full") as HTMLElement;
+const setEntity = function(val, noload) {
+  if (val === "characters") {
+    switchCreators.style.display = "block";
+    switchCharacters.style.display = "none";
+  } else {
+    switchCreators.style.display = "none";
+    switchCharacters.style.display = "block";
+  }
+  entity = val;
+  if (!noload)
+    loadNetwork();
+};
+switchCharacters.addEventListener("click", () => setEntity("characters", false));
+switchCreators.addEventListener("click", () => setEntity("creators", false));
+const setSize = function(val) {
+  if (val === "small") {
+    switchSmall.style.display = "none";
+    switchFull.style.display = "block";
+  } else {
+    switchSmall.style.display = "block";
+    switchFull.style.display = "none";
+  }
+  network_size = val;
+  loadNetwork();
+};
+switchFull.addEventListener("click", () => setSize("full"));
+switchSmall.addEventListener("click", () => setSize("small"));
+
+const currentUrl = window.location.hash.replace(/^#/, '')
+if (currentUrl !== "") {
+  const args = currentUrl.split("/");
+  setEntity(args[0], true);
+  setSize(args[1]);
+} else {
+  loadNetwork();
+}
+
