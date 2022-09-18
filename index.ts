@@ -1,6 +1,7 @@
 /* TODO:
-- display typeof creator in sidebar (donut ?)
-- creators categories based on type of creator instead
+- prespatialize networks
+- improve display of creator type in sidebar ?
+- adjust communities colors
 - read url arguments (entity, selectedNode)
 - list comics associated with clicked node
 - click comic to show only attached nodes
@@ -58,6 +59,11 @@ const clusters = {
     creators: 0.85,
     characters: 1.2
   },
+  roles: {
+    artist: "#234fac",
+    writer: "#2b6718",
+    "full-stack": "#d4a129"
+  },
   creators: {
     "Silver Age": {
       match: "Stan Lee",
@@ -113,6 +119,26 @@ const clusters = {
   communities: {}
 }
 
+// Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
+const lighten = function(col, amt) {
+  var usePound = false;
+  if (col[0] == "#") {
+    col = col.slice(1);
+    usePound = true;
+  }
+  var num = parseInt(col,16);
+  var r = (num >> 16) + amt;
+  if (r > 255) r = 255;
+  else if  (r < 0) r = 0;
+  var b = ((num >> 8) & 0x00FF) + amt;
+  if (b > 255) b = 255;
+  else if  (b < 0) b = 0;
+  var g = (num & 0x0000FF) + amt;
+  if (g > 255) g = 255;
+  else if (g < 0) g = 0;
+  return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
+}
+
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
@@ -155,12 +181,15 @@ function loadNetwork() {
         clusters.communities[communities[node]].cluster = cluster;
         }
     });
-    graph.forEachNode((node, {comics, thumbnail}) => {
+    graph.forEachNode((node, {comics, thumbnail, artist, writer}) => {
+      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         size: Math.pow(comics, 0.2) * (network_size === "small" ? 4 : 2),
-        color: (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color
+        color: entity === "characters" ?
+          (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color :
+          (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles["full-stack"]))
       });
       if (network_size == "small")
         graph.setNodeAttribute(node, "type", "thumbnail");
@@ -242,7 +271,7 @@ function loadNetwork() {
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
-            ? { ...data, color: graph.getNodeAttribute(graph.opposite(node, edge), 'color'), size: Math.log(graph.getEdgeAttribute(edge, 'weight'))}
+            ? { ...data, color: lighten(graph.getNodeAttribute(graph.opposite(node, edge), 'color'), 25), size: Math.log(graph.getEdgeAttribute(edge, 'weight'))}
             : { ...data, color: "#FFF", hidden: true }
       );
     };
