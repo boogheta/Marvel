@@ -142,6 +142,7 @@ def download_entity(entity, options, filters={}):
 extractID = lambda n: int(n["resourceURI"].split("/")[-1])
 
 def build_graph(nodes_type, links_type, comics, nodes):
+    skipIDs = set()
     G = nx.Graph()
     for n in nodes:
         attrs = {
@@ -161,6 +162,9 @@ def build_graph(nodes_type, links_type, comics, nodes):
         elif nodes_type == "characters":
             attrs["label"] = n["name"]
             attrs["description"] = n["description"]
+        if attrs["label"].startswith("Various"):
+            skipIDs.add(n["id"])
+            continue
         G.add_node(n["id"], **attrs)
 
     for comic in comics:
@@ -168,6 +172,8 @@ def build_graph(nodes_type, links_type, comics, nodes):
             continue
         for i, c1 in enumerate(comic[nodes_type]["items"]):
             c1id = extractID(c1)
+            if c1id in skipIDs:
+                continue
             if nodes_type == "creators":
                 role = c1.get("role", "").lower().strip()
                 if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
@@ -186,6 +192,8 @@ def build_graph(nodes_type, links_type, comics, nodes):
                     if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
                         continue
                 c2id = extractID(c2)
+                if c2id in skipIDs:
+                    continue
                 if G.has_edge(c1id, c2id):
                     G.edges[c1id, c2id]["weight"] += 1
                 else:
