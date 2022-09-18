@@ -106,8 +106,8 @@ h1 {
   position: absolute;
   right: 1em;
   top: 1em;
-  text-align: right;
-  width: 109px;
+  text-align: center;
+  width: 112px;
 }
 .input {
   position: relative;
@@ -118,21 +118,20 @@ h1 {
   display: none;
 }
 .input button {
-  width: 2.5em;
-  height: 2.5em;
+  width: 33px;
+  height: 33px;
   display: inline-block;
-  text-align: center;
   background: white;
   outline: none;
   border: 1px solid dimgrey;
-  border-radius: 2px;
   cursor: pointer;
 }
 #search {
-  margin: 5px 0px;
+  margin: 5px 1px;
 }
 #search input {
   width: 100%;
   padding: 5px;
   text-align: center;
+  font-family: monospace;
 }
