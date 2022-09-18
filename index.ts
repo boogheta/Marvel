@@ -1,15 +1,11 @@
 /* TODO:
-- test data with stories instead of comics
 - display typeof creator in sidebar (donut?)
+- creators categories based on type of creator instead
 - read url arguments (entity, selectedNode)
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - fullscreen button
 - add disclaimer/methodo
-- creators categories based on type of creator instead
-- filter unconnected nodes
-- filter less connected nodes (and those without pic)
-- filter overconnected
 */
 
 import {Sigma} from "sigma";
@@ -145,7 +141,7 @@ function loadNetwork() {
   nodeExtra.innerHTML = "";
   clusters.communities = {};
   
-  fetch("./data/Marvel_" + entity + (network_size === "small" ? "" : "_full") + ".gexf")
+  fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);

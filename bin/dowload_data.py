@@ -141,7 +141,7 @@ def download_entity(entity, options, filters={}):
 
 extractID = lambda n: int(n["resourceURI"].split("/")[-1])
 
-def build_graph(nodes_type, comics, nodes):
+def build_graph(nodes_type, links_type, comics, nodes):
     G = nx.Graph()
     for n in nodes:
         attrs = {
@@ -164,7 +164,7 @@ def build_graph(nodes_type, comics, nodes):
         G.add_node(n["id"], **attrs)
 
     for comic in comics:
-        if comic[nodes_type]["returned"] > CONF["cooccurrence_threshold"]:
+        if comic[nodes_type]["returned"] > CONF["cooccurrence_threshold_for_" + nodes_type]:
             continue
         for i, c1 in enumerate(comic[nodes_type]["items"]):
             c1id = extractID(c1)
@@ -193,11 +193,14 @@ def build_graph(nodes_type, comics, nodes):
     for node in list(G.nodes):
         if G.degree(node) < 2:
             G.remove_node(node)
-    nx.write_gexf(G, os.path.join("data", "Marvel_%s_full.gexf" % nodes_type))
+    nx.write_gexf(G, os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
     for node in list(G.nodes):
-        if G.nodes[node]["comics"] < CONF["min_comics_for_" + nodes_type]:
+        if G.nodes[node]["comics"] < CONF["min_" + links_type + "_for_" + nodes_type]:
             G.remove_node(node)
-    nx.write_gexf(G, os.path.join("data", "Marvel_%s.gexf" % nodes_type))
+    for node in list(G.nodes):
+        if G.degree(node) < 2:
+            G.remove_node(node)
+    nx.write_gexf(G, os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
 def build_csv(entity, rows, fields):
@@ -218,7 +221,9 @@ if __name__ == "__main__":
     stories = download_entity("stories", {"orderBy": "id"}, {"type": "story"})
     characters = download_entity("characters", {"orderBy": "name"})
     creators = download_entity("creators", {"orderBy": ["lastName", "firstName"]})
-    build_graph("characters", comics, characters)
-    build_graph("creators", comics, creators)
+    build_graph("characters", "stories", stories, characters)
+    build_graph("creators", "stories", stories, creators)
+    build_graph("characters", "comics", comics, characters)
+    build_graph("creators", "comics", comics, creators)
     build_csv("comics", comics, [])
     build_csv("stories", stories, [])
