@@ -188,7 +188,7 @@ function loadNetwork() {
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
-        size: Math.pow(comics, 0.2) * (network_size === "small" ? 4 : 2),
+        size: Math.pow(comics, 0.2) * (network_size === "small" ? 4 : (entity == "characters" ? 2 : 1.75)),
         color: entity === "characters" ?
           (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color :
           (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles["full-stack"]))
@@ -342,7 +342,7 @@ function loadNetwork() {
 
     const sensibleSettings = forceAtlas2.inferSettings(graph);
     const fa2Layout = new FA2Layout(graph, {
-      settings: sensibleSettings,
+      settings: sensibleSettings
     });
     fa2Layout.start();
     loader.style.display = "none";
