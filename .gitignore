@@ -3,3 +3,4 @@ config.yml
 node_modules
 package-lock.json
 build
+images/other_formats
