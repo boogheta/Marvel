@@ -1,5 +1,4 @@
 /* TODO:
-- find way to better handle buttons
 - enable pictures on full networks
 - add border nodes?
 - check Miles Morales missing
@@ -142,11 +141,11 @@ function divHeight(divId) {
 }
 
 function resize() {
-  const freeHeight = divHeight("sidebar") - divHeight("header") - (divHeight("switch-small") || divHeight("switch-full")) - divHeight("footer");
-  explanations.style["height"] = (freeHeight - 28) + "px";
-  explanations.style["min-height"] = (freeHeight - 28) + "px";
-  nodeDetails.style["height"] = (freeHeight - 33) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 33) + "px";
+  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
+  explanations.style.height = (freeHeight - 8) + "px";
+  explanations.style["min-height"] = (freeHeight - 8) + "px";
+  nodeDetails.style.height = (freeHeight - 23) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 23) + "px";
 }
 window.addEventListener("resize", resize);
 
@@ -158,6 +157,7 @@ function loadNetwork() {
   container.innerHTML = '';
   loader.style.display = "block";
   explanations.style.display = "block";
+  nodeDetails.style.display = "none";
   modal.style.display = "none";
   modalImg.src = "";
   nodeLabel.innerHTML = "";
@@ -230,6 +230,7 @@ function loadNetwork() {
     const clickNode = (node) => {
       if (!node) {
         explanations.style.display = "block";
+        nodeDetails.style.display = "none";
         modal.style.display = "none";
         nodeLabel.innerHTML = "";
         nodeImg.src = "";
@@ -244,6 +245,7 @@ function loadNetwork() {
       }
       const attrs = graph.getNodeAttributes(node);
       explanations.style.display = "none";
+      nodeDetails.style.display = "block";
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
       modalImg.src = attrs.image_url;
@@ -354,10 +356,10 @@ const setTitle = function() {
   document.getElementById("title").innerHTML = "This is a g" + title;
 }
 
-const switchCharacters = document.getElementById("switch-characters") as HTMLElement,
-  switchCreators = document.getElementById("switch-creators") as HTMLElement,
-  switchSmall = document.getElementById("switch-small") as HTMLElement,
-  switchFull = document.getElementById("switch-full") as HTMLElement,
+const switchCharacters = document.getElementById("switch-characters") as HTMLButtonElement,
+  switchCreators = document.getElementById("switch-creators") as HTMLButtonElement,
+  switchSmall = document.getElementById("switch-small") as HTMLButtonElement,
+  switchFull = document.getElementById("switch-full") as HTMLButtonElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
@@ -367,11 +369,11 @@ const switchCharacters = document.getElementById("switch-characters") as HTMLEle
 const setEntity = function(val, load) {
   entity = val;
   if (val === "characters") {
-    switchCreators.style.display = "block";
-    switchCharacters.style.display = "none";
+    switchCreators.disabled = false;
+    switchCharacters.disabled = true;
   } else {
-    switchCreators.style.display = "none";
-    switchCharacters.style.display = "block";
+    switchCreators.disabled = true;
+    switchCharacters.disabled = false;
   }
   entitySpans.forEach((span) => span.innerHTML = val);
   creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
@@ -388,11 +390,11 @@ const setEntity = function(val, load) {
 const setSize = function(val) {
   network_size = val;
   if (val === "small") {
-    switchSmall.style.display = "none";
-    switchFull.style.display = "block";
+    switchSmall.disabled = true;
+    switchFull.disabled = false;
   } else {
-    switchSmall.style.display = "block";
-    switchFull.style.display = "none";
+    switchSmall.disabled = false;
+    switchFull.disabled = true;
   }
   smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
   fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
