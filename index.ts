@@ -14,8 +14,8 @@
 - test bipartite network between authors and characters filtered by category of author
 */
 
-import { Sigma, getNodeProgramImage } from "./sigma.min.js";
-//import getNodeProgramImage from "./sigma/rendering/webgl/programs/node.image";
+import { Sigma } from "./sigma.js";
+import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
 
 console.log(getNodeProgramImage);
 
@@ -192,7 +192,7 @@ function loadNetwork() {
           (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color :
           (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles.both))
       });
-      if (network_size == "small")
+      //if (network_size == "small")
         graph.setNodeAttribute(node, "type", "thumbnail");
     });
     /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
@@ -211,11 +211,11 @@ function loadNetwork() {
       labelColor: network_size === "small" ? {attribute: 'color'} : {color: '#999'},
       labelRenderedSizeThreshold: network_size === "small" ? 11 : 6
     };
-    if (network_size == "small")
+    //if (network_size == "small")
       sigmaSettings["nodeProgramClasses"] = {
         thumbnail: getNodeProgramImage()
       };
-    renderer = new Sigma(graph, container, sigmaSettings);
+    renderer = new Sigma(graph as any, container, sigmaSettings);
 
     // Bind zoom manipulation buttons
     const camera = renderer.getCamera();
