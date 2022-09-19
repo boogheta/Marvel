@@ -11,18 +11,25 @@
     <div id="sidebar">
       <h1>MARVEL networks</h1>
       <h2 id="title"></h2>
-      <button class="switch" id="switch-creators" title="Load the creators network instead">See the creators network</button>
-      <button class="switch" id="switch-characters" title="Load the characters network instead">See the characters network</button>
-      <button class="switch" id="switch-small" title="Load the small network instead">See the small network</button>
-      <button class="switch" id="switch-full" title="Load the full network instead">See the full network</button>
-      <div id="explanations"></div>
+      <button class="switch" id="switch-creators" title="Load the creators network instead">creators<br/>network</button>
+      <button class="switch" id="switch-characters" title="Load the characters network instead">characters<br/>network</button>
+      <button class="switch" id="switch-small" title="Load the small network instead">small<br/>network</button>
+      <button class="switch" id="switch-full" title="Load the full network instead">full<br/>network</button>
+      <div id="explanations">
+        <p>This graph shows a map of Marvel <span class="entity"></span> where each one is positionned close to those he/she is most linked with. Click on the <span class="full-details">nodes</span><span class="small-details">pictures</span> to see their specific links and details.</p>
+        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams and some alter-egos)</span> mentioned as involved in <span class="small-details">at least </span><span class="small-details" id="min-stories"></span><span class="full-details">all</span> comic book stories registered within Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few small isolated sets of <span class="entity"></span> never associated with the others were removed).</p>
+        <p>The size of each node reflects how often the <span class="entity"></span> have been accounted as participating to stories within Marvel API's data.</p>
+        <p class="characters-details">Colors indicate which "family"<sup>*</sup> each character belongs to (<span id="clusters"></span>, etc.).</p>
+        <p class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color">writer</b>, an <b id="artist-color">artist</b> or really a bit of <b id="both-color">both</b>.</p>
+        <p>Marvel API's data is not always perfect and some stories miss information, although it is quite rich and results look good enough!</p>
+      </div>
       <div id="node-details">
         <h2 id="node-label"></h2>
         <img id="node-img"/>
         <div id="node-extra"></div>
       </div>
       <div id="footer">
-        <p><sup>*</sup> Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>, they can be imprecise</p>
+        <p><sup>*</sup> Communities are automatically computed using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>, so they are sometimes imprecise</p>
         <p>Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a> and published on <a href="https://github.com/boogheta/Marvel" target="_blank">GitHub</a> as free open source software (AGPL v3).<br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
         <p>Data provided by <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a><br/>© 2022 MARVEL</p>
       </div>

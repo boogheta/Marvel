@@ -1,4 +1,5 @@
 /* TODO:
+- handle responsive sidebar
 - use communities labels for creators clusters and document it in explanations
 - adjust communities colors
 - prespatialize networks
@@ -21,18 +22,6 @@ import FA2Layout from "graphology-layout-forceatlas2/worker";
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 
-const fixedPalette = [
-  "#5fb1ff",
-  "#ff993e",
-  "#8b4a98",
-  "#bce25b",
-  "#d52f3f",
-  "#0051c4",
-  "#2cc143",
-  "#c45ecf",
-  "#ded03f",
-  "#904f13",
-];
 const clusters = {
   resolutions: {
     creators: 0.85,
@@ -41,7 +30,7 @@ const clusters = {
   roles: {
     artist: "#234fac",
     writer: "#2b6718",
-    "full-stack": "#d4a129"
+    both: "#d4a129"
   },
   creators: {
     "Silver Age": {
@@ -66,14 +55,6 @@ const clusters = {
       match: "Avengers",
       color: "#2b6718"
     },
-    "Champions": {
-      match: "Spider-Man (Miles Morales)",
-      color: "#57b23d"
-    },
-    "Fantastic Four & Cosmic Heroes": {
-      match: "Fantastic Four",
-      color: "#234fac"
-    },
     "Spider-Man & Marvel Knights": {
       match: "Spider-Man (Peter Parker)",
       color: "#822e23"
@@ -82,21 +63,42 @@ const clusters = {
       match: "X-Men",
       color: "#d4a129"
     },
-    "X-Factor & X-Force": {
+    "Other X-Teams": {
       match: "X-Force",
       color: "#d97a2d"
     },
-    "Alpha Flight": {
-      match: "Alpha Flight",
-      color: "#8d32a7"
+    "Fantastic Four & Cosmic heroes": {
+      match: "Fantastic Four",
+      color: "#234fac"
     },
     "Ultimate Universe": {
       match: "Ultimates",
       color: "#424c9b"
     },
+    "Champions": {
+      match: "Spider-Man (Miles Morales)",
+      color: "#57b23d"
+    },
+    "Alpha Flight": {
+      match: "Alpha Flight",
+      color: "#8d32a7"
+    }
   },
   communities: {}
 }
+
+const extraPalette = [
+  "#5fb1ff",
+  "#ff993e",
+  "#8b4a98",
+  "#bce25b",
+  "#d52f3f",
+  "#0051c4",
+  "#2cc143",
+  "#c45ecf",
+  "#ded03f",
+  "#904f13",
+];
 
 // Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
 const lighten = function(col, amt) {
@@ -120,15 +122,12 @@ const lighten = function(col, amt) {
 
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
+  modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
-  nodeExtra = document.getElementById("node-extra") as HTMLElement,
-  zoomInBtn = document.getElementById("zoom-in") as HTMLElement,
-  zoomOutBtn = document.getElementById("zoom-out") as HTMLElement,
-  zoomResetBtn = document.getElementById("zoom-reset") as HTMLElement,
-  modal = document.getElementById("modal") as HTMLElement;
+  nodeExtra = document.getElementById("node-extra") as HTMLElement;
 
 modal.addEventListener("click", () => modal.style.display = "none");
 
@@ -136,7 +135,7 @@ let renderer = null;
 
 function loadNetwork() {
   setTitle();
-  
+
   if (renderer) renderer.kill();
   container.innerHTML = '';
   loader.style.display = "block";
@@ -147,7 +146,7 @@ function loadNetwork() {
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
   clusters.communities = {};
-  
+
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
@@ -169,8 +168,8 @@ function loadNetwork() {
         y: circularPositions[node].y,
         size: Math.pow(stories, 0.2) * (network_size === "small" ? 4 : (entity == "characters" ? 2 : 1.75)),
         color: entity === "characters" ?
-          (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color :
-          (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles["full-stack"]))
+          (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color :
+          (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles.both))
       });
       if (network_size == "small")
         graph.setNodeAttribute(node, "type", "thumbnail");
@@ -199,13 +198,13 @@ function loadNetwork() {
 
     // Bind zoom manipulation buttons
     const camera = renderer.getCamera();
-    zoomInBtn.addEventListener("click", () => {
+    document.getElementById("zoom-in").addEventListener("click", () => {
       camera.animatedZoom({ duration: 600 });
     });
-    zoomOutBtn.addEventListener("click", () => {
+    document.getElementById("zoom-out").addEventListener("click", () => {
       camera.animatedUnzoom({ duration: 600 });
     });
-    zoomResetBtn.addEventListener("click", () => {
+    document.getElementById("zoom-reset").addEventListener("click", () => {
       camera.animatedReset({ duration: 600 });
     });
 
@@ -332,23 +331,29 @@ function loadNetwork() {
   });
 }
 
+const conf = {};
 let entity = "characters",
   network_size = "small";
 
-const pageTitle = document.querySelector("title") as HTMLElement;
-const h2Title = document.getElementById("title") as HTMLElement;
 const setTitle = function() {
   window.location.hash = entity + "/" + network_size;
   const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featuring together within same stories";
-  pageTitle.innerHTML = "MARVEL networks &mdash; G" + title;
-  h2Title.innerHTML = "This is a g" + title;
+  document.querySelector("title").innerHTML = "MARVEL networks &mdash; G" + title;
+  document.getElementById("title").innerHTML = "This is a g" + title;
 }
 
-const switchCharacters = document.getElementById("switch-characters") as HTMLElement;
-const switchCreators = document.getElementById("switch-creators") as HTMLElement;
-const switchSmall = document.getElementById("switch-small") as HTMLElement;
-const switchFull = document.getElementById("switch-full") as HTMLElement;
-const setEntity = function(val, noload) {
+const switchCharacters = document.getElementById("switch-characters") as HTMLElement,
+  switchCreators = document.getElementById("switch-creators") as HTMLElement,
+  switchSmall = document.getElementById("switch-small") as HTMLElement,
+  switchFull = document.getElementById("switch-full") as HTMLElement,
+  entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
+  charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
+  creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
+  smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
+  fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
+
+const setEntity = function(val, load) {
+  entity = val;
   if (val === "characters") {
     switchCreators.style.display = "block";
     switchCharacters.style.display = "none";
@@ -356,13 +361,20 @@ const setEntity = function(val, noload) {
     switchCreators.style.display = "none";
     switchCharacters.style.display = "block";
   }
-  entity = val;
-  if (!noload)
+  entitySpans.forEach((span) => span.innerHTML = val);
+  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
+  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
+  document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
+    .map((k) => '<span style="color: ' + clusters.characters[k].color + '">' + k + '</span>')
+    .join(", ");
+  document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
+  document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
+  if (load)
     loadNetwork();
 };
-switchCharacters.addEventListener("click", () => setEntity("characters", false));
-switchCreators.addEventListener("click", () => setEntity("creators", false));
+
 const setSize = function(val) {
+  network_size = val;
   if (val === "small") {
     switchSmall.style.display = "none";
     switchFull.style.display = "block";
@@ -370,18 +382,30 @@ const setSize = function(val) {
     switchSmall.style.display = "block";
     switchFull.style.display = "none";
   }
-  network_size = val;
+  smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
+  fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
   loadNetwork();
 };
+
+switchCharacters.addEventListener("click", () => setEntity("characters", true));
+switchCreators.addEventListener("click", () => setEntity("creators", true));
 switchFull.addEventListener("click", () => setSize("full"));
 switchSmall.addEventListener("click", () => setSize("small"));
 
-const currentUrl = window.location.hash.replace(/^#/, '')
-if (currentUrl !== "") {
-  const args = currentUrl.split("/");
-  setEntity(args[0], true);
-  setSize(args[1]);
-} else {
-  loadNetwork();
-}
-
+fetch("./config.yml.example")
+.then((res) => res.text())
+.then((confdata) => {
+  confdata.split("\n").forEach((line) => {
+    const keyval = line.split(/:\s*/);
+    conf[keyval[0]] = keyval[1];
+  });
+  Object.keys(clusters.roles).forEach((k) =>
+    document.getElementById(k + "-color").style.color = clusters.roles[k]
+  );
+  const currentUrl = window.location.hash.replace(/^#/, '')
+  if (currentUrl !== "") {
+    const args = currentUrl.split("/");
+    setEntity(args[0], false);
+    setSize(args[1]);
+  } else loadNetwork();
+})
