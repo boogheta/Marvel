@@ -347,7 +347,7 @@ function loadNetwork() {
     setTimeout(() => {
       fa2Layout.stop();
       noverlap.assign(graph);
-    }, network_size === "small" ? 15000 : 90000);
+    }, network_size === "small" ? 15000 : 45000);
 
   });
 }
