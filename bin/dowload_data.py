@@ -152,7 +152,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
             "image": n["image"],
             "image_url": n["thumbnail"]["path"] + "." + n["thumbnail"]["extension"],
             "url": n["urls"][0]["url"],
-            "comics": 0
+            links_type: 0
         }
         if nodes_type == "creators":
             attrs["label"] = n.get("fullName") or " ".join(n[k] for k in ["firstName", "middleName", "lastName", "suffix"] if n[k])
@@ -185,7 +185,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
                 elif not role:
                     role_key = "unknown_role"
                 G.nodes[c1id][role_key] += 1
-            G.nodes[c1id]["comics"] += 1
+            G.nodes[c1id][links_type] += 1
             for c2 in comic[nodes_type]["items"][i+1:]:
                 if nodes_type == "creators":
                     role = c2.get("role", "").lower().strip()
@@ -201,7 +201,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
     biggest_component = max(nx.connected_components(G), key=len)
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
     for node in list(G.nodes):
-        if G.nodes[node]["comics"] < CONF["min_" + links_type + "_for_" + nodes_type]:
+        if G.nodes[node][links_type] < CONF["min_" + links_type + "_for_" + nodes_type]:
             G.remove_node(node)
     biggest_component = max(nx.connected_components(G), key=len)
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
