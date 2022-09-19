@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "build": "kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
-    "start": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./"
+    "postinstall": "git clone -b 1257-fix-memory-saturation-with-many-node-images https://github.com/boogheta/sigma.js.git",
+    "prebuild": "cd sigma.js && npm install && npm run prepare && cd -",
+    "build": "npm run prebuild && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
+    "start": "npm run prebuild && kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./"
   },
   "license": "AGPL v3.0",
   "dependencies": {
@@ -14,8 +16,7 @@
     "graphology-gexf": "^0.10.2",
     "graphology-layout": "^0.6.0",
     "graphology-layout-forceatlas2": "^0.9.2",
-    "graphology-layout-noverlap": "^0.4.2",
-    "sigma": "latest"
+    "graphology-layout-noverlap": "^0.4.2"
   },
   "devDependencies": {
     "kotatsu": "^0.22.3",
