@@ -75,11 +75,11 @@ const clusters = {
     },
     "Ultimate Universe": {
       match: "Ultimates",
-      color: "#424c9b"
+      color: "#57b23d"
     },
     "Champions": {
       match: "Spider-Man (Miles Morales)",
-      color: "#57b23d"
+      color: "#424c9b"
     },
     "Alpha Flight": {
       match: "Alpha Flight",
