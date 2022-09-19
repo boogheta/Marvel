@@ -1,8 +1,7 @@
 /* TODO:
-- enable pictures on full networks with fixed sigma
-- add border nodes or allow to switch between pictures and colors
 - use bigger thumbnails
 - adjust parameters now that we have no real constraint (fix Miles Morales missing)
+- improve UX PICTURES/COLORS button
 - adjust communities colors
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
@@ -208,7 +207,7 @@ function loadNetwork() {
       defaultEdgeColor: '#1A1A1A',
       labelWeight: 'bold',
       labelFont: 'monospace',
-      labelColor: network_size === "small" ? {attribute: 'color'} : {color: '#999'},
+      labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
       labelRenderedSizeThreshold: network_size === "small" ? 11 : 6
     };
     //if (network_size == "small")
@@ -216,6 +215,8 @@ function loadNetwork() {
         thumbnail: getNodeProgramImage()
       };
     renderer = new Sigma(graph as any, container, sigmaSettings);
+
+    if (view === "colors") switchView();
 
     // Bind zoom manipulation buttons
     const camera = renderer.getCamera();
@@ -239,7 +240,7 @@ function loadNetwork() {
         nodeImg.src = "";
         nodeExtra.innerHTML = "";
         renderer.setSetting(
-          "nodeReducer", (n, data) => data
+          "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
         );
         renderer.setSetting(
           "edgeReducer", (edge, data) => data
@@ -269,11 +270,20 @@ function loadNetwork() {
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
       renderer.setSetting(
-        "nodeReducer", (n, data) =>
-          n === node ||
-          graph.hasEdge(n, node)
-            ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1)}
-            : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
+        "nodeReducer", (n, data) => {
+          if (view === "pictures")
+            return (n === node || graph.hasEdge(n, node)
+              ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1) }
+              : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
+            )
+          else return (n === node
+            ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1) }
+            : (graph.hasEdge(n, node)
+                ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1), image: null }
+                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
+              )
+            )
+        }
       );
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
@@ -350,10 +360,11 @@ function loadNetwork() {
 
 const conf = {};
 let entity = "characters",
-  network_size = "small";
+  network_size = "small",
+  view = "pictures";
 
 const setTitle = function() {
-  window.location.hash = entity + "/" + network_size;
+  window.location.hash = entity + "/" + network_size + "/" + view;
   const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
   document.querySelector("title").innerHTML = "MARVEL networks &mdash; G" + title;
   document.getElementById("title").innerHTML = "This is a g" + title;
@@ -363,6 +374,7 @@ const switchCharacters = document.getElementById("switch-characters") as HTMLBut
   switchCreators = document.getElementById("switch-creators") as HTMLButtonElement,
   switchSmall = document.getElementById("switch-small") as HTMLButtonElement,
   switchFull = document.getElementById("switch-full") as HTMLButtonElement,
+  switchViewBtn = document.getElementById("switch-view") as HTMLButtonElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
@@ -409,6 +421,20 @@ switchCreators.addEventListener("click", () => setEntity("creators", true));
 switchFull.addEventListener("click", () => setSize("full"));
 switchSmall.addEventListener("click", () => setSize("small"));
 
+const toggleView = function() {
+  switchViewBtn.innerHTML = view;
+  view = (view === "pictures" ? "colors" : "pictures");
+  window.location.hash = entity + "/" + network_size + "/" + view;
+};
+const switchView = () => {
+  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
+  renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
+};
+switchViewBtn.addEventListener("click", () => {
+  toggleView();
+  switchView();
+});
+
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confdata) => {
@@ -421,8 +447,10 @@ fetch("./config.yml.example")
   );
   let currentUrl = window.location.hash.replace(/^#/, '')
   if (currentUrl === "")
-    currentUrl = entity + "/" + network_size;
+    currentUrl = entity + "/" + network_size + "/" + view;
   const args = currentUrl.split("/");
+  view = args[2];
+  switchViewBtn.innerHTML = view === "pictures" ? "colors" : "pictures";
   setEntity(args[0], false);
   setSize(args[1]);
 })
