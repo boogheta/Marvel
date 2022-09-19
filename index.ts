@@ -14,8 +14,10 @@
 - test bipartite network between authors and characters filtered by category of author
 */
 
-import { Sigma } from "sigma";
-import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
+import { Sigma, getNodeProgramImage } from "./sigma.min.js";
+//import getNodeProgramImage from "./sigma/rendering/webgl/programs/node.image";
+
+console.log(getNodeProgramImage);
 
 import Graph from "graphology";
 import { parse } from "graphology-gexf";
