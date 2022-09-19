@@ -1,6 +1,5 @@
 /* TODO:
 - souci d'initialisation du texte when coming from redirect (colors indicate)
-- remove cursor pointer on background
 - find way to better handle buttons
 - enable pictures on full networks
 - add border nodes?

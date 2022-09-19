@@ -108,7 +108,6 @@ h2 {
   overflow: hidden;
   font-family: sans-serif;
   background-color: black;
-  cursor: pointer;
 }
 #loader {
   position: absolute;
