@@ -1,5 +1,4 @@
 /* TODO:
-- use bigger thumbnails
 - adjust parameters now that we have no real constraint (fix Miles Morales missing)
 - improve UX PICTURES/COLORS button
 - adjust communities colors

@@ -75,7 +75,7 @@ def download_thumbnails(entity, data):
         if "image_not_available" in item["thumbnail"]["path"]:
             item["image"] = "./images/not_available.gif"
             continue
-        thumbnail_url = item["thumbnail"]["path"] + "/standard_small." + item["thumbnail"]["extension"]
+        thumbnail_url = item["thumbnail"]["path"] + "/standard_medium." + item["thumbnail"]["extension"]
         thumbnail_file = os.path.join("images", entity, "%s.%s" % (item["id"], item["thumbnail"]["extension"]))
         if not os.path.exists(thumbnail_file):
             print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
