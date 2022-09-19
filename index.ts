@@ -137,9 +137,7 @@ modal.addEventListener("click", () => modal.style.display = "none");
 let renderer = null;
 
 function divHeight(divId) {
-  const res = document.getElementById(divId).getBoundingClientRect().height;
-  console.log(divId, res);
-  return res;
+  return document.getElementById(divId).getBoundingClientRect().height;
 }
 
 function resize() {
