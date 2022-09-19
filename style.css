@@ -59,6 +59,11 @@ h2 {
   border: 2px solid white;
   cursor: inherit;
 }
+#switch-view {
+  width: 108px;
+  margin: 5px 1px 0px 1px;
+  text-transform: uppercase;
+}
 #explanations {
   clear: both;
   margin: 0 3px;
