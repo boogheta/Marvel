@@ -1,5 +1,4 @@
 /* TODO:
-- souci d'initialisation du texte when coming from redirect (colors indicate)
 - find way to better handle buttons
 - enable pictures on full networks
 - add border nodes?
@@ -415,10 +414,10 @@ fetch("./config.yml.example")
   Object.keys(clusters.roles).forEach((k) =>
     document.getElementById(k + "-color").style.color = clusters.roles[k]
   );
-  const currentUrl = window.location.hash.replace(/^#/, '')
-  if (currentUrl !== "") {
-    const args = currentUrl.split("/");
-    setEntity(args[0], false);
-    setSize(args[1]);
-  } else loadNetwork();
+  let currentUrl = window.location.hash.replace(/^#/, '')
+  if (currentUrl === "")
+    currentUrl = entity + "/" + network_size;
+  const args = currentUrl.split("/");
+  setEntity(args[0], false);
+  setSize(args[1]);
 })
