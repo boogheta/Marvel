@@ -33,11 +33,11 @@ h2 {
 .switch {
   display: block;
   height: 42px;
-  width: 46%;
-  margin: 10px 2%;
+  width: 32%;
+  margin: 10px 0px;
   padding: 5px;
   cursor: pointer;
-  background-color: dimgray;
+  background-color: #ec1d24;
   color: white;
   font-size: 12px;
   font-family: monospace;
@@ -47,15 +47,26 @@ h2 {
   border-radius: 5px;
   border: 0px;
 }
+.switch.left {
+  margin-left: 12%;
+  margin-right: 6%;
+}
+.switch.right {
+  margin-left: 6%;
+  margin-right: 12%;
+}
 #switch-characters, #switch-small {
   display: none;
 }
 #explanations {
   clear: both;
-  margin: 5px;
-  padding-top: 10px;
+  margin: 0;
+  padding-top: 5px;
   overflow-y: auto;
   max-height: 60%;
+}
+#explanations p {
+  margin: 5px;
 }
 #node-details {
   clear: both;

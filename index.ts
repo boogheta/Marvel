@@ -1,6 +1,5 @@
 /* TODO:
 - check Miles Morales missing
-- handle responsive sidebar
 - use communities labels for creators clusters and document it in explanations
 - adjust communities colors
 - prespatialize networks
@@ -128,6 +127,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
+  nodeDetails = document.getElementById("node-details") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement;
@@ -136,8 +136,24 @@ modal.addEventListener("click", () => modal.style.display = "none");
 
 let renderer = null;
 
+function divHeight(divId) {
+  const res = document.getElementById(divId).getBoundingClientRect().height;
+  console.log(divId, res);
+  return res;
+}
+
+function resize() {
+  const freeHeight = divHeight("sidebar") - divHeight("header") - (divHeight("switch-small") || divHeight("switch-full")) - divHeight("footer");
+  explanations.style["height"] = (freeHeight - 28) + "px";
+  explanations.style["min-height"] = (freeHeight - 28) + "px";
+  nodeDetails.style["height"] = (freeHeight - 33) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 33) + "px";
+}
+window.addEventListener("resize", resize);
+
 function loadNetwork() {
   setTitle();
+  resize();
 
   if (renderer) renderer.kill();
   container.innerHTML = '';
