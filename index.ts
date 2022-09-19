@@ -1,5 +1,4 @@
 /* TODO:
-- adjust parameters now that we have no real constraint (fix Miles Morales missing)
 - improve UX PICTURES/COLORS button
 - adjust communities colors
 - use communities labels for creators clusters and document it in explanations
@@ -28,7 +27,7 @@ import louvain from 'graphology-communities-louvain';
 const clusters = {
   resolutions: {
     creators: 0.85,
-    characters: 1.2
+    characters: 1.15
   },
   roles: {
     artist: "#234fac",
@@ -77,10 +76,6 @@ const clusters = {
     "Ultimate Universe": {
       match: "Ultimates",
       color: "#57b23d"
-    },
-    "Champions": {
-      match: "Spider-Man (Miles Morales)",
-      color: "#424c9b"
     },
     "Alpha Flight": {
       match: "Alpha Flight",
@@ -185,7 +180,7 @@ function loadNetwork() {
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
-        size: Math.pow(stories, 0.2) * (network_size === "small" ? 4 : (entity == "characters" ? 2 : 1.75)),
+        size: Math.pow(stories, 0.2) * (network_size === "small" ? 2 : 1.25) * (entity == "characters" ? 2 : 1.25),
         color: entity === "characters" ?
           (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color :
           (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles.both))
@@ -207,7 +202,7 @@ function loadNetwork() {
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
-      labelRenderedSizeThreshold: network_size === "small" ? 11 : 6
+      labelRenderedSizeThreshold: network_size === "small" ? 9 : 5
     };
     //if (network_size == "small")
       sigmaSettings["nodeProgramClasses"] = {
