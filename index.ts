@@ -1,9 +1,10 @@
 /* TODO:
-- enable pictures on full networks
-- add border nodes?
-- check Miles Morales missing
-- use communities labels for creators clusters and document it in explanations
+- enable pictures on full networks with fixed sigma
+- add border nodes or allow to switch between pictures and colors
+- use bigger thumbnails
+- adjust parameters now that we have no real constraint (fix Miles Morales missing)
 - adjust communities colors
+- use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
 - test smartphone
