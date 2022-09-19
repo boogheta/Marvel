@@ -202,7 +202,7 @@ function loadNetwork() {
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
-      labelRenderedSizeThreshold: network_size === "small" ? 9 : 5
+      labelRenderedSizeThreshold: (network_size === "small" ? 8 : 4) + (entity === "characters" ? 2 : 0)
     };
     //if (network_size == "small")
       sigmaSettings["nodeProgramClasses"] = {
