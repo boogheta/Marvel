@@ -1,4 +1,7 @@
 /* TODO:
+- find way to better handle buttons
+- enable pictures on full networks
+- add border nodes?
 - check Miles Morales missing
 - use communities labels for creators clusters and document it in explanations
 - adjust communities colors
@@ -9,11 +12,9 @@
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
-
 */
 
-import {Sigma} from "sigma";
-import { Coordinates, EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import { Sigma } from "sigma";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 import Graph from "graphology";
@@ -302,8 +303,7 @@ function loadNetwork() {
           graph.setNodeAttribute(selectedNode, "highlighted", true);
           clickNode(selectedNode);
           // Move the camera to center it on the selected node:
-          const nodePosition = renderer.getNodeDisplayData(selectedNode) as Coordinates;
-          renderer.getCamera().animate(nodePosition, {
+          renderer.getCamera().animate(renderer.getNodeDisplayData(selectedNode), {
             duration: 500,
           });
         } else if (selectedNode) {
@@ -414,10 +414,10 @@ fetch("./config.yml.example")
   Object.keys(clusters.roles).forEach((k) =>
     document.getElementById(k + "-color").style.color = clusters.roles[k]
   );
-  const currentUrl = window.location.hash.replace(/^#/, '')
-  if (currentUrl !== "") {
-    const args = currentUrl.split("/");
-    setEntity(args[0], false);
-    setSize(args[1]);
-  } else loadNetwork();
+  let currentUrl = window.location.hash.replace(/^#/, '')
+  if (currentUrl === "")
+    currentUrl = entity + "/" + network_size;
+  const args = currentUrl.split("/");
+  setEntity(args[0], false);
+  setSize(args[1]);
 })
