@@ -1,6 +1,5 @@
 /* TODO:
 - improve UX PICTURES/COLORS button
-- adjust communities colors
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
@@ -30,8 +29,8 @@ const clusters = {
     characters: 1.15
   },
   roles: {
-    artist: "#234fac",
-    writer: "#2b6718",
+    writer: "#234fac",
+    artist: "#2b6718",
     both: "#d4a129"
   },
   creators: {
