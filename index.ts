@@ -276,13 +276,8 @@ function loadNetwork() {
             : { ...data, color: "#FFF", hidden: true }
       );
     };
-    renderer.on("clickNode", (event) => {
-      //event.preventDefault();
-      setTimeout(() => clickNode(event.node), 5);
-    });
-    container.addEventListener("click", (e) =>  {
-      clickNode(null);
-    });
+    renderer.on("clickNode", (event) => clickNode(event.node));
+    renderer.on("clickStage", () => clickNode(null));
 
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement;
