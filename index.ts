@@ -1,11 +1,12 @@
 /* TODO:
-- add disclaimer/methodo
-- prespatialize networks
+- use communities labels for creators clusters and document it in explanations
 - adjust communities colors
+- prespatialize networks
+- add social network cards
+- test smartphone
+- fullscreen button
 - list comics associated with clicked node
 - click comic to show only attached nodes
-- fullscreen button
-- add social network cards
 */
 
 import {Sigma} from "sigma";
@@ -161,12 +162,12 @@ function loadNetwork() {
         clusters.communities[communities[node]].cluster = cluster;
         }
     });
-    graph.forEachNode((node, {comics, thumbnail, artist, writer}) => {
+    graph.forEachNode((node, {stories, thumbnail, artist, writer}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
-        size: Math.pow(comics, 0.2) * (network_size === "small" ? 4 : (entity == "characters" ? 2 : 1.75)),
+        size: Math.pow(stories, 0.2) * (network_size === "small" ? 4 : (entity == "characters" ? 2 : 1.75)),
         color: entity === "characters" ?
           (clusters.communities[communities[node]] || {color: fixedPalette[communities[node] % fixedPalette.length]}).color :
           (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles["full-stack"]))
@@ -233,15 +234,14 @@ function loadNetwork() {
         modal.style.display = "block";
       });
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.comics + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.stories + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
       if (entity === "creators") {
         if (attrs.writer === 0 && attrs.artist)
           nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.artist + '">artist</b></p>';
         else if (attrs.artist === 0 && attrs.writer)
           nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.writer + '">writer</b></p>';
         else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
-      }
-      if (clusters.communities[communities[node]])
+      } else if (clusters.communities[communities[node]])
         nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</b> community<sup>*</sup></p>';
       if (attrs.url)
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
