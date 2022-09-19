@@ -1,4 +1,5 @@
 /* TODO:
+- check Miles Morales missing
 - handle responsive sidebar
 - use communities labels for creators clusters and document it in explanations
 - adjust communities colors
@@ -8,6 +9,8 @@
 - fullscreen button
 - list comics associated with clicked node
 - click comic to show only attached nodes
+- test bipartite network between authors and characters filtered by category of author
+
 */
 
 import {Sigma} from "sigma";
