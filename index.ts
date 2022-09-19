@@ -273,7 +273,7 @@ function loadNetwork() {
           n === node ||
           graph.hasEdge(n, node)
             ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1)}
-            : { ...data, zIndex: 0, color: "#1A1A1A", image: null, size: network_size === "small" ? 5 : 2 }
+            : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
       );
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
