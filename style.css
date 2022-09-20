@@ -36,8 +36,8 @@ h2 {
 }
 #explanations {
   clear: both;
-  margin: 0 3px;
-  padding-top: 5px;
+  margin-top: 5px;
+  padding: 5px 3px 0px 3px;
   overflow-y: auto;
   max-height: 60%;
 }
@@ -46,7 +46,7 @@ h2 {
 }
 #node-details {
   clear: both;
-  margin-top: 10px;
+  margin-top: 4px;
   padding: 5px;
   text-align: center;
   overflow-y: auto;
@@ -161,15 +161,14 @@ h2 {
   margin-top: 0;
 }
 .choices {
-  margin-top: 1.8rem;
-  margin-bottom: 1.8rem;
+  margin: 10px 0;
 }
 .network-choice{
   display: flex;
   justify-content: center;
   position:relative;
   width: 100%; 
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
   height: 1.8rem;
 }
 label, .toggle {
@@ -204,7 +203,7 @@ label {
   user-select: none;
 }
 .names > div {
-  font-size: 12px;
+  font-size: 14px;
   font-family: monospace;
   font-weight: bold;
   text-transform: uppercase;

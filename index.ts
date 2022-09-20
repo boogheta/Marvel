@@ -1,5 +1,4 @@
 /* TODO:
-- adjust toggles css
 - lighten GEXF (load graphology jsons instead?)
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
@@ -135,10 +134,10 @@ function divHeight(divId) {
 
 function resize() {
   const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
-  explanations.style.height = (freeHeight - 8) + "px";
-  explanations.style["min-height"] = (freeHeight - 8) + "px";
-  nodeDetails.style.height = (freeHeight - 23) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 23) + "px";
+  explanations.style.height = (freeHeight - 13) + "px";
+  explanations.style["min-height"] = (freeHeight - 13) + "px";
+  nodeDetails.style.height = (freeHeight - 18) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
 }
 window.addEventListener("resize", resize);
 
