@@ -12,10 +12,28 @@
     <div id="sidebar">
       <div id="header">
         <h1>MARVEL networks</h1>
-        <button class="switch left" id="switch-characters" title="Load the characters network instead">characters<br/>network</button>
-        <button class="switch right" id="switch-creators" title="Load the creators network instead">creators<br/>network</button>
-        <button class="switch left" id="switch-small" title="Load the small network instead">small<br/>network</button>
-        <button class="switch right" id="switch-full" title="Load the full network instead">full<br/>network</button>
+        <div class="choices">
+          <div class="network-choice">
+            <input type="checkbox" id="node-type-switch" />
+            <label class="network-switch-label" for="node-type-switch">
+              <div class="toggle"></div>
+              <div class="names">
+                <div class="left">characters</div>
+                <div class="right">creators</div>
+              </div>
+            </label>
+          </div>
+          <div class="network-choice">
+            <input type="checkbox" id="node-filter-switch" />
+            <label class="network-switch-label" for="node-filter-switch">
+              <div class="toggle"></div>
+              <div class="names">
+                <div class="left">small</div>
+                <div class="right">full</div>
+              </div>
+            </label>
+          </div>
+        </div>
         <h2 id="title"></h2>
       </div>
       <div id="explanations">
