@@ -155,27 +155,31 @@ h2 {
   right: 1em;
   top: 1em;
   text-align: center;
-  width: 112px;
+  width: 150px;
 }
-.input {
-  position: relative;
-  display: inline-block;
+#sigma-buttons {
+  display: flex;
   vertical-align: middle;
 }
-.input:not(:hover) label {
-  display: none;
-}
-.input button {
+#sigma-buttons button {
+  flex: auto;
   width: 33px;
   height: 33px;
-  display: inline-block;
+  margin: 2px;
   background: white;
   outline: none;
   border: 1px solid dimgrey;
   cursor: pointer;
+  font-size: 15px;
+}
+#regscreen, #fullscreen {
+  padding-top: 4px;
+}
+#regscreen {
+  display: none;
 }
 #search {
-  margin: 5px 1px;
+  margin: 2px;
 }
 #search input {
   width: 100%;

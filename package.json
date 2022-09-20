@@ -7,7 +7,8 @@
     "postinstall": "git clone -b 1257-fix-memory-saturation-with-many-node-images https://github.com/boogheta/sigma.js.git",
     "prebuild": "cd sigma.js && npm install && npm run prepare && cd -",
     "build": "npm run prebuild && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
-    "start": "npm run prebuild && kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./"
+    "serve": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
+    "start": "npm run prebuild && npm run serve"
   },
   "license": "AGPL v3.0",
   "dependencies": {
