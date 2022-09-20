@@ -40,14 +40,18 @@
     </div>
     <div id="sigma-container"></div>
     <div id="controls">
-      <div class="input"><button id="zoom-reset" title="Reset zoom">⊙</button></div>
-      <div class="input"><button id="zoom-out" title="Zoom out">-</button></div>
-      <div class="input"><button id="zoom-in" title="Zoom in">+</button></div>
-      <div class="input"><button id="switch-view" title="Switch between pictures and colors"></button></div>
+      <div id="sigma-buttons">
+        <button id="zoom-reset" title="Reset zoom">⊙</button>
+        <button id="zoom-out" title="Zoom out">-</button>
+        <button id="zoom-in" title="Zoom in">+</button>
+        <button id="regscreen" title="Minimize to Windowed Screen">🗗︎</button>
+        <button id="fullscreen" title="Maximize to Full Screen">🗖︎</button>
+      </div>
       <div id="search" title="Search a character or a creator">
         <input type="search" id="search-input" list="suggestions" placeholder="Search…" />
         <datalist id="suggestions"></datalist>
       </div>
+      <button id="switch-view" title="Switch between pictures and colors"></button>
     </div>
     <div id="loader"><img src="./images/loader.gif"/></div>
     <div id="modal"><img id="modal-img"/></div>

@@ -4,7 +4,6 @@
 - prespatialize networks
 - add social network cards
 - test smartphone
-- fullscreen button
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
@@ -428,6 +427,33 @@ const switchView = () => {
 switchViewBtn.addEventListener("click", () => {
   toggleView();
   switchView();
+});
+
+const win = document.documentElement as any,
+  regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement,
+  fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement;
+
+regScreenBtn.addEventListener("click", () => {
+  if ((document as any).exitFullscreen) {
+    (document as any).exitFullscreen();
+  } else if ((document as any).webkitExitFullscreen) { /* Safari */
+    (document as any).webkitExitFullscreen();
+  } else if ((document as any).msExitFullscreen) { /* IE11 */
+    (document as any).msExitFullscreen();
+  }
+  regScreenBtn.style.display = "none";
+  fullScreenBtn.style.display = "block";
+});
+fullScreenBtn.addEventListener("click", () => {
+  if (win.requestFullscreen) {
+    win.requestFullscreen();
+  } else if (win.webkitRequestFullscreen) { /* Safari */
+    win.webkitRequestFullscreen();
+  } else if (win.msRequestFullscreen) { /* IE11 */
+    win.msRequestFullscreen();
+  }
+  fullScreenBtn.style.display = "none";
+  regScreenBtn.style.display = "block";
 });
 
 fetch("./config.yml.example")
