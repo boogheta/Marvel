@@ -1,4 +1,6 @@
 /* TODO:
+- fix CSS FF
+- fix search Cap A
 - lighten GEXF (load graphology jsons instead?)
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
@@ -114,6 +116,10 @@ const lighten = function(col, amt) {
   return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
+function divHeight(divId) {
+  return document.getElementById(divId).getBoundingClientRect().height;
+}
+
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
@@ -126,28 +132,19 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 modal.addEventListener("click", () => modal.style.display = "none");
 
-let renderer = null;
+const conf = {};
+let entity = "characters",
+  network_size = "small",
+  view = "pictures";
 
-function divHeight(divId) {
-  return document.getElementById(divId).getBoundingClientRect().height;
+const setTitle = function() {
+  window.location.hash = entity + "/" + network_size + "/" + view;
+  const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
+  document.querySelector("title").innerHTML = "MARVEL networks &mdash; G" + title;
+  document.getElementById("title").innerHTML = "This is a g" + title;
 }
 
-function resize() {
-  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
-  explanations.style.height = (freeHeight - 13) + "px";
-  explanations.style["min-height"] = (freeHeight - 13) + "px";
-  nodeDetails.style.height = (freeHeight - 18) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
-}
-window.addEventListener("resize", resize);
-
-function loadNetwork() {
-  setTitle();
-  resize();
-
-  if (renderer) renderer.kill();
-  container.innerHTML = '';
-  loader.style.display = "block";
+const defaultSidebar = function() {
   explanations.style.display = "block";
   nodeDetails.style.display = "none";
   modal.style.display = "none";
@@ -155,13 +152,27 @@ function loadNetwork() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
+  resize();
+}
+
+let renderer = null;
+function loadNetwork() {
+  loader.style.display = "block";
+
+  if (renderer) renderer.kill();
+  renderer = null;
+  container.innerHTML = '';
+
+  setTitle();
+  defaultSidebar()
+
   clusters.communities = {};
 
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
     const graph = parse(Graph, gexf);
-    const circularPositions = circular(graph, { scale: 50 });
+
     const communities = louvain(graph, {resolution: clusters.resolutions[entity]});
     graph.forEachNode((node, {label}) => {
       for (var cluster in clusters[entity])
@@ -171,24 +182,28 @@ function loadNetwork() {
         clusters.communities[communities[node]].cluster = cluster;
         }
     });
+
+    const circularPositions = circular(graph, { scale: 50 });
+
     graph.forEachNode((node, {stories, thumbnail, artist, writer}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         size: Math.pow(stories, 0.2) * (network_size === "small" ? 2 : 1.25) * (entity == "characters" ? 2 : 1.25),
-        color: entity === "characters" ?
-          (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color :
-          (artist_ratio > 0.65 ? clusters.roles.artist : (artist_ratio < 0.34 ? clusters.roles.writer : clusters.roles.both))
+        type: "thumbnail",
+        color: (entity === "characters"
+          ? (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color
+          : (artist_ratio > 0.65
+            ? clusters.roles.artist
+            : (artist_ratio < 0.34
+              ? clusters.roles.writer
+              : clusters.roles.both
+            )
+          )
+        )
       });
-      //if (network_size == "small")
-        graph.setNodeAttribute(node, "type", "thumbnail");
     });
-    /*graph.forEachEdge((edge, attrs, n1, n2, n1_attrs, n2_attrs) => {
-      graph.mergeEdgeAttributes(edge, {size: 1});
-      if (n1_attrs.color === n2_attrs.color)
-        graph.setEdgeAttribute(edge, 'color', n1_attrs.color);
-    });*/
 
     // Instantiate sigma:
     let sigmaSettings = {
@@ -198,12 +213,11 @@ function loadNetwork() {
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
-      labelRenderedSizeThreshold: (network_size === "small" ? 8 : 4) + (entity === "characters" ? 2 : 0)
-    };
-    //if (network_size == "small")
-      sigmaSettings["nodeProgramClasses"] = {
+      labelRenderedSizeThreshold: (network_size === "small" ? 8 : 4) + (entity === "characters" ? 2 : 0),
+      nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
-      };
+      }
+    };
     renderer = new Sigma(graph as any, container, sigmaSettings);
 
     if (view === "colors") switchView();
@@ -223,12 +237,7 @@ function loadNetwork() {
     // Handle clicks on nodes
     const clickNode = (node) => {
       if (!node) {
-        explanations.style.display = "block";
-        nodeDetails.style.display = "none";
-        modal.style.display = "none";
-        nodeLabel.innerHTML = "";
-        nodeImg.src = "";
-        nodeExtra.innerHTML = "";
+        defaultSidebar();
         renderer.setSetting(
           "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
         );
@@ -237,28 +246,35 @@ function loadNetwork() {
         );
         return;
       }
+
       const attrs = graph.getNodeAttributes(node);
       explanations.style.display = "none";
       nodeDetails.style.display = "block";
+
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
       modalImg.src = attrs.image_url;
       nodeImg.addEventListener("click", () => {
         modal.style.display = "block";
       });
+
       nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
       nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.stories + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+      // Display roles in stories for creators
       if (entity === "creators") {
         if (attrs.writer === 0 && attrs.artist)
           nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.artist + '">artist</b></p>';
         else if (attrs.artist === 0 && attrs.writer)
           nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.writer + '">writer</b></p>';
         else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
-      } else if (clusters.communities[communities[node]])
+      }
+      // Or communities if we have it for characters
+      else if (clusters.communities[communities[node]])
         nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</b> community<sup>*</sup></p>';
       if (attrs.url)
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
+      // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
       renderer.setSetting(
         "nodeReducer", (n, data) => {
           if (view === "pictures")
@@ -275,6 +291,7 @@ function loadNetwork() {
             )
         }
       );
+      // Hide unrelated links and highlight weight and color as the target the node's links 
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
@@ -284,16 +301,20 @@ function loadNetwork() {
     };
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => clickNode(null));
+
+    // Add pointer on hovering nodes
     renderer.on('enterNode', () => container.style.cursor = 'pointer');
     renderer.on('leaveNode', () => container.style.cursor = 'default');
 
     // Setup nodes search
-    const searchInput = document.getElementById("search-input") as HTMLInputElement;
-    const searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
+    const searchInput = document.getElementById("search-input") as HTMLInputElement,
+      searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
     let selectedNode = null,
       suggestions = [];
     const setSearchQuery = (query) => {
-      if (searchInput.value !== query) searchInput.value = query;
+      if (searchInput.value !== query)
+        searchInput.value = query;
+
       if (query.length > 1) {
         const lcQuery = query.toLowerCase();
         suggestions = [];
@@ -310,9 +331,10 @@ function loadNetwork() {
           graph.setNodeAttribute(selectedNode, "highlighted", true);
           clickNode(selectedNode);
           // Move the camera to center it on the selected node:
-          renderer.getCamera().animate(renderer.getNodeDisplayData(selectedNode), {
-            duration: 500,
-          });
+          renderer.getCamera().animate(
+            renderer.getNodeDisplayData(selectedNode),
+            {duration: 500}
+          );
         } else if (selectedNode) {
           graph.setNodeAttribute(selectedNode, "highlighted", false);
           selectedNode = null;
@@ -326,8 +348,6 @@ function loadNetwork() {
         .sort()
         .map((node) => "<option>" + node.label + "</option>")
         .join("\n");
-      // Refresh rendering:
-      renderer.refresh();
     }
     searchInput.addEventListener("input", () => {
       setSearchQuery(searchInput.value || "");
@@ -336,6 +356,7 @@ function loadNetwork() {
       setSearchQuery("");
     });
 
+    // Run spatialisation
     const sensibleSettings = forceAtlas2.inferSettings(graph);
     const fa2Layout = new FA2Layout(graph, {
       settings: sensibleSettings
@@ -350,72 +371,9 @@ function loadNetwork() {
   });
 }
 
-const conf = {};
-let entity = "characters",
-  network_size = "small",
-  view = "pictures";
-
-const setTitle = function() {
-  window.location.hash = entity + "/" + network_size + "/" + view;
-  const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
-  document.querySelector("title").innerHTML = "MARVEL networks &mdash; G" + title;
-  document.getElementById("title").innerHTML = "This is a g" + title;
-}
-
-const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
-  switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
-  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
-  entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
-  charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
-  creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
-  smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
-  fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
-
-const setEntity = function(val, load) {
-  entity = val;
-  entitySpans.forEach((span) => span.innerHTML = val);
-  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
-  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
-  document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
-    .map((k) => '<span style="color: ' + clusters.characters[k].color + '">' + k + '</span>')
-    .join(", ");
-  document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
-  document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
-  if (load)
-    loadNetwork();
-};
-
-const setSize = function(val) {
-  network_size = val;
-  smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
-  fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
-  loadNetwork();
-};
-
-const setView = function(val) {
-  view = val
-  window.location.hash = entity + "/" + network_size + "/" + view;
-};
-const switchView = function() {
-  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
-  renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
-};
-
+// Fullscreen/window buttons
 const win = document.documentElement as any,
-  regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement,
   fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement;
-
-regScreenBtn.addEventListener("click", () => {
-  if ((document as any).exitFullscreen) {
-    (document as any).exitFullscreen();
-  } else if ((document as any).webkitExitFullscreen) { /* Safari */
-    (document as any).webkitExitFullscreen();
-  } else if ((document as any).msExitFullscreen) { /* IE11 */
-    (document as any).msExitFullscreen();
-  }
-  regScreenBtn.style.display = "none";
-  fullScreenBtn.style.display = "block";
-});
 fullScreenBtn.addEventListener("click", () => {
   if (win.requestFullscreen) {
     win.requestFullscreen();
@@ -428,6 +386,68 @@ fullScreenBtn.addEventListener("click", () => {
   regScreenBtn.style.display = "block";
 });
 
+const regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
+regScreenBtn.addEventListener("click", () => {
+  if ((document as any).exitFullscreen) {
+    (document as any).exitFullscreen();
+  } else if ((document as any).webkitExitFullscreen) { /* Safari */
+    (document as any).webkitExitFullscreen();
+  } else if ((document as any).msExitFullscreen) { /* IE11 */
+    (document as any).msExitFullscreen();
+  }
+  regScreenBtn.style.display = "none";
+  fullScreenBtn.style.display = "block";
+});
+
+// Network switch buttons
+const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
+  switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
+  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
+  entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
+  charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
+  creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
+  smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
+  fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
+
+const setEntity = function(val) {
+  entity = val;
+  entitySpans.forEach((span) => span.innerHTML = val);
+  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
+  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
+  document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
+    .map((k) => '<span style="color: ' + clusters.characters[k].color + '">' + k + '</span>')
+    .join(", ");
+  document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
+  document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
+};
+
+const setSize = function(val) {
+  network_size = val;
+  smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
+  fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
+};
+
+const setView = function(val) {
+  view = val
+  window.location.hash = entity + "/" + network_size + "/" + view;
+};
+const switchView = function() {
+  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
+  renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
+};
+
+// Responsiveness
+function resize() {
+  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
+  explanations.style.height = (freeHeight - 13) + "px";
+  explanations.style["min-height"] = (freeHeight - 13) + "px";
+  nodeDetails.style.height = (freeHeight - 18) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
+}
+window.addEventListener("resize", resize);
+resize();
+
+// Collect data's metadata for explanations
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confdata) => {
@@ -439,12 +459,33 @@ fetch("./config.yml.example")
     document.getElementById(k + "-color").style.color = clusters.roles[k]
   );
 
+  // Read first url to set settings
   let currentUrl = window.location.hash.replace(/^#/, '')
   if (currentUrl === "")
     currentUrl = entity + "/" + network_size + "/" + view;
   const args = currentUrl.split("/");
 
-  // Adjust color switch first since it does not load anything
+  // Setup Node type switch
+  if (args[0] === "creators")
+    switchNodeType.checked = true;
+  setEntity(args[0]);
+  switchNodeType.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    setEntity(target.checked ? "creators" : "characters");
+    loadNetwork();
+  });
+
+  // Setup Size filter switch
+  if (args[1] === "full")
+    switchNodeFilter.checked = true;
+  setSize(args[1]);
+  switchNodeFilter.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    setSize(target.checked ? "full" : "small");
+    loadNetwork();
+  });
+
+  // Setup View switch
   if (args[2] === "colors")
     switchNodeView.checked = true;
   setView(args[2]);
@@ -454,21 +495,6 @@ fetch("./config.yml.example")
     switchView();
   });
 
-  // Adjust nodes type then with option load=false to not load anything either
-  if (args[0] === "creators")
-    switchNodeType.checked = true;
-  setEntity(args[0], false);
-  switchNodeType.addEventListener("change", (event) => {
-    const target = event.target as HTMLInputElement;
-    setEntity(target.checked ? "creators" : "characters", true);
-  });
-
-  // Finally adjust the filter which will also load the network
-  if (args[1] === "full")
-    switchNodeFilter.checked = true;
-  setSize(args[1]);
-  switchNodeFilter.addEventListener("change", (event) => {
-    const target = event.target as HTMLInputElement;
-    setSize(target.checked ? "full" : "small");
-  });
-})
+  // Load first network from settings
+  loadNetwork();
+});

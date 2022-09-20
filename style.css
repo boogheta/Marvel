@@ -17,6 +17,7 @@ html, body {
   margin: 0;
   overflow: hidden;
   font-family: monospace;
+  font-size: 12px;
   background-color: #222;
   color: dimgrey;
   float: left;
@@ -42,7 +43,7 @@ h2 {
   max-height: 60%;
 }
 #explanations p {
-  margin: 5px;
+  margin: 7px;
 }
 #node-details {
   clear: both;
@@ -73,7 +74,7 @@ h2 {
   width: 300px;
 }
 #footer p {
-  font-size: 12px;
+  font-size: 11px;
   padding: 5px 0px;
   border-top: 1px solid #555;
   margin: 0;
@@ -83,7 +84,6 @@ h2 {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: sans-serif;
   background-color: black;
 }
 #loader {
@@ -161,7 +161,7 @@ h2 {
   margin-top: 0;
 }
 .choices {
-  margin: 10px 0;
+  margin: 15px 0;
 }
 .network-choice{
   display: flex;
