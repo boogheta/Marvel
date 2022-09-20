@@ -1,4 +1,5 @@
 /* TODO:
+- branch switch view to toggle + adjust toggles css
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
