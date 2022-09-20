@@ -365,10 +365,8 @@ const setTitle = function() {
   document.getElementById("title").innerHTML = "This is a g" + title;
 }
 
-const switchCharacters = document.getElementById("switch-characters") as HTMLButtonElement,
-  switchCreators = document.getElementById("switch-creators") as HTMLButtonElement,
-  switchSmall = document.getElementById("switch-small") as HTMLButtonElement,
-  switchFull = document.getElementById("switch-full") as HTMLButtonElement,
+const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
+  switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
   switchViewBtn = document.getElementById("switch-view") as HTMLButtonElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
@@ -378,13 +376,6 @@ const switchCharacters = document.getElementById("switch-characters") as HTMLBut
 
 const setEntity = function(val, load) {
   entity = val;
-  if (val === "characters") {
-    switchCreators.disabled = false;
-    switchCharacters.disabled = true;
-  } else {
-    switchCreators.disabled = true;
-    switchCharacters.disabled = false;
-  }
   entitySpans.forEach((span) => span.innerHTML = val);
   creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
   charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
@@ -399,22 +390,13 @@ const setEntity = function(val, load) {
 
 const setSize = function(val) {
   network_size = val;
-  if (val === "small") {
-    switchSmall.disabled = true;
-    switchFull.disabled = false;
-  } else {
-    switchSmall.disabled = false;
-    switchFull.disabled = true;
-  }
   smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
   fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
   loadNetwork();
 };
 
-switchCharacters.addEventListener("click", () => setEntity("characters", true));
-switchCreators.addEventListener("click", () => setEntity("creators", true));
-switchFull.addEventListener("click", () => setSize("full"));
-switchSmall.addEventListener("click", () => setSize("small"));
+switchNodeType.addEventListener("change", (v) => v ? setSize("full"): setSize("small"))
+switchNodeFilter.addEventListener("change", (v) => v ? setEntity("characters", true): setEntity("creators", true))
 
 const toggleView = function() {
   switchViewBtn.innerHTML = view;
