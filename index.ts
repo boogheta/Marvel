@@ -1,5 +1,5 @@
 /* TODO:
-- improve UX PICTURES/COLORS button
+- improve UX PICTURES/COLORS button : use real toggle switches https://www.w3schools.com/howto/howto_css_switch.asp 
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
@@ -287,6 +287,8 @@ function loadNetwork() {
     };
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => clickNode(null));
+    renderer.on('enterNode', () => container.style.cursor = 'pointer');
+    renderer.on('leaveNode', () => container.style.cursor = 'default');
 
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement;
