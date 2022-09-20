@@ -1,5 +1,4 @@
 /* TODO:
-- improve UX PICTURES/COLORS button : use real toggle switches https://www.w3schools.com/howto/howto_css_switch.asp 
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
@@ -394,9 +393,6 @@ const setSize = function(val) {
   loadNetwork();
 };
 
-switchNodeType.addEventListener("change", (v) => v ? setSize("full"): setSize("small"))
-switchNodeFilter.addEventListener("change", (v) => v ? setEntity("characters", true): setEntity("creators", true))
-
 const toggleView = function() {
   switchViewBtn.innerHTML = view;
   view = (view === "pictures" ? "colors" : "pictures");
@@ -448,12 +444,30 @@ fetch("./config.yml.example")
   Object.keys(clusters.roles).forEach((k) =>
     document.getElementById(k + "-color").style.color = clusters.roles[k]
   );
+
   let currentUrl = window.location.hash.replace(/^#/, '')
   if (currentUrl === "")
     currentUrl = entity + "/" + network_size + "/" + view;
   const args = currentUrl.split("/");
+
   view = args[2];
   switchViewBtn.innerHTML = view === "pictures" ? "colors" : "pictures";
+
+  if (args[0] === "creators")
+    switchNodeType.checked = true;
   setEntity(args[0], false);
+
+  if (args[1] === "full")
+    switchNodeFilter.checked = true;
   setSize(args[1]);
+
+  switchNodeType.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    setEntity(target.checked ? "creators" : "characters", true);
+  });
+  switchNodeFilter.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    setSize(target.checked ? "full" : "small");
+  });
+
 })

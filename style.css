@@ -34,40 +34,6 @@ h2 {
   color: var(--marvel-red);
   margin: 0;
 }
-.switch {
-  display: block;
-  height: 42px;
-  width: 120px;
-  margin: 0px 0px 10px 0px;
-  padding: 5px;
-  cursor: pointer;
-  background-color: var(--marvel-red);
-  color: white;
-  font-size: 12px;
-  font-family: monospace;
-  font-weight: bold;
-  text-transform: uppercase;
-  float: left;
-  border-radius: 5px;
-  border: 0;
-}
-.switch.left {
-  margin-left: 20px;
-  margin-right: 10px;
-}
-.switch.right {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-.switch:disabled {
-  border: 2px solid white;
-  cursor: inherit;
-}
-#switch-view {
-  width: 108px;
-  margin: 5px 1px 0px 1px;
-  text-transform: uppercase;
-}
 #explanations {
   clear: both;
   margin: 0 3px;
@@ -187,7 +153,6 @@ h2 {
   text-align: center;
   font-family: monospace;
 }
-
 /* -------- Switch Styles ------------*/
 .choices .network-choice:last-child {
   margin-bottom: 0;
@@ -207,7 +172,6 @@ h2 {
   margin-bottom: 1rem;
   height: 1.8rem;
 }
-
 label, .toggle {
   height: 100%;
   border-radius: 100px;
@@ -236,37 +200,35 @@ label {
   position: absolute;
   display: flex;
   justify-content: space-around;
-  align-items:center;
+  align-items: center;
   user-select: none;
 }
-.names>div {
+.names > div {
   font-size: 12px;
   font-family: monospace;
   font-weight: bold;
   text-transform: uppercase;
 }
-.left,.right{
-  width:50%;
+.left, .right{
+  width: 50%;
   text-align: center;
 }
-
-
 [type="checkbox"] {
   display: none;
 }
 /* Toggle */
-[type="checkbox"]:checked + #network-switch-label .toggle{
+[type="checkbox"]:checked + .network-switch-label .toggle {
   transform: translateX(100%);
 }
 .left {
-  color:white;
+  color: white;
 }
 .right {
   color: var(--marvel-red);
 }
-[type="checkbox"]:checked + #network-switch-label .left{
-  color:var(--marvel-red);
+[type="checkbox"]:checked + .network-switch-label .left {
+  color: var(--marvel-red);
 }
-[type="checkbox"]:checked + #network-switch-label .right{
-  color:white;
+[type="checkbox"]:checked + .network-switch-label .right {
+  color: white;
 }
