@@ -155,12 +155,26 @@ const defaultSidebar = function() {
   resize();
 }
 
-let renderer = null;
+let graph = null,
+  renderer = null;
+
+const setNodeSize = function(node, stories, sigmaHeight) {
+  graph.setNodeAttribute(node,
+    "size",
+    Math.pow(stories, 0.2)
+    * (network_size === "small" ? 2 : 1.25)
+    * (entity == "characters" ? 2 : 1.25)
+    * sigmaHeight / 900
+  );
+};
+
 function loadNetwork() {
   loader.style.display = "block";
 
   if (renderer) renderer.kill();
   renderer = null;
+  if (graph) graph.clear();
+  graph = null;
   container.innerHTML = '';
 
   setTitle();
@@ -171,7 +185,7 @@ function loadNetwork() {
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".gexf")
   .then((res) => res.text())
   .then((gexf) => {
-    const graph = parse(Graph, gexf);
+    graph = parse(Graph, gexf);
 
     const communities = louvain(graph, {resolution: clusters.resolutions[entity]});
     graph.forEachNode((node, {label}) => {
@@ -186,11 +200,12 @@ function loadNetwork() {
     const circularPositions = circular(graph, { scale: 50 });
 
     graph.forEachNode((node, {stories, thumbnail, artist, writer}) => {
-      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
+      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
+        sigmaHeight = divHeight("sigma-container");
+      setNodeSize(node, stories, sigmaHeight);
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
-        size: Math.pow(stories, 0.2) * (network_size === "small" ? 2 : 1.25) * (entity == "characters" ? 2 : 1.25),
         type: "thumbnail",
         color: (entity === "characters"
           ? (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color
@@ -443,7 +458,13 @@ function resize() {
   explanations.style["min-height"] = (freeHeight - 13) + "px";
   nodeDetails.style.height = (freeHeight - 18) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
-}
+  if (graph) {
+    const sigmaHeight = divHeight("sigma-container");
+    graph.forEachNode((node, {stories}) =>
+      setNodeSize(node, stories, sigmaHeight)
+    );
+  }
+};
 window.addEventListener("resize", resize);
 resize();
 
