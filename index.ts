@@ -1,5 +1,6 @@
 /* TODO:
-- branch switch view to toggle + adjust toggles css
+- adjust toggles css
+- lighten GEXF (load graphology jsons instead?)
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
@@ -11,8 +12,6 @@
 
 import { Sigma } from "./sigma.js";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
-
-console.log(getNodeProgramImage);
 
 import Graph from "graphology";
 import { parse } from "graphology-gexf";
@@ -366,7 +365,7 @@ const setTitle = function() {
 
 const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
   switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
-  switchViewBtn = document.getElementById("switch-view") as HTMLButtonElement,
+  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
@@ -394,19 +393,14 @@ const setSize = function(val) {
   loadNetwork();
 };
 
-const toggleView = function() {
-  switchViewBtn.innerHTML = view;
-  view = (view === "pictures" ? "colors" : "pictures");
+const setView = function(val) {
+  view = val
   window.location.hash = entity + "/" + network_size + "/" + view;
 };
-const switchView = () => {
+const switchView = function() {
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
 };
-switchViewBtn.addEventListener("click", () => {
-  toggleView();
-  switchView();
-});
 
 const win = document.documentElement as any,
   regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement,
@@ -451,24 +445,31 @@ fetch("./config.yml.example")
     currentUrl = entity + "/" + network_size + "/" + view;
   const args = currentUrl.split("/");
 
-  view = args[2];
-  switchViewBtn.innerHTML = view === "pictures" ? "colors" : "pictures";
+  // Adjust color switch first since it does not load anything
+  if (args[2] === "colors")
+    switchNodeView.checked = true;
+  setView(args[2]);
+  switchNodeView.addEventListener("change", (event) => {
+    const target = event.target as HTMLInputElement;
+    setView(target.checked ? "colors" : "pictures");
+    switchView();
+  });
 
+  // Adjust nodes type then with option load=false to not load anything either
   if (args[0] === "creators")
     switchNodeType.checked = true;
   setEntity(args[0], false);
-
-  if (args[1] === "full")
-    switchNodeFilter.checked = true;
-  setSize(args[1]);
-
   switchNodeType.addEventListener("change", (event) => {
     const target = event.target as HTMLInputElement;
     setEntity(target.checked ? "creators" : "characters", true);
   });
+
+  // Finally adjust the filter which will also load the network
+  if (args[1] === "full")
+    switchNodeFilter.checked = true;
+  setSize(args[1]);
   switchNodeFilter.addEventListener("change", (event) => {
     const target = event.target as HTMLInputElement;
     setSize(target.checked ? "full" : "small");
   });
-
 })
