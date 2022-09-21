@@ -1,5 +1,4 @@
 /* TODO:
-- prespatialize networks
 - use communities labels for creators clusters and document it in explanations
 - test smartphone
  + please rotate on vertical screen
@@ -18,10 +17,7 @@ import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image"
 import Graph from "graphology";
 import { parse } from "graphology-gexf";
 import { circular } from "graphology-layout";
-import forceAtlas2 from "graphology-layout-forceatlas2";
-import FA2Layout from "graphology-layout-forceatlas2/worker";
-import noverlap from 'graphology-layout-noverlap';
-import louvain from 'graphology-communities-louvain';
+import { animateNodes } from "./sigma.js/utils/animate";
 
 const clusters = {
   resolutions: {
@@ -163,8 +159,8 @@ const setNodeSize = function(node, stories, sigmaHeight) {
   graph.setNodeAttribute(node,
     "size",
     Math.pow(stories, 0.2)
-    * (network_size === "small" ? 2 : 1.25)
     * (entity == "characters" ? 2 : 1.25)
+    * (network_size === "small" ? 2 : 1.25)
     * sigmaHeight / 900
   );
 };
@@ -183,33 +179,34 @@ function loadNetwork() {
 
   clusters.communities = {};
 
-  fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".gexf")
-  .then((res) => res.text())
-  .then((gexf) => {
-    graph = parse(Graph, gexf);
+  fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json")
+  .then((res) => res.json())
+  .then((data) => {
+    graph = Graph.from(data);
 
-    const communities = louvain(graph, {resolution: clusters.resolutions[entity]});
-    graph.forEachNode((node, {label}) => {
+    graph.forEachNode((node, {label, community}) => {
       for (var cluster in clusters[entity])
         if (label === clusters[entity][cluster].match) {
-          clusters[entity][cluster].community = communities[node];
-        clusters.communities[communities[node]] = clusters[entity][cluster];
-        clusters.communities[communities[node]].cluster = cluster;
+          clusters[entity][cluster].community = community;
+          clusters.communities[community] = clusters[entity][cluster];
+          clusters.communities[community].cluster = cluster;
         }
     });
 
-    const circularPositions = circular(graph, { scale: 50 });
+    const circularPositions = circular(graph, { scale: 50 }),
+      spatializedPositions = {};
 
-    graph.forEachNode((node, {stories, thumbnail, artist, writer}) => {
+    graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         sigmaHeight = divHeight("sigma-container");
       setNodeSize(node, stories, sigmaHeight);
+      spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         type: "thumbnail",
         color: (entity === "characters"
-          ? (clusters.communities[communities[node]] || {color: extraPalette[communities[node] % extraPalette.length]}).color
+          ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
           : (artist_ratio > 0.65
             ? clusters.roles.artist
             : (artist_ratio < 0.34
@@ -285,8 +282,8 @@ function loadNetwork() {
         else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
       }
       // Or communities if we have it for characters
-      else if (clusters.communities[communities[node]])
-        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[communities[node]].color + '">' + clusters.communities[communities[node]].cluster + '</b> community<sup>*</sup></p>';
+      else if (clusters.communities[attrs.community])
+        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[attrs.community].color + '">' + clusters.communities[attrs.community].cluster + '</b> community<sup>*</sup></p>';
       if (attrs.url)
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
@@ -384,18 +381,8 @@ function loadNetwork() {
     });
     setSearchQuery("");
 
-    // Run spatialisation
-    const sensibleSettings = forceAtlas2.inferSettings(graph);
-    const fa2Layout = new FA2Layout(graph, {
-      settings: sensibleSettings
-    });
-    fa2Layout.start();
+    animateNodes(graph, spatializedPositions, { duration: 5000 , easing: "quadraticOut" });
     loader.style.display = "none";
-    setTimeout(() => {
-      fa2Layout.stop();
-      noverlap.assign(graph);
-    }, network_size === "small" ? 15000 : 45000);
-
   });
 }
 
