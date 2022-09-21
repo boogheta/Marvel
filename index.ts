@@ -400,8 +400,6 @@ fullScreenBtn.addEventListener("click", () => {
   } else if (win.msRequestFullscreen) { /* IE11 */
     win.msRequestFullscreen();
   }
-  fullScreenBtn.style.display = "none";
-  regScreenBtn.style.display = "block";
 });
 
 const regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
@@ -413,8 +411,6 @@ regScreenBtn.addEventListener("click", () => {
   } else if ((document as any).msExitFullscreen) { /* IE11 */
     (document as any).msExitFullscreen();
   }
-  regScreenBtn.style.display = "none";
-  fullScreenBtn.style.display = "block";
 });
 
 // Network switch buttons
