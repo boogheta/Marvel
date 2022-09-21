@@ -147,6 +147,17 @@ h2 {
 #regscreen {
   display: none;
 }
+#fullscreen {
+  display: block;
+}
+@media all and (display-mode: fullscreen) {
+  #regscreen {
+    display: block;
+  }
+  #fullscreen {
+    display: none;
+  }
+}
 #search {
   margin: 2px;
 }
