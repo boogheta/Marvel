@@ -235,3 +235,45 @@ label {
 [type="checkbox"]:checked + .network-switch-label .right {
   color: white;
 }
+#rotate-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: none;
+  background-color: rgba(0, 0, 0, 0.85);
+  text-align: center;
+}
+#rotate-modal h1 {
+  font-size: 30px;
+}
+#rotate-modal img {
+  position: relative;
+  top: 25%;
+  left: 0;
+  max-width: 45%;
+}
+#rotate-modal p {
+  display: block;
+  position: absolute;
+  bottom: 20%;
+  left: 25%;
+  width: 50%;
+  background-color: var(--marvel-red);
+  color: white;
+  font-size: 20px;
+  font-family: monospace;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 10px 0px;
+}
+@media (orientation: portrait) {
+  #rotate-modal {
+    display: block;
+  }
+  #sidebar, #controls {
+    display: none;
+  }
+}
