@@ -4,12 +4,13 @@
  + please rotate on vertical screen
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
-- lighten GEXF (load graphology jsons instead?)
 - add social network cards
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
 */
+
+import pako from "pako";
 
 import { Sigma } from "./sigma.js";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
@@ -179,10 +180,10 @@ function loadNetwork() {
 
   clusters.communities = {};
 
-  fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json")
-  .then((res) => res.json())
-  .then((data) => {
-    graph = Graph.from(data);
+  fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json.gz")
+  .then((res) => res.arrayBuffer())
+  .then((text) => {
+    graph = Graph.from(JSON.parse(pako.inflate(text, {to: "string"})));
 
     graph.forEachNode((node, {label, community}) => {
       for (var cluster in clusters[entity])

@@ -7,6 +7,8 @@ import forceAtlas2 from 'graphology-layout-forceatlas2';
 import noverlap from 'graphology-layout-noverlap';
 import louvain from 'graphology-communities-louvain';
 
+import pako from "pako";
+
 const args = process.argv.slice(2);
 const filename = args[0];
 const fileroot = filename.replace(/gexf$/, "");
@@ -73,8 +75,8 @@ function processGraph(graph){
       console.log('ForceAtlas2 fully processed in:', (time1 - time0)/1000 + "s (" + doneIterations + " iterations)");
 
       noverlap.assign(graph);
-      fs.writeFileSync(fileroot + "json", JSON.stringify(graph.toJSON()));
-      console.log(" -> Saved " + fileroot+ " json");
+      fs.writeFileSync(fileroot + "json.gz", pako.deflate(JSON.stringify(graph)));
+      console.log(" -> Saved " + fileroot+ " json.gz");
     }
   );
 }
