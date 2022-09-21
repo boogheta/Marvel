@@ -456,18 +456,24 @@ const switchView = function() {
 };
 
 // Responsiveness
+let resizing = false;
 function resize() {
-  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
-  explanations.style.height = (freeHeight - 13) + "px";
-  explanations.style["min-height"] = (freeHeight - 13) + "px";
-  nodeDetails.style.height = (freeHeight - 18) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
-  if (graph) {
-    const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-    graph.forEachNode((node, {stories}) =>
-      setNodeSize(node, stories, sigmaDim)
-    );
-  }
+  if (resizing) return;
+  resizing = true;
+  setTimeout(() => {
+    const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
+    explanations.style.height = (freeHeight - 13) + "px";
+    explanations.style["min-height"] = (freeHeight - 13) + "px";
+    nodeDetails.style.height = (freeHeight - 18) + "px";
+    nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
+    if (graph) {
+      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
+      graph.forEachNode((node, {stories}) =>
+        setNodeSize(node, stories, sigmaDim)
+      );
+    }
+    resizing = false;
+  }, 50);
 };
 window.addEventListener("resize", resize);
 resize();
