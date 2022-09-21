@@ -3,7 +3,6 @@
  + please rotate on vertical screen
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
-- fix CSS FF
 - lighten GEXF (load graphology jsons instead?)
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
