@@ -3,7 +3,6 @@
 - test smartphone
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
- + handle node sizes with ratio (need to replug wheel events)
 - add social network cards
 - list comics associated with clicked node
 - click comic to show only attached nodes
@@ -157,16 +156,16 @@ const defaultSidebar = function() {
 }
 
 let graph = null,
-  renderer = null;
+  renderer = null,
+  camera = null,
+  ratio = 1;
 
-const setNodeSize = function(node, stories, sigmaDim) {
-  graph.setNodeAttribute(node,
-    "size",
-    Math.pow(stories, 0.2)
+const computeNodeSize = function(node, stories, sigmaDim) {
+  return Math.pow(stories, 0.2)
     * (entity == "characters" ? 2 : 1.25)
     * (network_size === "small" ? 2 : 1.25)
     * sigmaDim / 1000
-  );
+    * ratio;
 };
 
 function loadNetwork() {
@@ -176,6 +175,7 @@ function loadNetwork() {
   renderer = null;
   if (graph) graph.clear();
   graph = null;
+  camera = null;
   container.innerHTML = '';
 
   setTitle();
@@ -203,7 +203,7 @@ function loadNetwork() {
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-      setNodeSize(node, stories, sigmaDim);
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim));
       spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
@@ -239,17 +239,46 @@ function loadNetwork() {
 
     if (view === "colors") switchView();
 
+    const adjustNodesSizeToZoom = function() {
+      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
+        newSizes = {};
+      graph.forEachNode((node, {stories}) => {
+        newSizes[node] = {size: computeNodeSize(node, stories, sigmaDim)}
+      });
+      animateNodes(graph, newSizes, { duration: 400, easing: "quadraticOut" });
+    }
     // Bind zoom manipulation buttons
-    const camera = renderer.getCamera();
+    camera = renderer.getCamera();
     document.getElementById("zoom-in").addEventListener("click", () => {
       camera.animatedZoom({ duration: 600 });
+      if (camera.ratio > sigmaSettings.minCameraRatio)
+        ratio *= 1.1;
+      adjustNodesSizeToZoom();
     });
     document.getElementById("zoom-out").addEventListener("click", () => {
       camera.animatedUnzoom({ duration: 600 });
+      if (camera.ratio < sigmaSettings.maxCameraRatio)
+        ratio /= 1.1;
+      adjustNodesSizeToZoom();
     });
     document.getElementById("zoom-reset").addEventListener("click", () => {
       camera.animatedReset({ duration: 600 });
+      ratio = 1;
+      adjustNodesSizeToZoom();
     });
+    const handleWheel = function(e) {
+      if (e.event.delta > 0) {
+        if (camera.ratio > sigmaSettings.minCameraRatio)
+          ratio *= 1.1;
+      } else if (e.event.delta < 0) {
+        if (camera.ratio < sigmaSettings.maxCameraRatio)
+          ratio /= 1.1;
+      } else return;
+      adjustNodesSizeToZoom();
+    };
+    renderer.on("wheelNode", (e) => handleWheel(e));
+    renderer.on("wheelEdge", (e) => handleWheel(e));
+    renderer.on("wheelStage", (e) => handleWheel(e));
 
     // Handle clicks on nodes
     const clickNode = (node) => {
@@ -357,7 +386,7 @@ function loadNetwork() {
           selectedNode = suggestions[0].node;
           suggestions = [];
           // Move the camera to center it on the selected node:
-          renderer.getCamera().animate(
+          camera.animate(
             renderer.getNodeDisplayData(selectedNode),
             {duration: 500}
           );
@@ -465,7 +494,7 @@ function resize() {
     if (graph) {
       const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
       graph.forEachNode((node, {stories}) =>
-        setNodeSize(node, stories, sigmaDim)
+        graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim))
       );
     }
     resizing = false;
