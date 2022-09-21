@@ -114,6 +114,9 @@ const lighten = function(col, amt) {
   return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
+function divWidth(divId) {
+  return document.getElementById(divId).getBoundingClientRect().width;
+}
 function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
@@ -156,13 +159,13 @@ const defaultSidebar = function() {
 let graph = null,
   renderer = null;
 
-const setNodeSize = function(node, stories, sigmaHeight) {
+const setNodeSize = function(node, stories, sigmaDim) {
   graph.setNodeAttribute(node,
     "size",
     Math.pow(stories, 0.2)
     * (entity == "characters" ? 2 : 1.25)
     * (network_size === "small" ? 2 : 1.25)
-    * sigmaHeight / 900
+    * sigmaDim / 1000
   );
 };
 
@@ -199,8 +202,8 @@ function loadNetwork() {
 
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
-        sigmaHeight = divHeight("sigma-container");
-      setNodeSize(node, stories, sigmaHeight);
+        sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
+      setNodeSize(node, stories, sigmaDim);
       spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
@@ -221,9 +224,9 @@ function loadNetwork() {
 
     // Instantiate sigma:
     let sigmaSettings = {
-      minCameraRatio: 0.08,
-      maxCameraRatio: 1.2,
-      defaultEdgeColor: '#1A1A1A',
+      minCameraRatio: 0.07,
+      maxCameraRatio: 1.3,
+      defaultEdgeColor: '#2A2A2A',
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
@@ -382,7 +385,7 @@ function loadNetwork() {
     });
     setSearchQuery("");
 
-    animateNodes(graph, spatializedPositions, { duration: 5000 , easing: "quadraticOut" });
+    animateNodes(graph, spatializedPositions, { duration: network_size === "small" ? 2000 : 4000, easing: "cubicInOut" });
     loader.style.display = "none";
   });
 }
@@ -460,9 +463,9 @@ function resize() {
   nodeDetails.style.height = (freeHeight - 18) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
   if (graph) {
-    const sigmaHeight = divHeight("sigma-container");
+    const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
     graph.forEachNode((node, {stories}) =>
-      setNodeSize(node, stories, sigmaHeight)
+      setNodeSize(node, stories, sigmaDim)
     );
   }
 };
