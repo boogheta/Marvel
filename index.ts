@@ -1,11 +1,13 @@
 /* TODO:
+- test smartphone
+ + please rotate on vertical screen
+ + reduce size sidebar + titles
+ + hide footer and explanations in drawers
 - fix CSS FF
-- fix search Cap A
 - lighten GEXF (load graphology jsons instead?)
 - use communities labels for creators clusters and document it in explanations
 - prespatialize networks
 - add social network cards
-- test smartphone
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
@@ -324,6 +326,7 @@ function loadNetwork() {
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement,
       searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
+
     let selectedNode = null,
       suggestions = [];
     const setSearchQuery = (query) => {
@@ -338,18 +341,18 @@ function loadNetwork() {
             suggestions.push({node: node, label: label});
         });
 
-        if (suggestions.length === 1 && suggestions[0].label === query) {
+        if (suggestions.length >= 1 && suggestions[0].label === query) {
           if (selectedNode)
             graph.setNodeAttribute(selectedNode, "highlighted", false);
           selectedNode = suggestions[0].node;
           suggestions = [];
-          graph.setNodeAttribute(selectedNode, "highlighted", true);
-          clickNode(selectedNode);
           // Move the camera to center it on the selected node:
           renderer.getCamera().animate(
             renderer.getNodeDisplayData(selectedNode),
             {duration: 500}
           );
+          graph.setNodeAttribute(selectedNode, "highlighted", true);
+          clickNode(selectedNode);
         } else if (selectedNode) {
           graph.setNodeAttribute(selectedNode, "highlighted", false);
           selectedNode = null;
