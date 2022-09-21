@@ -1,11 +1,11 @@
 /* TODO:
+- prespatialize networks
+- use communities labels for creators clusters and document it in explanations
 - test smartphone
  + please rotate on vertical screen
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
 - lighten GEXF (load graphology jsons instead?)
-- use communities labels for creators clusters and document it in explanations
-- prespatialize networks
 - add social network cards
 - list comics associated with clicked node
 - click comic to show only attached nodes
@@ -326,13 +326,23 @@ function loadNetwork() {
     const searchInput = document.getElementById("search-input") as HTMLInputElement,
       searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
 
+    const feedAllSuggestions = function() {
+      suggestions = graph.nodes()
+        .map((node) => ({
+          node: node,
+          label: graph.getNodeAttribute(node, "label")
+        })
+      );
+    }
+
     let selectedNode = null,
       suggestions = [];
     const setSearchQuery = (query) => {
+      feedAllSuggestions();
       if (searchInput.value !== query)
         searchInput.value = query;
 
-      if (query.length > 1) {
+      if (query) {
         const lcQuery = query.toLowerCase();
         suggestions = [];
         graph.forEachNode((node, {label}) => {
@@ -359,7 +369,7 @@ function loadNetwork() {
       } else if (selectedNode) {
         graph.setNodeAttribute(selectedNode, "highlighted", false);
         selectedNode = null;
-        suggestions = [];
+        feedAllSuggestions();
       }
       searchSuggestions.innerHTML = suggestions
         .sort()
@@ -372,6 +382,7 @@ function loadNetwork() {
     searchInput.addEventListener("blur", () => {
       setSearchQuery("");
     });
+    setSearchQuery("");
 
     // Run spatialisation
     const sensibleSettings = forceAtlas2.inferSettings(graph);
