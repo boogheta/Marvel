@@ -3,6 +3,7 @@
 - test smartphone
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
+ + handle node sizes with ratio (need to replug wheel events)
 - add social network cards
 - list comics associated with clicked node
 - click comic to show only attached nodes
