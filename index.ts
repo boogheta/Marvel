@@ -1,7 +1,6 @@
 /* TODO:
 - use communities labels for creators clusters and document it in explanations
 - test smartphone
- + please rotate on vertical screen
  + reduce size sidebar + titles
  + hide footer and explanations in drawers
 - add social network cards
