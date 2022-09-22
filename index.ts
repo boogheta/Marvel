@@ -1,4 +1,5 @@
 /* TODO:
+- improve clusters using PMI ? Math.max(log (coccurrence/(occurrence1 * occurrence2)), 0)
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
 - list comics associated with clicked node
