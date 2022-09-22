@@ -148,9 +148,10 @@ const defaultSidebar = function() {
 
 let graph = null,
   renderer = null,
-  camera = null;
+  camera = null,
+  sigmaDim = null;
 
-const computeNodeSize = function(node, stories, sigmaDim, ratio) {
+const computeNodeSize = function(node, stories, ratio) {
   return Math.pow(stories, 0.2)
     * (entity == "characters" ? 1.75 : 1.25)
     * (network_size === "small" ? 1.75 : 1.25)
@@ -191,9 +192,8 @@ function loadNetwork() {
       spatializedPositions = {};
 
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
-      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
-        sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim, 1));
+      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, 1));
       spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
@@ -231,11 +231,10 @@ function loadNetwork() {
 
     // Bind zoom manipulation buttons
     const adjustNodesSizeToZoom = function(extraRatio) {
-      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
-        newSizes = {},
+      const newSizes = {},
         ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
       graph.forEachNode((node, {stories}) => {
-        newSizes[node] = {size: computeNodeSize(node, stories, sigmaDim, ratio)}
+        newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
       });
       animateNodes(graph, newSizes, { duration: extraRatio == 1 ? 200 : 600, easing: "quadraticOut" });
     }
@@ -318,7 +317,7 @@ function loadNetwork() {
             ? { ...data, zIndex: 2, size: data.size * 1.5 }
             : (graph.hasEdge(n, node)
                 ? { ...data, zIndex: 1, image: null }
-                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 4 : 2 }
+                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: sigmaDim / 350 }
               )
             )
         }
@@ -477,27 +476,28 @@ const switchView = function() {
 
 // Responsiveness
 let resizing = false;
+function doResize() {
+  resizing = true;
+  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
+  explanations.style.height = (freeHeight - 13) + "px";
+  explanations.style["min-height"] = (freeHeight - 13) + "px";
+  nodeDetails.style.height = (freeHeight - 18) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
+  sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
+  if (graph && camera) {
+    const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
+    graph.forEachNode((node, {stories}) =>
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, ratio))
+    );
+  }
+  resizing = false;
+}
 function resize() {
   if (resizing) return;
   resizing = true;
-  setTimeout(() => {
-    const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
-    explanations.style.height = (freeHeight - 13) + "px";
-    explanations.style["min-height"] = (freeHeight - 13) + "px";
-    nodeDetails.style.height = (freeHeight - 18) + "px";
-    nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
-    if (graph && camera) {
-      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
-        ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
-      graph.forEachNode((node, {stories}) =>
-        graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim, ratio))
-      );
-    }
-    resizing = false;
-  }, 50);
+  setTimeout(doResize, 50);
 };
 window.addEventListener("resize", resize);
-resize();
 
 // Collect data's metadata for explanations
 fetch("./config.yml.example")
@@ -547,6 +547,7 @@ fetch("./config.yml.example")
     switchView();
   });
 
+  doResize();
   // Load first network from settings
   loadNetwork();
 });
