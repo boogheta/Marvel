@@ -294,30 +294,7 @@ label {
 .credits-full, #title {
   display: block;
 }
-@media (max-height: 600px) {
-  #sidebar, #footer {
-    width: 200px;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  .choices {
-    margin: 5px 0;
-  }
-  label {
-    width: 90%;
-  }
-  .names > div {
-    font-size: 12px;
-  }
-  .credits-short {
-    display: block;
-  }
-  .credits-full, #title {
-    display: none;
-  }
-}
-@media (max-width: 700px) {
+@media (max-height: 600px) or (max-width: 700px) {
   #sidebar, #footer {
     width: 200px;
   }
