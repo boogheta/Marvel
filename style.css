@@ -168,6 +168,10 @@ h2 {
   font-family: monospace;
   font-size: 14px;
 }
+#suggestions-select {
+  display: none;
+  width: 146px;
+}
 /* -------- Switch Styles ------------*/
 .choices .network-choice:last-child {
   margin-bottom: 0;
@@ -319,5 +323,11 @@ label {
   }
   .credits-full, #title {
     display: none;
+  }
+  #search input {
+    display: none;
+  }
+  #suggestions-select {
+    display: block;
   }
 }

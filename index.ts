@@ -265,12 +265,17 @@ function loadNetwork() {
     const clickNode = (node) => {
       if (!node) {
         defaultSidebar();
+        if (selectedNode) {
+          graph.setNodeAttribute(selectedNode, "highlighted", false)
+          selectedNode = null;
+        }
         renderer.setSetting(
           "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
         );
         renderer.setSetting(
           "edgeReducer", (edge, data) => data
         );
+        feedAllSuggestions();
         return;
       }
 
@@ -335,7 +340,8 @@ function loadNetwork() {
 
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement,
-      searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement;
+      searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
+      selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
 
     const feedAllSuggestions = function() {
       suggestions = graph.nodes()
@@ -344,6 +350,7 @@ function loadNetwork() {
           label: graph.getNodeAttribute(node, "label")
         }))
         .sort((a, b) => a.label < b.label ? -1 : 1);
+        selectSuggestions.innerHTML = "<option></option>" + searchSuggestions.innerHTML;
     }
 
     let selectedNode = null,
@@ -386,7 +393,13 @@ function loadNetwork() {
         .sort()
         .map((node) => "<option>" + node.label + "</option>")
         .join("\n");
+      selectSuggestions.innerHTML = "<option></option>" + searchSuggestions.innerHTML;
     }
+    selectSuggestions.addEventListener("change", () => {
+      const idx = selectSuggestions.selectedIndex;
+      if (!idx) clickNode(null);
+      else setSearchQuery(suggestions[idx - 1].label);
+    });
     searchInput.addEventListener("input", () => {
       setSearchQuery(searchInput.value || "");
     });
