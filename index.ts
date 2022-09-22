@@ -1,6 +1,5 @@
 /* TODO:
-- make search a simple select on smartphones?
-- improve clusters using PMI ? Math.max(log (coccurrence/(occurrence1 * occurrence2)), 0)
+- check node sizes/labels
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
 - list comics associated with clicked node
@@ -274,7 +273,6 @@ function loadNetwork() {
         renderer.setSetting(
           "edgeReducer", (edge, data) => data
         );
-        feedAllSuggestions();
         return;
       }
 
@@ -349,7 +347,6 @@ function loadNetwork() {
           label: graph.getNodeAttribute(node, "label")
         }))
         .sort((a, b) => a.label < b.label ? -1 : 1);
-        selectSuggestions.innerHTML = "<option></option>" + searchSuggestions.innerHTML;
     }
 
     let selectedNode = null,
@@ -392,12 +389,17 @@ function loadNetwork() {
         .sort()
         .map((node) => "<option>" + node.label + "</option>")
         .join("\n");
-      selectSuggestions.innerHTML = "<option></option>" + searchSuggestions.innerHTML;
     }
+    feedAllSuggestions();
+    const allSuggestions = suggestions.map(x => x);
+    selectSuggestions.innerHTML = "<option></option>" + allSuggestions
+      .sort()
+      .map((node) => "<option>" + node.label + "</option>")
+      .join("\n");
     selectSuggestions.addEventListener("change", () => {
       const idx = selectSuggestions.selectedIndex;
       if (!idx) clickNode(null);
-      else setSearchQuery(suggestions[idx - 1].label);
+      else setSearchQuery(allSuggestions[idx - 1].label);
     });
     searchInput.addEventListener("input", () => {
       setSearchQuery(searchInput.value || "");
