@@ -474,6 +474,7 @@ const setView = function(val) {
   window.location.hash = entity + "/" + network_size + "/" + view;
 };
 const switchView = function() {
+  if (!renderer) return;
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
 };

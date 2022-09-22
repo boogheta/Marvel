@@ -192,7 +192,7 @@ label, .toggle {
 }
 label {
   display: block;
-  width: 70%;
+  width: 210px;
   background-color: white;
   border-radius: 100px;
   position: relative;
@@ -201,10 +201,11 @@ label {
 }
 .toggle {
   position: absolute;
-  width: 50%;
+  width: 103px;
   background-color: var(--marvel-red);
-  box-shadow: 0 2px 15px rgba(0,0,0,.15);
   transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin: -2px 0 0 -2px;
+  border: 2px solid black;
 }
 .names {
   font-size: 90%;
@@ -294,7 +295,7 @@ label {
 .credits-full, #title {
   display: block;
 }
-@media (max-height: 600px) or (max-width: 700px) {
+@media (max-height: 600px), (max-width: 700px) {
   #sidebar, #footer {
     width: 200px;
   }
@@ -305,7 +306,10 @@ label {
     margin: 5px 0;
   }
   label {
-    width: 90%;
+    width: 180px;
+  }
+  .toggle {
+    width: 88px;
   }
   .names > div {
     font-size: 12px;
