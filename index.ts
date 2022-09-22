@@ -1,4 +1,5 @@
 /* TODO:
+- make search a simple select on smartphones?
 - improve clusters using PMI ? Math.max(log (coccurrence/(occurrence1 * occurrence2)), 0)
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
@@ -359,8 +360,8 @@ function loadNetwork() {
         .map((node) => ({
           node: node,
           label: graph.getNodeAttribute(node, "label")
-        })
-      );
+        }))
+        .sort((a, b) => a.label < b.label ? -1 : 1);
     }
 
     let selectedNode = null,
