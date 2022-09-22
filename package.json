@@ -9,6 +9,7 @@
     "build": "npm run buildsigma && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
     "serve": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
     "start": "npm run buildsigma && npm run serve",
+    "quickpreparegraphs": "ls data/*stories*.gexf | while read f; do node spatialize-network.js $f 100 100; done",
     "preparegraphs": "ls data/*.gexf | while read f; do node spatialize-network.js $f; done"
   },
   "license": "AGPL v3.0",

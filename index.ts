@@ -19,10 +19,6 @@ import { circular } from "graphology-layout";
 import { animateNodes } from "./sigma.js/utils/animate";
 
 const clusters = {
-  resolutions: {
-    creators: 0.85,
-    characters: 1.15
-  },
   roles: {
     writer: "#234fac",
     artist: "#2b6718",
@@ -51,17 +47,13 @@ const clusters = {
       match: "Avengers",
       color: "#2b6718"
     },
-    "Spider-Man & Marvel Knights": {
-      match: "Spider-Man (Peter Parker)",
-      color: "#822e23"
-    },
     "X-Men": {
       match: "X-Men",
       color: "#d4a129"
     },
-    "Other X-Teams": {
-      match: "X-Force",
-      color: "#d97a2d"
+    "Spider-Man & Marvel Knights": {
+      match: "Spider-Man (Peter Parker)",
+      color: "#822e23"
     },
     "Fantastic Four & Cosmic heroes": {
       match: "Fantastic Four",
@@ -336,7 +328,7 @@ function loadNetwork() {
             )
         }
       );
-      // Hide unrelated links and highlight weight and color as the target the node's links 
+      // Hide unrelated links and highlight, weight and color as the target the node's links
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
