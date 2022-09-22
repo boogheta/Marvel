@@ -1,4 +1,5 @@
 /* TODO:
+- make search a simple select on smartphones?
 - improve clusters using PMI ? Math.max(log (coccurrence/(occurrence1 * occurrence2)), 0)
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
@@ -18,10 +19,6 @@ import { circular } from "graphology-layout";
 import { animateNodes } from "./sigma.js/utils/animate";
 
 const clusters = {
-  resolutions: {
-    creators: 0.85,
-    characters: 1.15
-  },
   roles: {
     writer: "#234fac",
     artist: "#2b6718",
@@ -50,17 +47,13 @@ const clusters = {
       match: "Avengers",
       color: "#2b6718"
     },
-    "Spider-Man & Marvel Knights": {
-      match: "Spider-Man (Peter Parker)",
-      color: "#822e23"
-    },
     "X-Men": {
       match: "X-Men",
       color: "#d4a129"
     },
-    "Other X-Teams": {
-      match: "X-Force",
-      color: "#d97a2d"
+    "Spider-Man & Marvel Knights": {
+      match: "Spider-Man (Peter Parker)",
+      color: "#822e23"
     },
     "Fantastic Four & Cosmic heroes": {
       match: "Fantastic Four",
@@ -155,15 +148,14 @@ const defaultSidebar = function() {
 
 let graph = null,
   renderer = null,
-  camera = null,
-  ratio = 1;
+  camera = null;
 
-const computeNodeSize = function(node, stories, sigmaDim) {
+const computeNodeSize = function(node, stories, sigmaDim, ratio) {
   return Math.pow(stories, 0.2)
-    * (entity == "characters" ? 2 : 1.25)
-    * (network_size === "small" ? 2 : 1.25)
+    * (entity == "characters" ? 1.75 : 1.25)
+    * (network_size === "small" ? 1.75 : 1.25)
     * sigmaDim / 1000
-    * ratio;
+    / ratio;
 };
 
 function loadNetwork() {
@@ -201,7 +193,7 @@ function loadNetwork() {
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim));
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim, 1));
       spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
@@ -237,42 +229,33 @@ function loadNetwork() {
 
     if (view === "colors") switchView();
 
-    const adjustNodesSizeToZoom = function() {
-      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
-        newSizes = {};
-      graph.forEachNode((node, {stories}) => {
-        newSizes[node] = {size: computeNodeSize(node, stories, sigmaDim)}
-      });
-      animateNodes(graph, newSizes, { duration: 400, easing: "quadraticOut" });
-    }
     // Bind zoom manipulation buttons
+    const adjustNodesSizeToZoom = function(extraRatio) {
+      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
+        newSizes = {},
+        ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
+      graph.forEachNode((node, {stories}) => {
+        newSizes[node] = {size: computeNodeSize(node, stories, sigmaDim, ratio)}
+      });
+      animateNodes(graph, newSizes, { duration: extraRatio == 1 ? 200 : 600, easing: "quadraticOut" });
+    }
     camera = renderer.getCamera();
     document.getElementById("zoom-in").addEventListener("click", () => {
       camera.animatedZoom({ duration: 600 });
       if (camera.ratio > sigmaSettings.minCameraRatio)
-        ratio *= 1.1;
-      adjustNodesSizeToZoom();
+        adjustNodesSizeToZoom(1/1.5);
     });
     document.getElementById("zoom-out").addEventListener("click", () => {
       camera.animatedUnzoom({ duration: 600 });
       if (camera.ratio < sigmaSettings.maxCameraRatio)
-        ratio /= 1.1;
-      adjustNodesSizeToZoom();
+        adjustNodesSizeToZoom(1.5);
     });
     document.getElementById("zoom-reset").addEventListener("click", () => {
       camera.animatedReset({ duration: 600 });
-      ratio = 1;
-      adjustNodesSizeToZoom();
+      adjustNodesSizeToZoom(0);
     });
     const handleWheel = function(e) {
-      if (e.event.delta > 0) {
-        if (camera.ratio > sigmaSettings.minCameraRatio)
-          ratio *= 1.1;
-      } else if (e.event.delta < 0) {
-        if (camera.ratio < sigmaSettings.maxCameraRatio)
-          ratio /= 1.1;
-      } else return;
-      adjustNodesSizeToZoom();
+      setTimeout(() => adjustNodesSizeToZoom(1), 200);
     };
     renderer.on("wheelNode", (e) => handleWheel(e));
     renderer.on("wheelEdge", (e) => handleWheel(e));
@@ -324,18 +307,18 @@ function loadNetwork() {
           if (view === "pictures")
             return (n === node || graph.hasEdge(n, node)
               ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1) }
-              : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
+              : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 4 : 2 }
             )
           else return (n === node
-            ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1) }
+            ? { ...data, zIndex: 2, size: data.size * 1.5 }
             : (graph.hasEdge(n, node)
-                ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1), image: null }
-                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 5 : 3 }
+                ? { ...data, zIndex: 1, image: null }
+                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 4 : 2 }
               )
             )
         }
       );
-      // Hide unrelated links and highlight weight and color as the target the node's links 
+      // Hide unrelated links and highlight, weight and color as the target the node's links
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
@@ -359,8 +342,8 @@ function loadNetwork() {
         .map((node) => ({
           node: node,
           label: graph.getNodeAttribute(node, "label")
-        })
-      );
+        }))
+        .sort((a, b) => a.label < b.label ? -1 : 1);
     }
 
     let selectedNode = null,
@@ -474,6 +457,7 @@ const setView = function(val) {
   window.location.hash = entity + "/" + network_size + "/" + view;
 };
 const switchView = function() {
+  if (!renderer) return;
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
 };
@@ -489,10 +473,11 @@ function resize() {
     explanations.style["min-height"] = (freeHeight - 13) + "px";
     nodeDetails.style.height = (freeHeight - 18) + "px";
     nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
-    if (graph) {
-      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
+    if (graph && camera) {
+      const sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container")),
+        ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
       graph.forEachNode((node, {stories}) =>
-        graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim))
+        graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, sigmaDim, ratio))
       );
     }
     resizing = false;

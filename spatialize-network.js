@@ -1,13 +1,13 @@
-import fs from 'fs';
+const fs = require('fs');
 
-import Graph from "graphology";
-import { parse } from "graphology-gexf";
-import { circular } from "graphology-layout";
-import forceAtlas2 from 'graphology-layout-forceatlas2';
-import noverlap from 'graphology-layout-noverlap';
-import louvain from 'graphology-communities-louvain';
+const graphology = require ("graphology");
+const gexf = require("graphology-gexf");
+const layouts = require ("graphology-layout");
+const forceAtlas2 = require ('graphology-layout-forceatlas2');
+const noverlap = require ('graphology-layout-noverlap');
+const louvain = require ('graphology-communities-louvain');
 
-import pako from "pako";
+const pako = require ("pako");
 
 const args = process.argv.slice(2);
 const filename = args[0];
@@ -15,15 +15,15 @@ const fileroot = filename.replace(/gexf$/, "");
 const entity = /creators/.test(filename) ? "creators" : "characters";
 const network_size= /full/.test(filename) ? "full" : "small";
 const links_type = /stories/.test(filename) ? "stories" : "comics";
-const FA2Iterations = (args.length < 2 ? 5000 : parseInt(args[1]));
-const batchIterations = (args.length < 3 ? 500 : parseInt(args[2]));
+const FA2Iterations = (args.length < 2 ? 10000 : parseInt(args[1]));
+const batchIterations = (args.length < 3 ? 1000 : parseInt(args[2]));
 
 function readGEXF(filename) {
   console.log("Working on " + filename + " ...");
-  let gexf = fs.readFileSync(filename, {encoding:'utf8', flag:'r'});
-  let graph = parse(Graph, gexf);
+  let gexfile = fs.readFileSync(filename, {encoding:'utf8', flag:'r'});
+  let graph = gexf.parse(graphology.Graph, gexfile);
 
-  const circularPositions = circular(graph, { scale: 50 });
+  const circularPositions = layouts.circular(graph, { scale: 50 });
 
   graph.forEachNode(node => {
     let size = graph.getNodeAttributes(node, links_type);
@@ -43,6 +43,7 @@ function runBatchFA2(graph, settings, doneIterations, finalCallback) {
   const t0 = Date.now();
   forceAtlas2.assign(graph, {
     iterations: batchIterations,
+    getEdgeWeight: "weight",
     settings: settings
   });
   console.log(' FA2 batch of ' + batchIterations + ' iterations processed in:', (Date.now() - t0)/1000 + "s");
@@ -60,25 +61,27 @@ function processGraph(graph){
 
   let time0 = Date.now();
 
+  // Use pointwise mutual information to sparse edges
+  const total = graph.reduceNodes((tot, node, attrs) => tot + attrs[links_type], 0);
+  graph.forEachEdge((edge, {weight}, n1, n2, n1_attrs, n2_attrs) => {
+    graph.setEdgeAttribute(edge, "weight", Math.max(1, Math.log(total * weight / (n1_attrs[links_type] * n2_attrs[links_type]))))
+  });
+
   // Run Louvain to field community
-  louvain.assign(graph, {resolution: entity === "creators" ? 0.85 : 1.15});
+  louvain.assign(graph, {resolution: entity === "creators" ? 1 : 1.2});
 
   // Spatializing with FA2
   console.log('Starting ForceAtlas2 for ' + FA2Iterations + ' iterations by batches of ' + batchIterations);
-  const circularPositions = circular(graph, { scale: 50 });
-  runBatchFA2(
-    graph,
-    forceAtlas2.inferSettings(graph),
-    0,
-    function(doneIterations) {
-      let time1 = Date.now();
-      console.log('ForceAtlas2 fully processed in:', (time1 - time0)/1000 + "s (" + doneIterations + " iterations)");
+  const settings = forceAtlas2.inferSettings(graph);
+  settings['edgeWeightInfluence'] = 0.8;
+  runBatchFA2(graph, settings, 0, function(doneIterations) {
+    let time1 = Date.now();
+    console.log('ForceAtlas2 fully processed in:', (time1 - time0)/1000 + "s (" + doneIterations + " iterations)");
 
-      noverlap.assign(graph);
-      fs.writeFileSync(fileroot + "json.gz", pako.deflate(JSON.stringify(graph)));
-      console.log(" -> Saved " + fileroot+ " json.gz");
-    }
-  );
+    noverlap.assign(graph);
+    fs.writeFileSync(fileroot + "json.gz", pako.deflate(JSON.stringify(graph)));
+    console.log(" -> Saved " + fileroot + "json.gz");
+  });
 }
 
 let graph = readGEXF(filename);
