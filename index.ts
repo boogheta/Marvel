@@ -1,8 +1,5 @@
 /* TODO:
 - use communities labels for creators clusters and document it in explanations
-- test smartphone
- + reduce size sidebar + titles
- + hide footer and explanations in drawers
 - add social network cards
 - list comics associated with clicked node
 - click comic to show only attached nodes
