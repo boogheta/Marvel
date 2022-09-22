@@ -71,16 +71,16 @@ const clusters = {
 }
 
 const extraPalette = [
+  "#bce25b",
+  "#0051c4",
+  "#d52f3f",
+  "#ded03f",
+  "#2cc143",
+  "#8b4a98",
   "#5fb1ff",
   "#ff993e",
-  "#8b4a98",
-  "#bce25b",
-  "#d52f3f",
-  "#0051c4",
-  "#2cc143",
-  "#c45ecf",
-  "#ded03f",
   "#904f13",
+  "#c45ecf",
 ];
 
 // Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
