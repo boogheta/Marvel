@@ -582,7 +582,7 @@ switchNodeView.onchange = (event) => {
 };
 
 function readUrl() {
-  let currentUrl = window.location.hash.replace(/^#/, '')
+  let currentUrl = window.location.hash.replace(/^#/, '');
   if (currentUrl === "" || currentUrl.split("/").length < 3)
     currentUrl = "characters/small/pictures";
   let args = currentUrl.split("/");
