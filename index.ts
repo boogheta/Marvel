@@ -262,8 +262,8 @@ function loadNetwork() {
     renderer.on("wheelStage", (e) => handleWheel(e));
 
     // Add pointer on hovering nodes
-    renderer.on('enterNode', () => container.style.cursor = 'pointer');
-    renderer.on('leaveNode', () => container.style.cursor = 'default');
+    renderer.on("enterNode", () => container.style.cursor = "pointer");
+    renderer.on("leaveNode", () => container.style.cursor = "default");
 
     // Handle clicks on nodes
     renderer.on("clickNode", (event) => clickNode(event.node));
@@ -402,8 +402,8 @@ function clickNode(node, updateURL=true) {
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   nodeLabel.innerHTML = attrs.label;
-  nodeImg.src = attrs.image_url;
-  modalImg.src = attrs.image_url;
+  nodeImg.src = attrs.image_url.replace(/^http:/, '');
+  modalImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
     modal.style.display = "block";
   };
