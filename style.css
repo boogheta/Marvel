@@ -146,6 +146,10 @@ h2 {
   font-weight: bold;
   padding: 0;
 }
+#sigma-buttons button img {
+  width: 20px;
+  margin-top: 2px;
+}
 #regscreen {
   display: none;
 }
@@ -332,7 +336,10 @@ label {
     display: none;
   }
 }
-@media (pointer: fine), (pointer: none) {
+@media not (pointer: coarse) {
+  #sidebar {
+    margin-right: 2px;
+  }
   #controls {
     right: 1em;
   }
@@ -340,6 +347,7 @@ label {
 @media (pointer: coarse) {
   #sidebar {
     float: right;
+    margin-left: 2px;
   }
   #controls {
     left: 1em;
