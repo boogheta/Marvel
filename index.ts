@@ -1,6 +1,5 @@
 /* TODO:
 - test zoom intro instead
-- check node sizes/labels
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
 - list comics associated with clicked node
@@ -307,7 +306,7 @@ function loadNetwork() {
       }
       // Or communities if we have it for characters
       else if (clusters.communities[attrs.community])
-        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[attrs.community].color + '">' + clusters.communities[attrs.community].cluster + '</b> community<sup>*</sup></p>';
+        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[attrs.community].color + '">' + clusters.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
       if (attrs.url)
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
@@ -422,7 +421,7 @@ function loadNetwork() {
     }
     feedAllSuggestions();
     const allSuggestions = suggestions.map(x => x);
-    selectSuggestions.innerHTML = "<option></option>" + allSuggestions
+    selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
       .sort()
       .map((node) => "<option>" + node.label + "</option>")
       .join("\n");
@@ -475,6 +474,8 @@ const switchNodeType = document.getElementById("node-type-switch") as HTMLInputE
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
+  colorsDetailsSpans = document.querySelectorAll(".colors-details") as NodeListOf<HTMLElement>,
+  picturesDetailsSpans = document.querySelectorAll(".pictures-details") as NodeListOf<HTMLElement>,
   smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
@@ -498,6 +499,8 @@ const setSize = function(val) {
 
 const setView = function(val) {
   view = val
+  colorsDetailsSpans.forEach((span) => span.style.display = (val === "colors" ? "inline" : "none"));
+  picturesDetailsSpans.forEach((span) => span.style.display = (val === "pictures" ? "inline" : "none"));
   window.location.hash = entity + "/" + network_size + "/" + view;
 };
 const switchView = function() {

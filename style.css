@@ -325,7 +325,7 @@ label {
   .credits-short {
     display: block;
   }
-  .credits-full, #title {
+  .credits-full, .asterisk, #title {
     display: none;
   }
 }
@@ -342,7 +342,7 @@ label {
     left: 1em;
   }
   #loader {
-    left: 38%;
+    left: 35%;
   }
   #search input {
     display: none;
