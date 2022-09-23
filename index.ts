@@ -121,7 +121,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement;
 
-modal.addEventListener("click", () => modal.style.display = "none");
+modal.onclick = () => modal.style.display = "none";
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -240,20 +240,20 @@ function loadNetwork() {
       animateNodes(graph, newSizes, { duration: extraRatio == 1 ? 200 : 600, easing: "quadraticOut" });
     }
     camera = renderer.getCamera();
-    document.getElementById("zoom-in").addEventListener("click", () => {
+    document.getElementById("zoom-in").onclick = () => {
       camera.animatedZoom({ duration: 600 });
       if (camera.ratio > sigmaSettings.minCameraRatio)
         adjustNodesSizeToZoom(1/1.5);
-    });
-    document.getElementById("zoom-out").addEventListener("click", () => {
+    };
+    document.getElementById("zoom-out").onclick = () => {
       camera.animatedUnzoom({ duration: 600 });
       if (camera.ratio < sigmaSettings.maxCameraRatio)
         adjustNodesSizeToZoom(1.5);
-    });
-    document.getElementById("zoom-reset").addEventListener("click", () => {
+    };
+    document.getElementById("zoom-reset").onclick = () => {
       camera.animatedReset({ duration: 600 });
       adjustNodesSizeToZoom(0);
-    });
+    };
     function handleWheel(e) {
       setTimeout(() => adjustNodesSizeToZoom(1), 200);
     }
@@ -435,12 +435,12 @@ function loadNetwork() {
         .map((node) => "<option>" + node.label + "</option>")
         .join("\n");
     }
-    searchInput.addEventListener("input", () => {
+    searchInput.oninput = () => {
       setSearchQuery(searchInput.value || "");
-    });
-    searchInput.addEventListener("blur", () => {
-      setSearchQuery("");
-    });
+    };
+    searchInput.onblur = () => {
+      setSearchQuery();
+    };
 
     // Init view
     setSearchQuery(selectedNode && graph.hasNode(selectedNode) ? graph.getNodeAttribute(selectedNode, "label") : "");
@@ -473,7 +473,7 @@ function loadNetwork() {
 // Fullscreen button
 const win = document.documentElement as any,
   fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement;
-fullScreenBtn.addEventListener("click", () => {
+fullScreenBtn.onclick = () => {
   if (win.requestFullscreen) {
     win.requestFullscreen();
   } else if (win.webkitRequestFullscreen) { /* Safari */
@@ -481,11 +481,11 @@ fullScreenBtn.addEventListener("click", () => {
   } else if (win.msRequestFullscreen) { /* IE11 */
     win.msRequestFullscreen();
   }
-});
+};
 
 // Exit Fullscreen button
 const regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
-regScreenBtn.addEventListener("click", () => {
+regScreenBtn.onclick = () => {
   if ((document as any).exitFullscreen) {
     (document as any).exitFullscreen();
   } else if ((document as any).webkitExitFullscreen) { /* Safari */
@@ -493,7 +493,7 @@ regScreenBtn.addEventListener("click", () => {
   } else if ((document as any).msExitFullscreen) { /* IE11 */
     (document as any).msExitFullscreen();
   }
-});
+};
 
 // Network switch buttons
 const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
@@ -561,7 +561,7 @@ function resize() {
   resizing = true;
   setTimeout(doResize, 50);
 };
-window.addEventListener("resize", resize);
+window.onresize = resize;
 
 // Collect data's metadata for explanations
 fetch("./config.yml.example")
@@ -590,31 +590,31 @@ fetch("./config.yml.example")
   if (args[0] === "creators")
     switchNodeType.checked = true;
   setEntity(args[0]);
-  switchNodeType.addEventListener("change", (event) => {
+  switchNodeType.onchange = (event) => {
     const target = event.target as HTMLInputElement;
     setEntity(target.checked ? "creators" : "characters");
     loadNetwork();
-  });
+  };
 
   // Setup Size filter switch
   if (args[1] === "full")
     switchNodeFilter.checked = true;
   setSize(args[1]);
-  switchNodeFilter.addEventListener("change", (event) => {
+  switchNodeFilter.onchange = (event) => {
     const target = event.target as HTMLInputElement;
     setSize(target.checked ? "full" : "small");
     loadNetwork();
-  });
+  };
 
   // Setup View switch
   if (args[2] === "colors")
     switchNodeView.checked = true;
   setView(args[2]);
-  switchNodeView.addEventListener("change", (event) => {
+  switchNodeView.onchange = (event) => {
     const target = event.target as HTMLInputElement;
     setView(target.checked ? "colors" : "pictures");
     switchView();
-  });
+  };
 
   // Setup optional SelectedNode
   if (args.length >= 4 && args[3])
