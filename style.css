@@ -89,6 +89,9 @@ h2 {
   overflow: hidden;
   background-color: black;
 }
+#sigma-container canvas {
+  display: none;
+}
 #loader {
   position: absolute;
   top: 45%;
@@ -325,7 +328,7 @@ label {
   .credits-short {
     display: block;
   }
-  .credits-full, #title {
+  .credits-full, .asterisk, #title {
     display: none;
   }
 }
@@ -342,7 +345,7 @@ label {
     left: 1em;
   }
   #loader {
-    left: 38%;
+    left: 35%;
   }
   #search input {
     display: none;
