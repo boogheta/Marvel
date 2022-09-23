@@ -371,6 +371,8 @@ function clickNode(node, updateURL=true) {
     if (graph.hasNode(selectedNode))
       graph.setNodeAttribute(selectedNode, "highlighted", false)
     selectedNode = null;
+    nodeImg.src = "";
+    modalImg.src = "";
   }
 
   // Reset unselected node view
