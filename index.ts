@@ -222,7 +222,7 @@ function loadNetwork() {
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
-      labelRenderedSizeThreshold: (network_size === "small" ? 8 : 4) + (entity === "characters" ? 2 : 0),
+      labelRenderedSizeThreshold: ((network_size === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
       nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
       }
@@ -516,8 +516,9 @@ function doResize() {
   nodeDetails.style.height = (freeHeight - 18) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-  if (graph && camera) {
+  if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
+    renderer.setSetting("labelRenderedSizeThreshold", ((network_size === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim/1000);
     graph.forEachNode((node, {stories}) =>
       graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, ratio))
     );
