@@ -4,7 +4,8 @@ An app that displays maps of Marvel characters or creators where each one is pos
 
 Visit it here: [https://boogheta.github.io/Marvel/](https://boogheta.github.io/Marvel/)
 
-<img src="https://github.com/medialab/gazouilloire/blob/main/images/screenshot.png" alt="screenshot" max-width="600px">
+<img src="https://raw.githubusercontent.com/boogheta/Marvel/master/images/screenshot.png" alt="screenshot">
+<img src="https://raw.githubusercontent.com/boogheta/Marvel/master/images/appshot.png" alt="appshot">
 
 ### Installation
 
