@@ -118,9 +118,11 @@
 window.dataLayer = window.dataLayer || [];
 function gtag() { dataLayer.push(arguments); };
 gtag('js', new Date());
-gtag('config', 'G-WX3GLGZ95V', {'page_path': '/'});
-window.addEventListener('hashchange', () => {
-  gtag('config', 'G-WX3GLGZ95V', {'page_path': window.location.hash.replace(/^#/, '')});
+gtag('config', 'G-WX3GLGZ95V');
+window.addEventListener("hashchange", function(event) {
+   gtag('event', 'pageview', {
+     'page_path': location.pathname + location.search + location.hash
+   });
 });
     </script>
   </body>
