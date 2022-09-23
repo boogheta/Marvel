@@ -15,9 +15,9 @@ import { Sigma } from "./sigma.js";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
 
 // Init global vars
-let entity = "characters",
-  network_size = "small",
-  view = "pictures",
+let entity = "",
+  network_size = "",
+  view = "",
   selectedNode = null,
   selectedNodeLabel = null,
   graph = null,
@@ -134,9 +134,9 @@ function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
 
-function setPermalink() {
-  const selection = graph && selectedNode && graph.hasNode(selectedNode) ? "/" + graph.getNodeAttribute(selectedNode, "label").replace(/ /g, "+") : "";
-  window.location.hash = entity + "/" + network_size + "/" + view + selection;
+function setPermalink(ent, siz, vie, sel) {
+  const selection = graph && sel && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
+  window.location.hash = ent + "/" + siz + "/" + vie + selection;
 }
 
 function defaultSidebar() {
@@ -173,10 +173,8 @@ function loadNetwork() {
   const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
   document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
   document.getElementById("title").innerHTML = "This is a m" + title;
-  if (!selectedNodeLabel) {
-    setPermalink();
+  if (!selectedNodeLabel)
     defaultSidebar();
-  }
 
   // Load network file
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json.gz")
@@ -357,7 +355,7 @@ function loadNetwork() {
       if (camera.ratio <= 5) {
         camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
         renderer.setSetting("maxCameraRatio", 1.3);
-        clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel));
+        clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
         selectedNodeLabel = null;
         return clearInterval(initLoop);
       }
@@ -366,7 +364,8 @@ function loadNetwork() {
   });
 }
 
-function clickNode(node) {
+function clickNode(node, updateURL=true) {
+  if (!graph || !renderer) return;
   // Unselect previous node
   if (selectedNode) {
     if (graph.hasNode(selectedNode))
@@ -377,8 +376,10 @@ function clickNode(node) {
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
+    selectedNodeLabel = null;
+    if (updateURL)
+      setPermalink(entity, network_size, view, node);
     selectSuggestions.selectedIndex = 0;
-    setPermalink();
     defaultSidebar();
     renderer.setSetting(
       "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
@@ -393,7 +394,8 @@ function clickNode(node) {
   }
 
   selectedNode = node;
-  setPermalink();
+  if (updateURL)
+    setPermalink(entity, network_size, view, node);
 
   // Fill sidebar with selected node's details
   const attrs = graph.getNodeAttributes(node);
@@ -525,23 +527,19 @@ function setSize(val) {
   network_size = val;
   smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
   fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
-  if (graph && selectedNode)
-    selectedNodeLabel = graph.getNodeAttribute(selectedNode, "label");
 }
 
 function setView(val) {
   view = val
   colorsDetailsSpans.forEach((span) => span.style.display = (val === "colors" ? "inline" : "none"));
   picturesDetailsSpans.forEach((span) => span.style.display = (val === "pictures" ? "inline" : "none"));
-  if (!selectedNodeLabel)
-    setPermalink();
 };
 function switchView() {
   if (!renderer) return;
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
   if (graph && selectedNode && graph.hasNode(selectedNode))
-    clickNode(selectedNode);
+    clickNode(selectedNode, false);
 };
 
 // Responsiveness
@@ -570,7 +568,72 @@ function resize() {
 };
 window.onresize = resize;
 
-// Collect data's metadata for explanations
+switchNodeType.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  setPermalink(target.checked ? "creators" : "characters", network_size, view, selectedNode);
+};
+switchNodeFilter.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  setPermalink(entity, target.checked ? "full" : "small", view, selectedNode);
+};
+switchNodeView.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  setPermalink(entity, network_size, target.checked ? "colors" : "pictures", selectedNode);
+};
+
+function readUrl() {
+  let currentUrl = window.location.hash.replace(/^#/, '')
+  if (currentUrl === "" || currentUrl.split("/").length < 3)
+    currentUrl = "characters/small/pictures";
+  let args = currentUrl.split("/");
+
+  let reload = false,
+    switchv = false,
+    clickn = false;
+  if (args[0] !== entity || args[1] !== network_size)
+    reload = true;
+  else if (args[2] !== view)
+    switchv = true;
+  if (args.length >= 4 && args[3]) {
+    selectedNodeLabel = args[3].replace(/\+/g, " ");
+  } else selectedNodeLabel = null;
+  if (graph && (
+    (selectedNodeLabel && (!selectedNode || selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label")))
+    || (!selectedNodeLabel && selectedNode)
+  ))
+    clickn = true;
+
+  // Setup optional SelectedNode (before setting view which depends on it)
+  if (args.length >= 4 && args[3])
+    searchInput.value = args[3].replace(/\+/g, " ");
+
+  // Setup Node type switch
+  if (args[0] === "creators")
+    switchNodeType.checked = true;
+  setEntity(args[0]);
+
+  // Setup Size filter switch
+  if (args[1] === "full")
+    switchNodeFilter.checked = true;
+  setSize(args[1]);
+
+  // Setup View switch
+  if (args[2] === "colors")
+    switchNodeView.checked = true;
+  setView(args[2]);
+
+  doResize();
+  // Load first network from settings
+  if (reload)
+    loadNetwork();
+  else if (switchv)
+    switchView();
+  else if (clickn)
+    clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+}
+window.onhashchange = readUrl;
+
+// Collect data's metadata to feed explanations
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confdata) => {
@@ -583,53 +646,5 @@ fetch("./config.yml.example")
   );
 
   // Read first url to set settings
-  let currentUrl = window.location.hash.replace(/^#/, '')
-  if (currentUrl === "")
-    currentUrl = entity + "/" + network_size + "/" + view;
-  let args = currentUrl.split("/");
-
-  if (args.length < 3) {
-    currentUrl = entity + "/" + network_size + "/" + view;
-    args = currentUrl.split("/");
-  }
-
-  // Setup optional SelectedNode (before setting view which depends on it)
-  if (args.length >= 4 && args[3]) {
-    selectedNodeLabel = args[3].replace(/\+/g, " ");
-    searchInput.value = selectedNodeLabel;
-  }
-
-  // Setup Node type switch
-  if (args[0] === "creators")
-    switchNodeType.checked = true;
-  setEntity(args[0]);
-  switchNodeType.onchange = (event) => {
-    const target = event.target as HTMLInputElement;
-    setEntity(target.checked ? "creators" : "characters");
-    loadNetwork();
-  };
-
-  // Setup Size filter switch
-  if (args[1] === "full")
-    switchNodeFilter.checked = true;
-  setSize(args[1]);
-  switchNodeFilter.onchange = (event) => {
-    const target = event.target as HTMLInputElement;
-    setSize(target.checked ? "full" : "small");
-    loadNetwork();
-  };
-
-  // Setup View switch
-  if (args[2] === "colors")
-    switchNodeView.checked = true;
-  setView(args[2]);
-  switchNodeView.onchange = (event) => {
-    const target = event.target as HTMLInputElement;
-    setView(target.checked ? "colors" : "pictures");
-    switchView();
-  };
-
-  doResize();
-  // Load first network from settings
-  loadNetwork();
+  readUrl();
 });
