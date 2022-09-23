@@ -1,6 +1,5 @@
 /* TODO:
 - use communities labels for creators clusters and document it in explanations
-- add social network cards
 IDEAS:
 - list comics associated with clicked node
 - click comic to show only attached nodes

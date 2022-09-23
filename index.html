@@ -5,10 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MARVEL networks &mdash; Map of main characters featured in same stories</title>
-    <link rel="stylesheet" href="./style.css">
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./style.css">
+
+    <meta property="og:title" content="MARVEL networks">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://boogheta.github.io/Marvel/">
+    <meta property="og:image" content="https://boogheta.github.io/Marvel/images/screenshot.png">
+    <meta property="og:description" content="Visualize maps of Marvel characters or creators and links they shared together though co-featuring stories as registered within Marvel's API. Made by @boogheta.">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@boogheta">
+    <meta name="twitter:creator" content="@boogheta">
+    <meta name="twitter:title" content="MARVEL networks">
+    <meta name="twitter:description" content="Visualize maps of Marvel characters or creators and links they shared together though co-featuring stories as registered within Marvel's API. Made by @boogheta.">
+    <meta name="twitter:image" content="https://boogheta.github.io/Marvel/images/screenshot.png">
   </head>
   <body>
+    <noscript><strong>The MARVEL networks app requires JavaScript. Please enable it to continue.</strong></noscript>
     <div id="sidebar">
       <div id="header">
         <h1>MARVEL networks</h1>
@@ -47,7 +61,7 @@
         <h2 id="title"></h2>
       </div>
       <div id="explanations">
-        <p>This graph shows a map of Marvel <span class="entity"></span> where each one is positionned close to those he/she is most linked with.</p>
+        <p>This graph shows a map of Marvel <span class="entity"></span> where each one is positionned close to those she/he is most linked with.</p>
         <p>Click on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see their specific links and details.</p>
         <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams and some alter-egos)</span> mentioned as involved in <span class="small-details">at least </span><span class="small-details" id="min-stories"></span><span class="full-details">all</span> comic book stories registered within Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
         <p>The size of each node reflects how often the <span class="entity"></span> have been accounted as participating to stories within Marvel API's data.</p>
@@ -62,11 +76,11 @@
         <div id="node-extra"></div>
       </div>
       <div id="footer">
-        <p class="credits-full"><sup>*</sup>&nbsp;Communities are automatically computed using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>, so they are sometimes imprecise</p>
-        <p class="credits-full">Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a> and published on <a href="https://github.com/boogheta/Marvel" target="_blank">GitHub</a> as free open source software (AGPL v3).<br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
-        <p class="credits-short">By <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> released on <a href="https://github.com/boogheta/Marvel" target="_blank">GitHub</a></p>
+        <p class="credits-full"><sup>*</sup>&nbsp;Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,<br/>so they are sometimes imprecise</p>
+        <p class="credits-full">Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a><br/> Full credits and free open source code<br/>(AGPL v3) available on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a>.<br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
+        <p class="credits-short">from <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a>'s <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a></p>
         <p class="credits-full">Data provided by <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a><br/>© 2022 MARVEL</p>
-        <p class="credits-short">Data from <a href="https://developer.marvel.com/" target="_blank">MARVEL's API</a> © 2022</p>
+        <p class="credits-short">data from <a href="https://developer.marvel.com/" target="_blank">MARVEL's API</a> © 2022</p>
       </div>
     </div>
     <div id="sigma-container"></div>
@@ -92,5 +106,11 @@
       <p>Please rotate!</p>
     </div>
     <script src="build/bundle.js"></script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WX3GLGZ95V"></script>
+    <script>
+window.dataLayer = window.dataLayer || [];   function gtag(){ dataLayer.push(arguments); }   gtag('js', new Date());
+gtag('config', 'G-WX3GLGZ95V');
+    </script>
   </body>
 </html>
