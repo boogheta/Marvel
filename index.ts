@@ -127,9 +127,9 @@ let entity = "characters",
 
 const setTitle = function() {
   window.location.hash = entity + "/" + network_size + "/" + view;
-  const title = "raph of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
+  const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
   document.querySelector("title").innerHTML = "MARVEL networks &mdash; G" + title;
-  document.getElementById("title").innerHTML = "This is a g" + title;
+  document.getElementById("title").innerHTML = "This is a m" + title;
 }
 
 const defaultSidebar = function() {
