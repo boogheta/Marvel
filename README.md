@@ -39,7 +39,7 @@ Visit it here: [https://boogheta.github.io/Marvel/](https://boogheta.github.io/M
 
 Data provided by [Marvel's API](https://developer.marvel.com/). © 2022 Marvel
 
-API documentation: https://developer.marvel.com/docs
+Here are links to the API's detailed [documentation](https://developer.marvel.com/docs) & [Terms of use](https://developer.marvel.com/terms).
 
 Entirely built with Free Libre Open Source Software and released as such under the [AGPL v3.0 license](./LICENSE).
 
