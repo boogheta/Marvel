@@ -19,6 +19,7 @@ let entity = "characters",
   network_size = "small",
   view = "pictures",
   selectedNode = null,
+  selectedNodeLabel = null,
   graph = null,
   renderer = null,
   camera = null,
@@ -131,13 +132,8 @@ function divHeight(divId) {
 }
 
 function setPermalink() {
-  window.location.hash = entity + "/" + network_size + "/" + view + (selectedNode ? "/" + selectedNode : "");
-}
-function setTitle() {
-  setPermalink();
-  const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
-  document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
-  document.getElementById("title").innerHTML = "This is a m" + title;
+  const selection = graph && selectedNode && graph.hasNode(selectedNode) ? "/" + graph.getNodeAttribute(selectedNode, "label").replace(/ /g, "+") : "";
+  window.location.hash = entity + "/" + network_size + "/" + view + selection;
 }
 
 function defaultSidebar() {
@@ -170,10 +166,12 @@ function loadNetwork() {
   camera = null;
   container.innerHTML = '';
 
-
   // Setup Sidebar default content
-  setTitle();
-  if (!selectedNode)
+  const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
+  document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
+  document.getElementById("title").innerHTML = "This is a m" + title;
+  setPermalink();
+  if (!selectedNodeLabel)
     defaultSidebar();
 
   // Load network file
@@ -266,112 +264,8 @@ function loadNetwork() {
     renderer.on('leaveNode', () => container.style.cursor = 'default');
 
     // Handle clicks on nodes
-    function clickNode(node, firstLoad) {
-      // Unselect previous node
-      if (!firstLoad && selectedNode) {
-        if (graph.hasNode(selectedNode))
-          graph.setNodeAttribute(selectedNode, "highlighted", false)
-        selectedNode = null;
-      }
-
-      // Reset unselected none view
-      if (!node) {
-        selectedNode = null;
-        setPermalink();
-        defaultSidebar();
-        renderer.setSetting(
-          "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
-        );
-        renderer.setSetting(
-          "edgeReducer", (edge, data) => data
-        );
-        renderer.setSetting(
-          "labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'}
-        );
-        return;
-      }
-
-      selectedNode = node;
-      setPermalink();
-
-      // Fill sidebar with selected node's details
-      const attrs = graph.getNodeAttributes(node);
-      explanations.style.display = "none";
-      nodeDetails.style.display = "block";
-      nodeLabel.innerHTML = attrs.label;
-      nodeImg.src = attrs.image_url;
-      modalImg.src = attrs.image_url;
-      nodeImg.addEventListener("click", () => {
-        modal.style.display = "block";
-      });
-
-      nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-      nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.stories + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
-      // Display roles in stories for creators
-      if (entity === "creators") {
-        if (attrs.writer === 0 && attrs.artist)
-          nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.artist + '">artist</b></p>';
-        else if (attrs.artist === 0 && attrs.writer)
-          nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.writer + '">writer</b></p>';
-        else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
-      }
-      // Or communities if we have it for characters
-      else if (clusters.communities[attrs.community])
-        nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[attrs.community].color + '">' + clusters.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
-      if (attrs.url)
-        nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
-
-      // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
-      graph.setNodeAttribute(node, "highlighted", true);
-      function dataConnected(data) {
-        const res = {
-          ...data,
-          zIndex: 1,
-          hlcolor: null
-        }
-        if (view === "colors")
-          res.image = null;
-        return res;
-      }
-      renderer.setSetting(
-        "nodeReducer", (n, data) => {
-          return n === node
-            ? { ...data,
-                zIndex: 2,
-                size: data.size * 1.5
-              }
-            : graph.hasEdge(n, node)
-              ? dataConnected(data)
-              : { ...data,
-                  zIndex: 0,
-                  color: "#2A2A2A",
-                  image: null,
-                  size: sigmaDim / 350,
-                  label: null
-                };
-        }
-      );
-      // Hide unrelated links and highlight, weight and color as the target the node's links
-      renderer.setSetting(
-        "edgeReducer", (edge, data) =>
-          graph.hasExtremity(edge, node)
-            ? { ...data,
-                zIndex: 0,
-                color: lighten(graph.getNodeAttribute(graph.opposite(node, edge), 'color'), 75),
-                size: Math.max(0.1, Math.log(graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 200000))
-              }
-            : { ...data,
-                zIndex: 0,
-                color: "#FFF",
-                hidden: true
-              }
-      );
-      renderer.setSetting(
-        "labelColor", {attribute: "hlcolor", color: "#CCC"}
-      );
-    };
-    renderer.on("clickNode", (event) => clickNode(event.node, false));
-    renderer.on("clickStage", () => clickNode(null, false));
+    renderer.on("clickNode", (event) => clickNode(event.node));
+    renderer.on("clickStage", () => setSearchQuery());
 
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement,
@@ -379,30 +273,29 @@ function loadNetwork() {
       selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
 
     // Prepare list of nodes for search/select suggestions
+    const allSuggestions = graph.nodes()
+      .map((node) => ({
+        node: node,
+        label: graph.getNodeAttribute(node, "label")
+      }))
+      .sort((a, b) => a.label < b.label ? -1 : 1);
     function feedAllSuggestions() {
-      suggestions = graph.nodes()
-        .map((node) => ({
-          node: node,
-          label: graph.getNodeAttribute(node, "label")
-        }))
-        .sort((a, b) => a.label < b.label ? -1 : 1);
+      suggestions = allSuggestions.map(x => x);
     }
     feedAllSuggestions();
 
     // Feed all nodes to select for touchscreens
-    const allSuggestions = suggestions.map(x => x);
     selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
       .sort()
       .map((node) => "<option>" + node.label + "</option>")
       .join("\n");
-    selectSuggestions.addEventListener("change", () => {
+    selectSuggestions.onchange = () => {
       const idx = selectSuggestions.selectedIndex;
-      if (!idx) clickNode(null, false);
-      else setSearchQuery(allSuggestions[idx - 1].label);
-    });
+      clickNode(idx ? allSuggestions[idx - 1].node : null);
+    };
 
     // Allow filterable input search for web browsers
-    function setSearchQuery(query) {
+    function setSearchQuery(query="") {
       feedAllSuggestions();
       if (searchInput.value !== query)
         searchInput.value = query;
@@ -416,7 +309,7 @@ function loadNetwork() {
         });
 
         if (suggestions.length >= 1 && suggestions[0].label === query) {
-          clickNode(suggestions[0].node, false);
+          clickNode(suggestions[0].node);
           // Move the camera to center it on the selected node:
           camera.animate(
             renderer.getNodeDisplayData(selectedNode),
@@ -424,10 +317,10 @@ function loadNetwork() {
           );
           suggestions = [];
         } else if (selectedNode) {
-          clickNode(null, false);
+          clickNode(null);
         }
       } else if (selectedNode) {
-        clickNode(null, false);
+        clickNode(null);
         feedAllSuggestions();
       }
       searchSuggestions.innerHTML = suggestions
@@ -439,11 +332,13 @@ function loadNetwork() {
       setSearchQuery(searchInput.value || "");
     };
     searchInput.onblur = () => {
-      setSearchQuery();
+      if (!selectedNode)
+        setSearchQuery();
     };
+    if (!selectedNodeLabel)
+      setSearchQuery();
 
     // Init view
-    setSearchQuery(selectedNode && graph.hasNode(selectedNode) ? graph.getNodeAttribute(selectedNode, "label") : "");
     if (view === "colors")
       switchView();
 
@@ -463,12 +358,119 @@ function loadNetwork() {
       if (camera.ratio <= 5) {
         camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
         renderer.setSetting("maxCameraRatio", 1.3);
+        clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel));
+        selectedNodeLabel = null;
         return clearInterval(initLoop);
       }
       camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
     }, 100);
   });
 }
+
+function clickNode(node) {
+  // Unselect previous node
+  if (selectedNode) {
+    if (graph.hasNode(selectedNode))
+      graph.setNodeAttribute(selectedNode, "highlighted", false)
+    selectedNode = null;
+  }
+
+  // Reset unselected node view
+  if (!node) {
+    selectedNode = null;
+    setPermalink();
+    defaultSidebar();
+    renderer.setSetting(
+      "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
+    );
+    renderer.setSetting(
+      "edgeReducer", (edge, data) => data
+    );
+    renderer.setSetting(
+      "labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'}
+    );
+    return;
+  }
+
+  selectedNode = node;
+  setPermalink();
+
+  // Fill sidebar with selected node's details
+  const attrs = graph.getNodeAttributes(node);
+  explanations.style.display = "none";
+  nodeDetails.style.display = "block";
+  nodeLabel.innerHTML = attrs.label;
+  nodeImg.src = attrs.image_url;
+  modalImg.src = attrs.image_url;
+  nodeImg.onclick = () => {
+    modal.style.display = "block";
+  };
+
+  nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
+  nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.stories + " stories</b> shared with <b>" + graph.degree(node) + " other " + entity + "</b></p>";
+  // Display roles in stories for creators
+  if (entity === "creators") {
+    if (attrs.writer === 0 && attrs.artist)
+      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.artist + '">artist</b></p>';
+    else if (attrs.artist === 0 && attrs.writer)
+      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + clusters.roles.writer + '">writer</b></p>';
+    else nodeExtra.innerHTML += '<p>Including <b style="color: ' + clusters.roles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + clusters.roles.artist + '">' + attrs.artist + " as artist</b></p>";
+  }
+  // Or communities if we have it for characters
+  else if (clusters.communities[attrs.community])
+    nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + clusters.communities[attrs.community].color + '">' + clusters.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
+  if (attrs.url)
+    nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
+
+  // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
+  graph.setNodeAttribute(node, "highlighted", true);
+  function dataConnected(data) {
+    const res = {
+      ...data,
+      zIndex: 1,
+      hlcolor: null
+    }
+    if (view === "colors")
+      res.image = null;
+    return res;
+  }
+  renderer.setSetting(
+    "nodeReducer", (n, data) => {
+      return n === node
+        ? { ...data,
+            zIndex: 2,
+            size: data.size * 1.5
+          }
+        : graph.hasEdge(n, node)
+          ? dataConnected(data)
+          : { ...data,
+              zIndex: 0,
+              color: "#2A2A2A",
+              image: null,
+              size: sigmaDim / 350,
+              label: null
+            };
+    }
+  );
+  // Hide unrelated links and highlight, weight and color as the target the node's links
+  renderer.setSetting(
+    "edgeReducer", (edge, data) =>
+      graph.hasExtremity(edge, node)
+        ? { ...data,
+            zIndex: 0,
+            color: lighten(graph.getNodeAttribute(graph.opposite(node, edge), 'color'), 75),
+            size: Math.max(0.1, Math.log(graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 200000))
+          }
+        : { ...data,
+            zIndex: 0,
+            color: "#FFF",
+            hidden: true
+          }
+  );
+  renderer.setSetting(
+    "labelColor", {attribute: "hlcolor", color: "#CCC"}
+  );
+};
 
 // Fullscreen button
 const win = document.documentElement as any,
@@ -523,6 +525,8 @@ function setSize(val) {
   network_size = val;
   smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
   fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
+  if (graph && selectedNode)
+    selectedNodeLabel = graph.getNodeAttribute(selectedNode, "label");
 }
 
 function setView(val) {
@@ -535,6 +539,8 @@ function switchView() {
   if (!renderer) return;
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
+  if (graph && selectedNode && graph.hasNode(selectedNode))
+    clickNode(selectedNode);
 };
 
 // Responsiveness
@@ -618,7 +624,7 @@ fetch("./config.yml.example")
 
   // Setup optional SelectedNode
   if (args.length >= 4 && args[3])
-    selectedNode = args[3];
+    selectedNodeLabel = args[3].replace(/\+/g, " ");
 
   doResize();
   // Load first network from settings
