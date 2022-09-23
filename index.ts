@@ -1,4 +1,5 @@
 /* TODO:
+- test zoom intro instead
 - check node sizes/labels
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
@@ -191,23 +192,25 @@ function loadNetwork() {
       spatializedPositions = {};
 
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
-      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined);
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, 1));
+      const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
+        color = (entity === "characters"
+        ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
+        : (artist_ratio > 0.65
+          ? clusters.roles.artist
+          : (artist_ratio < 0.34
+            ? clusters.roles.writer
+            : clusters.roles.both
+          )
+        )
+      );
       spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
         x: circularPositions[node].x,
         y: circularPositions[node].y,
         type: "thumbnail",
-        color: (entity === "characters"
-          ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
-          : (artist_ratio > 0.65
-            ? clusters.roles.artist
-            : (artist_ratio < 0.34
-              ? clusters.roles.writer
-              : clusters.roles.both
-            )
-          )
-        )
+        size: computeNodeSize(node, stories, 1),
+        color: color,
+        hlcolor: color
       });
     });
 
@@ -261,21 +264,26 @@ function loadNetwork() {
 
     // Handle clicks on nodes
     const clickNode = (node) => {
+      if (selectedNode) {
+        graph.setNodeAttribute(selectedNode, "highlighted", false)
+        selectedNode = null;
+      }
       if (!node) {
         defaultSidebar();
-        if (selectedNode) {
-          graph.setNodeAttribute(selectedNode, "highlighted", false)
-          selectedNode = null;
-        }
         renderer.setSetting(
           "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
         );
         renderer.setSetting(
           "edgeReducer", (edge, data) => data
         );
+        renderer.setSetting(
+          "labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'}
+        );
         return;
       }
 
+      selectedNode = node;
+      graph.setNodeAttribute(node, "highlighted", true);
       const attrs = graph.getNodeAttributes(node);
       explanations.style.display = "none";
       nodeDetails.style.display = "block";
@@ -304,28 +312,51 @@ function loadNetwork() {
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
       // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
+      const dataConnected = function(data) {
+        const res = {
+          ...data,
+          zIndex: 1,
+          hlcolor: null
+        }
+        if (view === "colors")
+          res.image = null;
+        return res;
+      }
       renderer.setSetting(
         "nodeReducer", (n, data) => {
-          if (view === "pictures")
-            return (n === node || graph.hasEdge(n, node)
-              ? { ...data, zIndex: 1, size: data.size * (n === node ? 1.5 : 1) }
-              : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: network_size === "small" ? 4 : 2 }
-            )
-          else return (n === node
-            ? { ...data, zIndex: 2, size: data.size * 1.5 }
-            : (graph.hasEdge(n, node)
-                ? { ...data, zIndex: 1, image: null }
-                : { ...data, zIndex: 0, color: "#2A2A2A", image: null, size: sigmaDim / 350 }
-              )
-            )
+          return n === node
+            ? { ...data,
+                zIndex: 2,
+                size: data.size * 1.5
+              }
+            : graph.hasEdge(n, node)
+              ? dataConnected(data)
+              : { ...data,
+                  zIndex: 0,
+                  color: "#2A2A2A",
+                  image: null,
+                  size: sigmaDim / 350,
+                  label: null
+                };
         }
       );
       // Hide unrelated links and highlight, weight and color as the target the node's links
       renderer.setSetting(
         "edgeReducer", (edge, data) =>
           graph.hasExtremity(edge, node)
-            ? { ...data, color: lighten(graph.getNodeAttribute(graph.opposite(node, edge), 'color'), 25), size: Math.log(graph.getEdgeAttribute(edge, 'weight') / 1000)}
-            : { ...data, color: "#FFF", hidden: true }
+            ? { ...data,
+                zIndex: 0,
+                color: lighten(graph.getNodeAttribute(graph.opposite(node, edge), 'color'), 75),
+                size: Math.max(0.1, Math.log(graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 200000))
+              }
+            : { ...data,
+                zIndex: 0,
+                color: "#FFF",
+                hidden: true
+              }
+      );
+      renderer.setSetting(
+        "labelColor", {attribute: "hlcolor", color: "#CCC"}
       );
     };
     renderer.on("clickNode", (event) => clickNode(event.node));
@@ -374,7 +405,6 @@ function loadNetwork() {
             renderer.getNodeDisplayData(selectedNode),
             {duration: 500}
           );
-          graph.setNodeAttribute(selectedNode, "highlighted", true);
           clickNode(selectedNode);
         } else if (selectedNode) {
           graph.setNodeAttribute(selectedNode, "highlighted", false);

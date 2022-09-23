@@ -208,7 +208,7 @@ label {
   background-color: var(--marvel-red);
   transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   margin: -2px 0 0 -2px;
-  border: 2px solid black;
+  border: 2px solid #222;
 }
 .names {
   font-size: 90%;
