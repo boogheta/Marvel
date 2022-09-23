@@ -2,86 +2,97 @@
 - use communities labels for creators clusters and document it in explanations
 IDEAS:
 - list comics associated with clicked node
-- click comic to show only attached nodes
+- click/hover comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
 */
 
 import pako from "pako";
 
-import { Sigma } from "./sigma.js";
-import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
-
 import Graph from "graphology";
 import { animateNodes } from "./sigma.js/utils/animate";
 
-const clusters = {
-  roles: {
-    writer: "#234fac",
-    artist: "#2b6718",
-    both: "#d4a129"
-  },
-  creators: {
-    "Silver Age": {
-      match: "Stan Lee",
-      color: "#CCC"
-    },
-    "Bronze Age": {
-      match: "Chris Claremont",
-      color: "#d4a129"
-    },
-    "Millenium Age": {
-      match: "Brian Michael Bendis",
-      color: "#8d32a7"
-    },
-    "Modern Age": {
-      match: "Donny Cates",
-      color: "#A22e23"
-    }
-  },
-  characters: {
-    "Avengers": {
-      match: "Avengers",
-      color: "#2b6718"
-    },
-    "X-Men": {
-      match: "X-Men",
-      color: "#d4a129"
-    },
-    "Spider-Man & Marvel Knights": {
-      match: "Spider-Man (Peter Parker)",
-      color: "#822e23"
-    },
-    "Fantastic Four & Cosmic heroes": {
-      match: "Fantastic Four",
-      color: "#234fac"
-    },
-    "Ultimate Universe": {
-      match: "Ultimates",
-      color: "#57b23d"
-    },
-    "Alpha Flight": {
-      match: "Alpha Flight",
-      color: "#8d32a7"
-    }
-  },
-  communities: {}
-}
+import { Sigma } from "./sigma.js";
+import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
 
-const extraPalette = [
-  "#bce25b",
-  "#0051c4",
-  "#d52f3f",
-  "#ded03f",
-  "#2cc143",
-  "#8b4a98",
-  "#5fb1ff",
-  "#ff993e",
-  "#904f13",
-  "#c45ecf",
-];
+// Init global vars
+let entity = "characters",
+  network_size = "small",
+  view = "pictures",
+  selectedNode = null,
+  graph = null,
+  renderer = null,
+  camera = null,
+  sigmaDim = null,
+  suggestions = [];
+
+const conf = {},
+  clusters = {
+    roles: {
+      writer: "#234fac",
+      artist: "#2b6718",
+      both: "#d4a129"
+    },
+    creators: {
+      "Silver Age": {
+        match: "Stan Lee",
+        color: "#CCC"
+      },
+      "Bronze Age": {
+        match: "Chris Claremont",
+        color: "#d4a129"
+      },
+      "Millenium Age": {
+        match: "Brian Michael Bendis",
+        color: "#8d32a7"
+      },
+      "Modern Age": {
+        match: "Donny Cates",
+        color: "#A22e23"
+      }
+    },
+    characters: {
+      "Avengers": {
+        match: "Avengers",
+        color: "#2b6718"
+      },
+      "X-Men": {
+        match: "X-Men",
+        color: "#d4a129"
+      },
+      "Spider-Man & Marvel Knights": {
+        match: "Spider-Man (Peter Parker)",
+        color: "#822e23"
+      },
+      "Fantastic Four & Cosmic heroes": {
+        match: "Fantastic Four",
+        color: "#234fac"
+      },
+      "Ultimate Universe": {
+        match: "Ultimates",
+        color: "#57b23d"
+      },
+      "Alpha Flight": {
+        match: "Alpha Flight",
+        color: "#8d32a7"
+      }
+    },
+    communities: {}
+  },
+  extraPalette = [
+    "#bce25b",
+    "#0051c4",
+    "#d52f3f",
+    "#ded03f",
+    "#2cc143",
+    "#8b4a98",
+    "#5fb1ff",
+    "#ff993e",
+    "#904f13",
+    "#c45ecf",
+  ];
 
 // Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
-const lighten = function(col, amt) {
+function lighten(col, amt) {
   var usePound = false;
   if (col[0] == "#") {
     col = col.slice(1);
@@ -100,13 +111,6 @@ const lighten = function(col, amt) {
   return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
-function divWidth(divId) {
-  return document.getElementById(divId).getBoundingClientRect().width;
-}
-function divHeight(divId) {
-  return document.getElementById(divId).getBoundingClientRect().height;
-}
-
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
@@ -119,19 +123,24 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 modal.addEventListener("click", () => modal.style.display = "none");
 
-const conf = {};
-let entity = "characters",
-  network_size = "small",
-  view = "pictures";
+function divWidth(divId) {
+  return document.getElementById(divId).getBoundingClientRect().width;
+}
+function divHeight(divId) {
+  return document.getElementById(divId).getBoundingClientRect().height;
+}
 
-const setTitle = function() {
-  window.location.hash = entity + "/" + network_size + "/" + view;
+function setPermalink() {
+  window.location.hash = entity + "/" + network_size + "/" + view + (selectedNode ? "/" + selectedNode : "");
+}
+function setTitle() {
+  setPermalink();
   const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
   document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
   document.getElementById("title").innerHTML = "This is a m" + title;
 }
 
-const defaultSidebar = function() {
+function defaultSidebar() {
   explanations.style.display = "block";
   nodeDetails.style.display = "none";
   modal.style.display = "none";
@@ -142,12 +151,7 @@ const defaultSidebar = function() {
   resize();
 }
 
-let graph = null,
-  renderer = null,
-  camera = null,
-  sigmaDim = null;
-
-const computeNodeSize = function(node, stories, ratio) {
+function computeNodeSize(node, stories, ratio) {
   return Math.pow(stories, 0.2)
     * (entity == "characters" ? 1.75 : 1.25)
     * (network_size === "small" ? 1.75 : 1.25)
@@ -158,6 +162,7 @@ const computeNodeSize = function(node, stories, ratio) {
 function loadNetwork() {
   loader.style.display = "block";
 
+  // Kill pre existing network
   if (renderer) renderer.kill();
   renderer = null;
   if (graph) graph.clear();
@@ -165,16 +170,21 @@ function loadNetwork() {
   camera = null;
   container.innerHTML = '';
 
+
+  // Setup Sidebar default content
   setTitle();
-  defaultSidebar()
+  if (!selectedNode)
+    defaultSidebar();
 
-  clusters.communities = {};
-
+  // Load network file
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json.gz")
   .then((res) => res.arrayBuffer())
   .then((text) => {
+    // Parse pako zipped graphology serialized network JSON
     graph = Graph.from(JSON.parse(pako.inflate(text, {to: "string"})));
 
+    // Identify community ids of main hardcoded colors
+    clusters.communities = {};
     graph.forEachNode((node, {label, community}) => {
       for (var cluster in clusters[entity])
         if (label === clusters[entity][cluster].match) {
@@ -184,18 +194,19 @@ function loadNetwork() {
         }
     });
 
+    // Adjust nodes visual attributes for rendering (size, color, images)
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         color = (entity === "characters"
-        ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
-        : (artist_ratio > 0.65
-          ? clusters.roles.artist
-          : (artist_ratio < 0.34
-            ? clusters.roles.writer
-            : clusters.roles.both
+          ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
+          : (artist_ratio > 0.65
+            ? clusters.roles.artist
+            : (artist_ratio < 0.34
+              ? clusters.roles.writer
+              : clusters.roles.both
+            )
           )
-        )
-      );
+        );
       graph.mergeNodeAttributes(node, {
         type: "thumbnail",
         size: computeNodeSize(node, stories, 1),
@@ -219,10 +230,8 @@ function loadNetwork() {
     };
     renderer = new Sigma(graph as any, container, sigmaSettings);
 
-    if (view === "colors") switchView();
-
     // Bind zoom manipulation buttons
-    const adjustNodesSizeToZoom = function(extraRatio) {
+    function adjustNodesSizeToZoom(extraRatio) {
       const newSizes = {},
         ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
       graph.forEachNode((node, {stories}) => {
@@ -245,20 +254,30 @@ function loadNetwork() {
       camera.animatedReset({ duration: 600 });
       adjustNodesSizeToZoom(0);
     });
-    const handleWheel = function(e) {
+    function handleWheel(e) {
       setTimeout(() => adjustNodesSizeToZoom(1), 200);
-    };
+    }
     renderer.on("wheelNode", (e) => handleWheel(e));
     renderer.on("wheelEdge", (e) => handleWheel(e));
     renderer.on("wheelStage", (e) => handleWheel(e));
 
+    // Add pointer on hovering nodes
+    renderer.on('enterNode', () => container.style.cursor = 'pointer');
+    renderer.on('leaveNode', () => container.style.cursor = 'default');
+
     // Handle clicks on nodes
-    const clickNode = (node) => {
-      if (selectedNode) {
-        graph.setNodeAttribute(selectedNode, "highlighted", false)
+    function clickNode(node, firstLoad) {
+      // Unselect previous node
+      if (!firstLoad && selectedNode) {
+        if (graph.hasNode(selectedNode))
+          graph.setNodeAttribute(selectedNode, "highlighted", false)
         selectedNode = null;
       }
+
+      // Reset unselected none view
       if (!node) {
+        selectedNode = null;
+        setPermalink();
         defaultSidebar();
         renderer.setSetting(
           "nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null })
@@ -273,11 +292,12 @@ function loadNetwork() {
       }
 
       selectedNode = node;
-      graph.setNodeAttribute(node, "highlighted", true);
+      setPermalink();
+
+      // Fill sidebar with selected node's details
       const attrs = graph.getNodeAttributes(node);
       explanations.style.display = "none";
       nodeDetails.style.display = "block";
-
       nodeLabel.innerHTML = attrs.label;
       nodeImg.src = attrs.image_url;
       modalImg.src = attrs.image_url;
@@ -302,7 +322,8 @@ function loadNetwork() {
         nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
 
       // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
-      const dataConnected = function(data) {
+      graph.setNodeAttribute(node, "highlighted", true);
+      function dataConnected(data) {
         const res = {
           ...data,
           zIndex: 1,
@@ -349,19 +370,16 @@ function loadNetwork() {
         "labelColor", {attribute: "hlcolor", color: "#CCC"}
       );
     };
-    renderer.on("clickNode", (event) => clickNode(event.node));
-    renderer.on("clickStage", () => clickNode(null));
-
-    // Add pointer on hovering nodes
-    renderer.on('enterNode', () => container.style.cursor = 'pointer');
-    renderer.on('leaveNode', () => container.style.cursor = 'default');
+    renderer.on("clickNode", (event) => clickNode(event.node, false));
+    renderer.on("clickStage", () => clickNode(null, false));
 
     // Setup nodes search
     const searchInput = document.getElementById("search-input") as HTMLInputElement,
       searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
       selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
 
-    const feedAllSuggestions = function() {
+    // Prepare list of nodes for search/select suggestions
+    function feedAllSuggestions() {
       suggestions = graph.nodes()
         .map((node) => ({
           node: node,
@@ -369,10 +387,22 @@ function loadNetwork() {
         }))
         .sort((a, b) => a.label < b.label ? -1 : 1);
     }
+    feedAllSuggestions();
 
-    let selectedNode = null,
-      suggestions = [];
-    const setSearchQuery = (query) => {
+    // Feed all nodes to select for touchscreens
+    const allSuggestions = suggestions.map(x => x);
+    selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
+      .sort()
+      .map((node) => "<option>" + node.label + "</option>")
+      .join("\n");
+    selectSuggestions.addEventListener("change", () => {
+      const idx = selectSuggestions.selectedIndex;
+      if (!idx) clickNode(null, false);
+      else setSearchQuery(allSuggestions[idx - 1].label);
+    });
+
+    // Allow filterable input search for web browsers
+    function setSearchQuery(query) {
       feedAllSuggestions();
       if (searchInput.value !== query)
         searchInput.value = query;
@@ -386,23 +416,18 @@ function loadNetwork() {
         });
 
         if (suggestions.length >= 1 && suggestions[0].label === query) {
-          if (selectedNode)
-            graph.setNodeAttribute(selectedNode, "highlighted", false);
-          selectedNode = suggestions[0].node;
-          suggestions = [];
+          clickNode(suggestions[0].node, false);
           // Move the camera to center it on the selected node:
           camera.animate(
             renderer.getNodeDisplayData(selectedNode),
             {duration: 500}
           );
-          clickNode(selectedNode);
+          suggestions = [];
         } else if (selectedNode) {
-          graph.setNodeAttribute(selectedNode, "highlighted", false);
-          selectedNode = null;
+          clickNode(null, false);
         }
       } else if (selectedNode) {
-        graph.setNodeAttribute(selectedNode, "highlighted", false);
-        selectedNode = null;
+        clickNode(null, false);
         feedAllSuggestions();
       }
       searchSuggestions.innerHTML = suggestions
@@ -410,25 +435,20 @@ function loadNetwork() {
         .map((node) => "<option>" + node.label + "</option>")
         .join("\n");
     }
-    feedAllSuggestions();
-    const allSuggestions = suggestions.map(x => x);
-    selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
-      .sort()
-      .map((node) => "<option>" + node.label + "</option>")
-      .join("\n");
-    selectSuggestions.addEventListener("change", () => {
-      const idx = selectSuggestions.selectedIndex;
-      if (!idx) clickNode(null);
-      else setSearchQuery(allSuggestions[idx - 1].label);
-    });
     searchInput.addEventListener("input", () => {
       setSearchQuery(searchInput.value || "");
     });
     searchInput.addEventListener("blur", () => {
       setSearchQuery("");
     });
-    setSearchQuery("");
 
+    // Init view
+    setSearchQuery(selectedNode && graph.hasNode(selectedNode) ? graph.getNodeAttribute(selectedNode, "label") : "");
+    if (view === "colors")
+      switchView();
+
+    // Zoom in graph on init network
+    loader.style.display = "none";
     camera.ratio = Math.pow(5, 3);
     const initLoop = setInterval(() => {
       document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
@@ -447,11 +467,10 @@ function loadNetwork() {
       }
       camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
     }, 100);
-    loader.style.display = "none";
   });
 }
 
-// Fullscreen/window buttons
+// Fullscreen button
 const win = document.documentElement as any,
   fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement;
 fullScreenBtn.addEventListener("click", () => {
@@ -464,6 +483,7 @@ fullScreenBtn.addEventListener("click", () => {
   }
 });
 
+// Exit Fullscreen button
 const regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
 regScreenBtn.addEventListener("click", () => {
   if ((document as any).exitFullscreen) {
@@ -487,7 +507,7 @@ const switchNodeType = document.getElementById("node-type-switch") as HTMLInputE
   smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
-const setEntity = function(val) {
+function setEntity(val) {
   entity = val;
   entitySpans.forEach((span) => span.innerHTML = val);
   creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
@@ -497,21 +517,21 @@ const setEntity = function(val) {
     .join(", ");
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
-};
+}
 
-const setSize = function(val) {
+function setSize(val) {
   network_size = val;
   smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
   fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
-};
+}
 
-const setView = function(val) {
+function setView(val) {
   view = val
   colorsDetailsSpans.forEach((span) => span.style.display = (val === "colors" ? "inline" : "none"));
   picturesDetailsSpans.forEach((span) => span.style.display = (val === "pictures" ? "inline" : "none"));
-  window.location.hash = entity + "/" + network_size + "/" + view;
+  setPermalink();
 };
-const switchView = function() {
+function switchView() {
   if (!renderer) return;
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
   renderer.setSetting("nodeReducer", (n, data) => (view === "pictures" ? data : { ...data, image: null }));
@@ -559,7 +579,12 @@ fetch("./config.yml.example")
   let currentUrl = window.location.hash.replace(/^#/, '')
   if (currentUrl === "")
     currentUrl = entity + "/" + network_size + "/" + view;
-  const args = currentUrl.split("/");
+  let args = currentUrl.split("/");
+
+  if (args.length < 3) {
+    currentUrl = entity + "/" + network_size + "/" + view;
+    args = currentUrl.split("/");
+  }
 
   // Setup Node type switch
   if (args[0] === "creators")
@@ -590,6 +615,10 @@ fetch("./config.yml.example")
     setView(target.checked ? "colors" : "pictures");
     switchView();
   });
+
+  // Setup optional SelectedNode
+  if (args.length >= 4 && args[3])
+    selectedNode = args[3];
 
   doResize();
   // Load first network from settings
