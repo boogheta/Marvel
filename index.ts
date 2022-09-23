@@ -1,7 +1,7 @@
 /* TODO:
-- test zoom intro instead
 - use communities labels for creators clusters and document it in explanations
 - add social network cards
+IDEAS:
 - list comics associated with clicked node
 - click comic to show only attached nodes
 - test bipartite network between authors and characters filtered by category of author
@@ -13,8 +13,6 @@ import { Sigma } from "./sigma.js";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
 
 import Graph from "graphology";
-import { parse } from "graphology-gexf";
-import { circular } from "graphology-layout";
 import { animateNodes } from "./sigma.js/utils/animate";
 
 const clusters = {
@@ -187,9 +185,6 @@ function loadNetwork() {
         }
     });
 
-    const circularPositions = circular(graph, { scale: 50 }),
-      spatializedPositions = {};
-
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         color = (entity === "characters"
@@ -202,10 +197,7 @@ function loadNetwork() {
           )
         )
       );
-      spatializedPositions[node] = {x: x, y: y};
       graph.mergeNodeAttributes(node, {
-        x: circularPositions[node].x,
-        y: circularPositions[node].y,
         type: "thumbnail",
         size: computeNodeSize(node, stories, 1),
         color: color,
@@ -216,7 +208,7 @@ function loadNetwork() {
     // Instantiate sigma:
     let sigmaSettings = {
       minCameraRatio: 0.07,
-      maxCameraRatio: 1.3,
+      maxCameraRatio: 100,
       defaultEdgeColor: '#2A2A2A',
       labelWeight: 'bold',
       labelFont: 'monospace',
@@ -438,7 +430,24 @@ function loadNetwork() {
     });
     setSearchQuery("");
 
-    animateNodes(graph, spatializedPositions, { duration: network_size === "small" ? 2000 : 4000, easing: "cubicInOut" });
+    camera.ratio = Math.pow(5, 3);
+    const initLoop = setInterval(() => {
+      document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
+      setTimeout(() => {
+        const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5)),
+          newSizes = {};
+        graph.forEachNode((node, {stories}) => {
+          newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
+        });
+        animateNodes(graph, newSizes, { duration: 100, easing: "quadraticOut" });
+      }, 100);
+      if (camera.ratio <= 5) {
+        camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
+        renderer.setSetting("maxCameraRatio", 1.3);
+        return clearInterval(initLoop);
+      }
+      camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
+    }, 100);
     loader.style.display = "none";
   });
 }

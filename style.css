@@ -89,6 +89,9 @@ h2 {
   overflow: hidden;
   background-color: black;
 }
+#sigma-container canvas {
+  display: none;
+}
 #loader {
   position: absolute;
   top: 45%;
