@@ -64,7 +64,9 @@ function processGraph(graph){
   // Use pointwise mutual information to sparse edges
   const total = graph.reduceNodes((tot, node, attrs) => tot + attrs[links_type], 0);
   graph.forEachEdge((edge, {weight}, n1, n2, n1_attrs, n2_attrs) => {
-    graph.setEdgeAttribute(edge, "weight", Math.max(1, Math.log(total * weight / (n1_attrs[links_type] * n2_attrs[links_type]))))
+    graph.setEdgeAttribute(edge, "weight",
+      Math.max(graph.degree(n1) === 1 || graph.degree(n2) === 1 ? 1 : 0, Math.log(total * weight / (n1_attrs[links_type] * n2_attrs[links_type])))
+    );
   });
 
   // Run Louvain to field community
@@ -73,12 +75,18 @@ function processGraph(graph){
   // Spatializing with FA2
   console.log('Starting ForceAtlas2 for ' + FA2Iterations + ' iterations by batches of ' + batchIterations);
   const settings = forceAtlas2.inferSettings(graph);
-  settings['edgeWeightInfluence'] = 0.8;
+  settings.edgeWeightInfluence = 0.5;
   runBatchFA2(graph, settings, 0, function(doneIterations) {
     let time1 = Date.now();
     console.log('ForceAtlas2 fully processed in:', (time1 - time0)/1000 + "s (" + doneIterations + " iterations)");
 
     noverlap.assign(graph);
+
+    // Reduce output size by reducing floats to ints
+    graph.forEachEdge((edge, {weight}, n1, n2, n1_attrs, n2_attrs) => {
+      graph.setEdgeAttribute(edge, "weight", Math.round(1000 * weight));
+    });
+
     fs.writeFileSync(fileroot + "json.gz", pako.deflate(JSON.stringify(graph)));
     console.log(" -> Saved " + fileroot + "json.gz");
   });
