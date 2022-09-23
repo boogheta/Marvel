@@ -120,7 +120,10 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
-  nodeExtra = document.getElementById("node-extra") as HTMLElement;
+  nodeExtra = document.getElementById("node-extra") as HTMLElement,
+  searchInput = document.getElementById("search-input") as HTMLInputElement,
+  searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
+  selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
 
 modal.onclick = () => modal.style.display = "none";
 
@@ -170,9 +173,10 @@ function loadNetwork() {
   const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
   document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
   document.getElementById("title").innerHTML = "This is a m" + title;
-  setPermalink();
-  if (!selectedNodeLabel)
+  if (!selectedNodeLabel) {
+    setPermalink();
     defaultSidebar();
+  }
 
   // Load network file
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json.gz")
@@ -267,11 +271,6 @@ function loadNetwork() {
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => setSearchQuery());
 
-    // Setup nodes search
-    const searchInput = document.getElementById("search-input") as HTMLInputElement,
-      searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
-      selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
-
     // Prepare list of nodes for search/select suggestions
     const allSuggestions = graph.nodes()
       .map((node) => ({
@@ -294,7 +293,7 @@ function loadNetwork() {
       clickNode(idx ? allSuggestions[idx - 1].node : null);
     };
 
-    // Allow filterable input search for web browsers
+    // Setup nodes input search for web browsers
     function setSearchQuery(query="") {
       feedAllSuggestions();
       if (searchInput.value !== query)
@@ -378,6 +377,7 @@ function clickNode(node) {
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
+    selectSuggestions.selectedIndex = 0;
     setPermalink();
     defaultSidebar();
     renderer.setSetting(
@@ -533,7 +533,8 @@ function setView(val) {
   view = val
   colorsDetailsSpans.forEach((span) => span.style.display = (val === "colors" ? "inline" : "none"));
   picturesDetailsSpans.forEach((span) => span.style.display = (val === "pictures" ? "inline" : "none"));
-  setPermalink();
+  if (!selectedNodeLabel)
+    setPermalink();
 };
 function switchView() {
   if (!renderer) return;
@@ -592,6 +593,12 @@ fetch("./config.yml.example")
     args = currentUrl.split("/");
   }
 
+  // Setup optional SelectedNode (before setting view which depends on it)
+  if (args.length >= 4 && args[3]) {
+    selectedNodeLabel = args[3].replace(/\+/g, " ");
+    searchInput.value = selectedNodeLabel;
+  }
+
   // Setup Node type switch
   if (args[0] === "creators")
     switchNodeType.checked = true;
@@ -621,10 +628,6 @@ fetch("./config.yml.example")
     setView(target.checked ? "colors" : "pictures");
     switchView();
   };
-
-  // Setup optional SelectedNode
-  if (args.length >= 4 && args[3])
-    selectedNodeLabel = args[3].replace(/\+/g, " ");
 
   doResize();
   // Load first network from settings
