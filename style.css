@@ -146,6 +146,10 @@ h2 {
   font-weight: bold;
   padding: 0;
 }
+#sigma-buttons button img {
+  width: 20px;
+  margin-top: 2px;
+}
 #regscreen {
   display: none;
 }
