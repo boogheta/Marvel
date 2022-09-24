@@ -20,13 +20,13 @@ const batchIterations = (args.length < 3 ? 1000 : parseInt(args[2]));
 
 function readGEXF(filename) {
   console.log("Working on " + filename + " ...");
-  let gexfile = fs.readFileSync(filename, {encoding:'utf8', flag:'r'});
-  let graph = gexf.parse(graphology.Graph, gexfile);
+  const gexfile = fs.readFileSync(filename, {encoding:'utf8', flag:'r'});
+  const graph = gexf.parse(graphology.Graph, gexfile);
 
   const circularPositions = layouts.circular(graph, { scale: 50 });
 
   graph.forEachNode(node => {
-    let size = graph.getNodeAttributes(node, links_type);
+    const size = graph.getNodeAttributes(node, links_type);
     graph.mergeNodeAttributes(node, {
       x: circularPositions[node].x,
       y: circularPositions[node].y,
@@ -83,14 +83,14 @@ function processGraph(graph){
     noverlap.assign(graph);
 
     // Reduce output size by reducing floats to ints
-    graph.forEachEdge((edge, {weight}, n1, n2, n1_attrs, n2_attrs) => {
-      graph.setEdgeAttribute(edge, "weight", Math.round(1000 * weight));
-    });
+    graph.forEachEdge((edge, {weight}) =>
+      graph.setEdgeAttribute(edge, "weight", Math.round(1000 * weight))
+    );
 
     fs.writeFileSync(fileroot + "json.gz", pako.deflate(JSON.stringify(graph)));
     console.log(" -> Saved " + fileroot + "json.gz");
   });
 }
 
-let graph = readGEXF(filename);
+const graph = readGEXF(filename);
 processGraph(graph);
