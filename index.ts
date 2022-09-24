@@ -117,6 +117,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
+  degreeSpan = document.getElementById("degree") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
@@ -159,29 +160,14 @@ function computeNodeSize(node, stories, ratio) {
 };
 
 function loadNetwork() {
-  loader.style.display = "block";
-
-  // Kill pre existing network
-  if (renderer) renderer.kill();
-  renderer = null;
-  if (graph) graph.clear();
-  graph = null;
-  camera = null;
-  container.innerHTML = '';
-
-  // Setup Sidebar default content
-  const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
-  document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
-  document.getElementById("title").innerHTML = "This is a m" + title;
-  if (!selectedNodeLabel)
-    defaultSidebar();
-
-  // Load network file
   fetch("./data/Marvel_" + entity + "_by_stories" + (network_size === "small" ? "" : "_full") + ".json.gz")
   .then((res) => res.arrayBuffer())
   .then((text) => {
     // Parse pako zipped graphology serialized network JSON
     graph = Graph.from(JSON.parse(pako.inflate(text, {to: "string"})));
+
+    degreeSpan.innerHTML = (graph.order + "")
+      .replace(/(.)(.{3})$/, "$1&nbsp;$2");
 
     // Identify community ids of main hardcoded colors
     clusters.communities = {};
@@ -625,9 +611,28 @@ function readUrl() {
   setView(args[2]);
 
   doResize();
-  // Load first network from settings
-  if (reload)
-    loadNetwork();
+  if (reload) {
+    loader.style.display = "block";
+
+    // Kill pre existing network
+    if (renderer) renderer.kill();
+    renderer = null;
+    if (graph) graph.clear();
+    graph = null;
+    camera = null;
+    container.innerHTML = '';
+    degreeSpan.innerHTML = '';
+
+    // Setup Sidebar default content
+    const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
+    document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
+    document.getElementById("title").innerHTML = "This is a m" + title;
+    if (!selectedNodeLabel)
+      defaultSidebar();
+
+    // Load network file
+    setTimeout(loadNetwork, 0);
+  }
   else if (switchv)
     switchView();
   else if (clickn)
