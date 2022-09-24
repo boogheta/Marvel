@@ -46,10 +46,9 @@ h2 {
 #explanations p {
   margin: 7px;
 }
-#degree {
+#order {
   min-width: 20px;
   display: inline-block;
-  font-weight: bold;
 }
 #node-details {
   clear: both;

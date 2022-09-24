@@ -1,4 +1,5 @@
 /* TODO:
+- adjust color clusters full characters
 - use communities labels for creators clusters and document it in explanations
 IDEAS:
 - list comics associated with clicked node
@@ -28,6 +29,7 @@ let entity = "",
 
 const conf = {},
   clusters = {
+    counts: {},
     roles: {
       writer: "#234fac",
       artist: "#2b6718",
@@ -112,12 +114,17 @@ function lighten(col, amt) {
   return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
+function fmtNumber(x) {
+  return (x + "")
+    .replace(/(.)(.{3})$/, "$1&nbsp;$2");
+}
+
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
-  degreeSpan = document.getElementById("degree") as HTMLElement,
+  orderSpan = document.getElementById("order") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
@@ -166,33 +173,33 @@ function loadNetwork() {
     // Parse pako zipped graphology serialized network JSON
     graph = Graph.from(JSON.parse(pako.inflate(text, {to: "string"})));
 
-    degreeSpan.innerHTML = (graph.order + "")
-      .replace(/(.)(.{3})$/, "$1&nbsp;$2");
+    orderSpan.innerHTML = fmtNumber(graph.order);
 
     // Identify community ids of main hardcoded colors
     clusters.communities = {};
+    clusters.counts = {};
     graph.forEachNode((node, {label, community}) => {
       for (var cluster in clusters[entity])
         if (label === clusters[entity][cluster].match) {
           clusters[entity][cluster].community = community;
           clusters.communities[community] = clusters[entity][cluster];
           clusters.communities[community].cluster = cluster;
+          clusters.communities[community].community = community;
         }
     });
 
     // Adjust nodes visual attributes for rendering (size, color, images)
     graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
+        role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
         color = (entity === "characters"
           ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
-          : (artist_ratio > 0.65
-            ? clusters.roles.artist
-            : (artist_ratio < 0.34
-              ? clusters.roles.writer
-              : clusters.roles.both
-            )
-          )
+          : clusters.roles[role]
         );
+      const key = entity === "characters" ? community : role;
+      if (!clusters.counts[key])
+        clusters.counts[key] = 0;
+      clusters.counts[key]++;
       graph.mergeNodeAttributes(node, {
         type: "thumbnail",
         size: computeNodeSize(node, stories, 1),
@@ -200,6 +207,17 @@ function loadNetwork() {
         hlcolor: color
       });
     });
+
+    // Feed communities size to explanations
+    if (entity === "creators")
+      Object.keys(clusters.roles).forEach((k) => {
+        const role = document.getElementById(k + "-color");
+        role.style.color = clusters.roles[k];
+        role.innerHTML = k + " (" + fmtNumber(clusters.counts[k]) + ")";
+      })
+    else document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
+      .map((k) => '<b style="color: ' + clusters.characters[k].color + '">' + k + ' (' + fmtNumber(clusters.counts[clusters.characters[k].community]) + ')</b>')
+      .join(", ");
 
     // Instantiate sigma:
     let sigmaSettings = {
@@ -502,11 +520,8 @@ const switchNodeType = document.getElementById("node-type-switch") as HTMLInputE
 function setEntity(val) {
   entity = val;
   entitySpans.forEach((span) => span.innerHTML = val);
-  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
   charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
-  document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
-    .map((k) => '<span style="color: ' + clusters.characters[k].color + '">' + k + '</span>')
-    .join(", ");
+  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
 }
@@ -621,7 +636,7 @@ function readUrl() {
     graph = null;
     camera = null;
     container.innerHTML = '';
-    degreeSpan.innerHTML = '';
+    orderSpan.innerHTML = '';
 
     // Setup Sidebar default content
     const title = "ap of " + (network_size === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
@@ -648,9 +663,6 @@ fetch("./config.yml.example")
     const keyval = line.split(/:\s*/);
     conf[keyval[0]] = keyval[1];
   });
-  Object.keys(clusters.roles).forEach((k) =>
-    document.getElementById(k + "-color").style.color = clusters.roles[k]
-  );
 
   // Read first url to set settings
   readUrl();
