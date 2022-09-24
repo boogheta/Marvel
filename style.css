@@ -46,6 +46,10 @@ h2 {
 #explanations p {
   margin: 7px;
 }
+#order {
+  min-width: 20px;
+  display: inline-block;
+}
 #node-details {
   clear: both;
   margin-top: 4px;

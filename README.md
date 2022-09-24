@@ -23,6 +23,12 @@ Visit it here: [https://boogheta.github.io/Marvel/](https://boogheta.github.io/M
   ```bash
   npm install
   npm run preparegraphs
+
+  # if necessary align small and full networks together
+  # for instance to retain the orientation of Marvel_characters_by_stories onto Marvel_characters_by_stories_full after 5000 more ForceAtlas2 iterations:
+  node align-networks.js data/Marvel_characters_by_stories_full.json.gz data/Marvel_characters_by_stories.json.gz 5000
+  # or to align Marvel_creators_by_stories with Marvel_creators_by_stories_full mirrored both along X and Y:
+  node align-networks.js data/Marvel_creators_by_stories.json.gz data/Marvel_creators_by_stories_full.json.gz 5000 --mirror-x --mirror-y
   ```
 
 - Run web interface
