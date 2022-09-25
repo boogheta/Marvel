@@ -1,7 +1,6 @@
 /* TODO:
 - adjust color clusters in full characters
 - innvestigate authors with , like Rob Liefeld, JimShooter Duplicate
-- on very small height, adjust buttons
 IDEAS:
 - optimize by ramcaching loaded netwotks
 - list comics associated with clicked node
@@ -209,7 +208,7 @@ function loadNetwork() {
     });
 
     // Adjust nodes visual attributes for rendering (size, color, images)
-    graph.forEachNode((node, {x, y,stories, thumbnail, artist, writer, community}) => {
+    graph.forEachNode((node, {x, y, stories, thumbnail, artist, writer, community}) => {
       const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
         role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
         color = (entity === "characters"
@@ -589,7 +588,7 @@ const switchNodeType = document.getElementById("node-type-switch") as HTMLInputE
 function setEntity(val) {
   entity = val;
   entitySpans.forEach((span) => span.innerHTML = val);
-  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline" : "none"));
+  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline-block" : "none"));
   creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
@@ -618,11 +617,11 @@ function switchView() {
 let resizing = false;
 function doResize() {
   resizing = true;
-  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("footer");
-  explanations.style.height = (freeHeight - 13) + "px";
-  explanations.style["min-height"] = (freeHeight - 13) + "px";
-  nodeDetails.style.height = (freeHeight - 18) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 18) + "px";
+  const freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small");
+  explanations.style.height = (freeHeight - 15) + "px";
+  explanations.style["min-height"] = (freeHeight - 15) + "px";
+  nodeDetails.style.height = (freeHeight - 20) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));

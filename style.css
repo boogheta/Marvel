@@ -77,13 +77,13 @@ h2 {
 #sidebar a, #sidebar a:visited {
   color: #af4f4f;
 }
-#footer {
+.footer {
   position: absolute;
   bottom: 0px;
   width: 300px;
   line-height: 13px;
 }
-#footer p {
+.footer p {
   font-size: 11px;
   padding: 2px 0px 7px 0px;
   border-top: 1px solid #555;
@@ -212,13 +212,13 @@ h2 {
 .choices {
   margin: 15px 0;
 }
-.network-choice{
+.network-choice {
   display: flex;
   justify-content: center;
   position:relative;
   width: 100%; 
   margin-bottom: 10px;
-  height: 1.8rem;
+  height: 28px;
 }
 label, .toggle {
   height: 100%;
@@ -230,7 +230,6 @@ label {
   background-color: white;
   border-radius: 100px;
   position: relative;
-  margin-bottom: 1rem;
   cursor: pointer;
 }
 .toggle {
@@ -323,14 +322,14 @@ label {
     display: none;
   }
 }
-.credits-short {
-  display: none;
-}
-.credits-full, #title {
+#credits, #title {
   display: block;
 }
+#credits-small {
+  display: none;
+}
 @media (max-width: 700px) {
-  #sidebar, #footer {
+  #sidebar, .footer {
     width: 200px;
   }
   h1 {
@@ -350,13 +349,19 @@ label {
   }
 }
 @media (max-height: 600px) {
+  .network-choice {
+    height: 20px;
+  }
+  .footer p {
+    padding: 4px 0px;
+  }
   .choices {
     margin: 5px 0;
   }
-  .credits-short {
+  #credits-small {
     display: block;
   }
-  .credits-full, .asterisk, #title {
+  #credits, .asterisk, #title {
     display: none;
   }
 }
