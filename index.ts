@@ -1,9 +1,18 @@
 /* TODO:
-- adjust color clusters full characters
-- use communities labels for creators clusters and document it in explanations
+- adjust color clusters in full characters
+- innvestigate authors with , like Rob Liefeld, JimShooter Duplicate
+- on very small height, adjust buttons
 IDEAS:
+- optimize by ramcaching loaded netwotks
 - list comics associated with clicked node
-- click/hover comic to show only attached nodes
+  lazyload full csv of stories
+  in nodeExtra: click to view comic books (if list loaded)
+  other sidebar static over network
+  list table (sortable? virtuallist?)
+  on click (on hover?) :
+   + display cover with modal options in lower zone of sidebar
+   + highlight related nodes
+   + if click, story_id bound in url args
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -13,6 +22,7 @@ import Graph from "graphology";
 import { animateNodes } from "./sigma.js/utils/animate";
 
 import { Sigma } from "./sigma.js";
+import { Coordinates } from "./sigma.js/types";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
 
 // Init global vars
@@ -37,45 +47,45 @@ const conf = {},
     },
     creators: {
       "Silver Age": {
-        match: "Stan Lee",
-        color: "#CCC"
+        match: ["Stan Lee", "Steve Ditko"],
+        color: "#DDDDDD"
       },
       "Bronze Age": {
-        match: "Chris Claremont",
-        color: "#d4a129"
-      },
-      "Millenium Age": {
-        match: "Brian Michael Bendis",
-        color: "#8d32a7"
+        match: ["Chris Claremont", "John Byrne", "Jim Starlin"],
+        color: "#ff993e"
       },
       "Modern Age": {
-        match: "Donny Cates",
-        color: "#A22e23"
+        match: ["Jeph Loeb", "Kurt Busiek", "Peter David", "Mark Waid"],
+        color: "#bce25b"
+      },
+      "Millenium Age": {
+        match: ["Kelly Thompson", "Brian Michael Bendis", "Dan Slott"],
+        color: "#5fb1ff"
       }
     },
     characters: {
       "Avengers": {
-        match: "Avengers",
+        match: ["Avengers"],
         color: "#2b6718"
       },
       "X-Men": {
-        match: "X-Men",
+        match: ["X-Men"],
         color: "#d4a129"
       },
       "Spider-Man & Marvel Knights": {
-        match: "Spider-Man (Peter Parker)",
+        match: ["Spider-Man (Peter Parker)"],
         color: "#822e23"
       },
       "Fantastic Four & Cosmic heroes": {
-        match: "Fantastic Four",
+        match: ["Fantastic Four"],
         color: "#234fac"
       },
       "Ultimate Universe": {
-        match: "Ultimates",
+        match: ["Ultimates"],
         color: "#57b23d"
       },
       "Alpha Flight": {
-        match: "Alpha Flight",
+        match: ["Alpha Flight"],
         color: "#8d32a7"
       }
     },
@@ -117,6 +127,9 @@ function lighten(col, amt) {
 function fmtNumber(x) {
   return (x + "")
     .replace(/(.)(.{3})$/, "$1&nbsp;$2");
+}
+function meanArray(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
 const container = document.getElementById("sigma-container") as HTMLElement,
@@ -178,10 +191,17 @@ function loadNetwork() {
     // Identify community ids of main hardcoded colors
     clusters.communities = {};
     clusters.counts = {};
-    graph.forEachNode((node, {label, community}) => {
+    graph.forEachNode((node, {x, y, label, community}) => {
       for (var cluster in clusters[entity])
-        if (label === clusters[entity][cluster].match) {
+        if (clusters[entity][cluster].match.indexOf(label) !== -1) {
           clusters[entity][cluster].community = community;
+          if (entity === "creators") {
+            clusters[entity][cluster].label = cluster;
+            clusters[entity][cluster].id = cluster.toLowerCase().replace(/ .*$/, "");
+            if (!clusters[entity][cluster].positions)
+              clusters[entity][cluster].positions = [{x: x, y: y}];
+            else clusters[entity][cluster].positions.push({x: x, y: y});
+          }
           clusters.communities[community] = clusters[entity][cluster];
           clusters.communities[community].cluster = cluster;
           clusters.communities[community].community = community;
@@ -195,8 +215,8 @@ function loadNetwork() {
         color = (entity === "characters"
           ? (clusters.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
           : clusters.roles[role]
-        );
-      const key = entity === "characters" ? community : role;
+        ),
+        key = entity === "characters" ? community : role;
       if (!clusters.counts[key])
         clusters.counts[key] = 0;
       clusters.counts[key]++;
@@ -208,16 +228,25 @@ function loadNetwork() {
       });
     });
 
-    // Feed communities size to explanations
-    if (entity === "creators")
+    if (entity === "creators") {
+      // Calculate positions of ages labels
+      for (const cluster in clusters.creators) {
+        clusters[entity][cluster].x = meanArray(clusters.creators[cluster].positions.map(n => n.x));
+        clusters[entity][cluster].y = meanArray(clusters.creators[cluster].positions.map(n => n.y));
+      }
+
+      // Feed communities size to explanations
       Object.keys(clusters.roles).forEach((k) => {
         const role = document.getElementById(k + "-color");
         role.style.color = clusters.roles[k];
         role.innerHTML = k + " (" + fmtNumber(clusters.counts[k]) + ")";
       })
-    else document.getElementById("clusters").innerHTML = Object.keys(clusters.characters)
-      .map((k) => '<b style="color: ' + clusters.characters[k].color + '">' + k + ' (' + fmtNumber(clusters.counts[clusters.characters[k].community]) + ')</b>')
-      .join(", ");
+    } else document.getElementById("clusters-legend").innerHTML = Object.keys(clusters.characters)
+      .map((k) =>
+        '<b style="color: ' + clusters.characters[k].color + '">'
+        + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
+        + " (" + fmtNumber(clusters.counts[clusters.characters[k].community]) + ')</b>'
+      ).join(", ");
 
     // Instantiate sigma:
     let sigmaSettings = {
@@ -233,6 +262,42 @@ function loadNetwork() {
       }
     };
     renderer = new Sigma(graph as any, container, sigmaSettings);
+
+    // Render clusters labels layer on top of sigma for creators
+    let clustersLayer = null,
+      sigmaWidth = divWidth("sigma-container");
+    if (entity === "creators") {
+      clustersLayer = document.createElement("div");
+      clustersLayer.id = "clusters-layer";
+      clustersLayer.style.display = "none";
+      let clusterLabelsDoms = "";
+      for (const cluster in clusters[entity]) {
+        const c = clusters[entity][cluster];
+        // adapt the position to viewport coordinates
+        const viewportPos = renderer.graphToViewport(c as Coordinates);
+        clusterLabelsDoms += '<div id="community-' + c.id + '" class="clusterLabel" style="top: ' + viewportPos.y + 'px; left: ' + viewportPos.x + 'px; color: ' + c.color + '">' + c.label + '</div>';
+      }
+      clustersLayer.innerHTML = clusterLabelsDoms;
+      // insert the layer underneath the hovers layer
+      container.insertBefore(clustersLayer, document.getElementsByClassName("sigma-hovers")[0]);
+
+      // Clusters labels position needs to be updated on each render
+      renderer.on("afterRender", () => {
+        for (const cluster in clusters[entity]) {
+          const c = clusters[entity][cluster];
+          const clusterLabel = document.getElementById("community-" + c.id);
+          // update position from the viewport
+          const viewportPos = renderer.graphToViewport(c as Coordinates);
+          if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaWidth - 5 * cluster.length);
+            clusterLabel.style.display = "none";
+          else {
+            clusterLabel.style.display = "block";
+            clusterLabel.style.top = viewportPos.y + 'px';
+            clusterLabel.style.left = viewportPos.x + 'px';
+          }
+        }
+      });
+    }
 
     // Bind zoom manipulation buttons
     function adjustNodesSizeToZoom(extraRatio) {
@@ -357,6 +422,8 @@ function loadNetwork() {
         animateNodes(graph, newSizes, { duration: 100, easing: "quadraticOut" });
       }, 100);
       if (camera.ratio <= 5) {
+        if (entity === "creators")
+          clustersLayer.style.display = "block";
         camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
         renderer.setSetting("maxCameraRatio", 1.3);
         clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
