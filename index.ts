@@ -264,8 +264,7 @@ function loadNetwork() {
     renderer = new Sigma(graph as any, container, sigmaSettings);
 
     // Render clusters labels layer on top of sigma for creators
-    let clustersLayer = null,
-      sigmaWidth = divWidth("sigma-container");
+    let clustersLayer = null;
     if (entity === "creators") {
       clustersLayer = document.createElement("div");
       clustersLayer.id = "clusters-layer";
@@ -283,12 +282,13 @@ function loadNetwork() {
 
       // Clusters labels position needs to be updated on each render
       renderer.on("afterRender", () => {
+        const sigmaWidth = divWidth("sigma-container");
         for (const cluster in clusters[entity]) {
           const c = clusters[entity][cluster];
           const clusterLabel = document.getElementById("community-" + c.id);
           // update position from the viewport
           const viewportPos = renderer.graphToViewport(c as Coordinates);
-          if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaWidth - 5 * cluster.length);
+          if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaWidth - 5 * cluster.length)
             clusterLabel.style.display = "none";
           else {
             clusterLabel.style.display = "block";
