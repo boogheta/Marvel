@@ -107,14 +107,14 @@ h2 {
 .clusterLabel {
   position: absolute;
   transform: translate(-50%, -50%);
-  text-transform: lowercase;
+  text-transform: uppercase;
   font-family: monospace;
-  font-variant: small-caps;
   font-weight: bold;
-  font-size: 1.3rem;
-  padding: 0px 6px 2px 6px;
+  font-size: 16px;
+  padding: 3px 8px;
   background-color: rgba(0, 0, 0, 0.55);
   border-radius: 14px;
+  text-align: center;
 }
 #loader {
   position: absolute;
