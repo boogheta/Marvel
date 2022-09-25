@@ -1,6 +1,6 @@
 /* TODO:
-- adjust color clusters in full characters
-- innvestigate authors with , like Rob Liefeld, JimShooter Duplicate
+- align louvain on characters small/full
+- investigate authors with , like Rob Liefeld, JimShooter Duplicate
 IDEAS:
 - optimize by ramcaching loaded netwotks
 - list comics associated with clicked node
@@ -85,7 +85,48 @@ const conf = {},
       },
       "Alpha Flight": {
         match: ["Alpha Flight"],
+        hide: true,
         color: "#8d32a7"
+      },
+      "Inhumans & Starjammers": {
+        match: ["Lilandra"],
+        hide: true,
+        color: "#904f13"
+      },
+      "Iron Fist & Luke Cage": {
+        match: ["Fat Cobra"],
+        hide: true,
+        color: "#c45ecf"
+      },
+      "New Warriors, The Initiative & Agents of Atlas": {
+        match: ["The Initiative"],
+        hide: true,
+        color: "#bce25b"
+      },
+      "Iron Armors": {
+        match: ["Calamity"],
+        hide: true,
+        color: "#5fb1ff"
+      },
+      "Diverse teams": {
+        match: ["Clint Barton"],
+        hide: true,
+        color: "#904f13"
+      },
+      "Young X-Men": {
+        match: ["Rockslide"],
+        hide: true,
+        color: "#ff993e"
+      },
+      "X-Statix": {
+        match: ["Dead Girl"],
+        hide: true,
+        color: "#bce25b"
+      },
+      "Age of Apocalypse": {
+        match: ["Magneto (Age of Apocalypse)"],
+        hide: true,
+        color: "#ded03f"
       }
     },
     communities: {}
@@ -241,7 +282,8 @@ function loadNetwork() {
         role.innerHTML = k + " (" + fmtNumber(clusters.counts[k]) + ")";
       })
     } else document.getElementById("clusters-legend").innerHTML = Object.keys(clusters.characters)
-      .map((k) =>
+      .filter(k => !clusters.characters[k].hide)
+      .map(k =>
         '<b style="color: ' + clusters.characters[k].color + '">'
         + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
         + " (" + fmtNumber(clusters.counts[clusters.characters[k].community]) + ')</b>'
