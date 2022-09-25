@@ -51,7 +51,7 @@ const conf = {},
         color: "#DDDDDD"
       },
       "Bronze Age": {
-        match: ["Chris Claremont", "John Byrne", "Ron Lim"],
+        match: ["Chris Claremont", "John Byrne", "Jim Starlin"],
         color: "#ff993e"
       },
       "Modern Age": {
@@ -264,7 +264,8 @@ function loadNetwork() {
     renderer = new Sigma(graph as any, container, sigmaSettings);
 
     // Render clusters labels layer on top of sigma for creators
-    let clustersLayer = null;
+    let clustersLayer = null,
+      sigmaWidth = divWidth("sigma-container");
     if (entity === "creators") {
       clustersLayer = document.createElement("div");
       clustersLayer.id = "clusters-layer";
@@ -287,8 +288,13 @@ function loadNetwork() {
           const clusterLabel = document.getElementById("community-" + c.id);
           // update position from the viewport
           const viewportPos = renderer.graphToViewport(c as Coordinates);
-          clusterLabel.style.top = viewportPos.y + 'px';
-          clusterLabel.style.left = viewportPos.x + 'px';
+          if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaWidth - 5 * cluster.length);
+            clusterLabel.style.display = "none";
+          else {
+            clusterLabel.style.display = "block";
+            clusterLabel.style.top = viewportPos.y + 'px';
+            clusterLabel.style.left = viewportPos.x + 'px';
+          }
         }
       });
     }
