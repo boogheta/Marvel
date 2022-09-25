@@ -1,6 +1,6 @@
 /* TODO:
 - align louvain on characters small/full
-- investigate authors with , like Rob Liefeld, JimShooter Duplicate
+- investigate authors with , like Rob Liefeld, JimShooter Duplicate, Virtual Calligr
 IDEAS:
 - optimize by ramcaching loaded netwotks
 - list comics associated with clicked node
@@ -297,6 +297,7 @@ function loadNetwork() {
       labelWeight: 'bold',
       labelFont: 'monospace',
       labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
+      labelGridCellSize: 180,
       labelRenderedSizeThreshold: ((network_size === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
       nodeProgramClasses: {
         thumbnail: getNodeProgramImage()
