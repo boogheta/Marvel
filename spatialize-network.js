@@ -1,4 +1,5 @@
 const fs = require('fs');
+const pako = require ("pako");
 
 const graphology = require ("graphology");
 const gexf = require("graphology-gexf");
@@ -6,8 +7,6 @@ const layouts = require ("graphology-layout");
 const forceAtlas2 = require ('graphology-layout-forceatlas2');
 const noverlap = require ('graphology-layout-noverlap');
 const louvain = require ('graphology-communities-louvain');
-
-const pako = require ("pako");
 
 const args = process.argv.slice(2);
 const filename = args[0];

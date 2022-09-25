@@ -2,6 +2,7 @@ config.yml
 .cache
 node_modules
 package-lock.json
+build
 images/other_formats
 images/creators.*
 images/characters.*
