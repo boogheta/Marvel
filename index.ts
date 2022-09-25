@@ -283,6 +283,7 @@ function loadNetwork() {
       // Clusters labels position needs to be updated on each render
       renderer.on("afterRender", () => {
         const sigmaWidth = divWidth("sigma-container");
+        clustersLayer.style.width = sigmaWidth + "px";
         for (const cluster in clusters[entity]) {
           const c = clusters[entity][cluster];
           const clusterLabel = document.getElementById("community-" + c.id);
@@ -292,6 +293,7 @@ function loadNetwork() {
             clusterLabel.style.display = "none";
           else {
             clusterLabel.style.display = "block";
+            clusterLabel.style["min-width"] = (10 * cluster.length) + "px";
             clusterLabel.style.top = viewportPos.y + 'px';
             clusterLabel.style.left = viewportPos.x + 'px';
           }
