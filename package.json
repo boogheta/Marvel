@@ -9,9 +9,9 @@
     "build": "npm run buildsigma && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
     "start": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
     "buildgraphs": "python bin/download_data.py && npm run preparegraphs && npm run aligngraphs",
-    "preparegraphs": "ls data/*.gexf | while read f; do node spatialize-network.js $f; echo; done",
+    "preparegraphs": "ls data/*stories*.gexf | while read f; do node spatialize-network.js $f; echo; done",
     "preparetestgraphs": "ls data/*stories*.gexf | while read f; do node spatialize-network.js $f 100 100; echo; done",
-    "aligngraphs": "node align-networks.js data/Marvel_characters_by_stories_full.json.gz data/Marvel_characters_by_stories.json.gz && node align-networks.js data/Marvel_creators_by_stories.json.gz data/Marvel_creators_by_stories_full.json.gz --mirror-x --mirror-y"
+    "aligngraphs": "node align-networks.js data/Marvel_characters_by_stories_full.json.gz data/Marvel_characters_by_stories.json.gz && node align-networks.js data/Marvel_creators_by_stories.json.gz data/Marvel_creators_by_stories_full.json.gz 5000 --mirror-x --mirror-y"
   },
   "license": "AGPL v3.0",
   "dependencies": {
