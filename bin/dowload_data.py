@@ -145,13 +145,102 @@ extractID = lambda n: int(n["id"] if "id" in n else n["resourceURI"].split("/")[
 SKIPNAMES = ["Various", "Blank", "Virtual", "#X", "ART & COMICS INT", "METROPOLIS", "Oh Sheeps", "KNIGHT AGENCY", "And More", "Mile High Comics", "Digikore Studios"]
 CLEANNAMES = {
   "A CO": "Aco",
-  "Andrea Divito": "Andrea Di Vito",
+  "Andrea DI Vito": "Andrea Di Vito",
   "Carmine DI Giandomenico": "Carmine Di Giandomenico",
   "David&#233; Fabbri": "Davidé Fabbri",
+  "Dennis O'neil": "Dennis O'Neil",
   "Dynamite Patrick Berkenkotter": "Patrick Berkenkotter",
   "Gary Hallgren painting": "Gary Hallgren",
+  "JEPH YORK": "Jeph York",
   "Jim Shooter - Duplicate": "Jim Shooter",
+  "Jj Kirby": "JJ Kirby",
   "R. a. Jones": "R.A. Jones",
+}
+DUPENAMES = {
+  "ALEC FRANCIS SIEGEL": "Alec Siegel",
+  "Alex Sviuk": "Alex Saviuk",
+  "Andre Aruajo": "Andre Lima Araujo",
+  "Andrea Divito": "Andrea Di Vito",
+  "Ardian Sayif": "Ardian Syaf",
+  "Brian K Vaughn": "Brian K. Vaughan",
+  "C Cafu": "Cafu",
+  "Carl Pfeuffer": "Carl Pfeufer",
+  "Carmine DiGiandomenico": "Carmine Di Giandomenico",
+  "Chris Cross": "ChrisCross",
+  "Christopher W. Sebela": "Christopher Sebela",
+  "Daerick Gross": "Darrick Gross",
+  "Dan Decarlo": "Dan De Carlo",
+  "David Manak": "Dave Manak",
+  "David Ross": "Dave Ross",
+  "Dean V. White": "Dean White",
+  "Dennis Medri": "Denis Medri",
+  "Dennis Oneil": "Dennis O'Neil",
+  "Deon Nockuls": "Deon Nuckols",
+  "Diogo Saido": "Diogo Saito",
+  "Dynamite Jim Krueger": "Jim Krueger",
+  "Dynamite Steve Sadowski": "Steve Sadowski",
+  "Eliot S. Maggin": "Elliot S. Maggin",
+  "F Flaviano": "Flaviano",
+  "Felix Ruiz Ruiz": "Felix Ruiz",
+  "Frank Marafino": "Frank Marraffino",
+  "Freddie Willaims": "Freddie E. Williams",
+  "G Geoffo": "Geoffo",
+  "Gardner F. Fox": "Gardner Fox",
+  "Glenn Herrling": "Glenn Herdling",
+  "Guisseppe Cammuncoli": "Giuseppe Camuncoli",
+  "HARRY ARTHUR SUYDAM": "Arthur Suydam",
+  "Harvey Talibao": "Harvey Tolibao",
+  "J. M. DeMatteis": "J.M. DeMatteis",
+  "Jack DArcy": "Jack D'ARCY",
+  "Jack Harris": "Jack C. Harris",
+  "Jacob Parker": "Jake Parker",
+  "James Sherman": "Jim Sherman",
+  "James Starlin": "Jim Starlin",
+  "Jeffrey C. York": "Jeph York",
+  "Jefte Paolo": "Jefte Palo",
+  "Jess Harrold": "Jess Harold",
+  "John Ney Rieber - Duplicate": "John Ney Rieber",
+  "John Ridgeway": "John Ridgway",
+  "Jon Jay Muth": "Jon J. Muth",
+  "Jose Albelo": "Joe Albelo",
+  "Juan Santa Cruz": "Juan Santacruz",
+  "Kelly Jones": "Kelley Jones",
+  "Kevin Knowlan": "Kevin Nowlan",
+  "Kevin Walker": "Kev Walker",
+  "Lenny Herman": "Lennie Herman",
+  "Liam Sharpe": "Liam Sharp",
+  "M Mast": "JL Mast",
+  "M. C. Wyman": "M.C. Wyman",
+  "MARK J. SIMMONS": "Mark Simmons",
+  "MK - Darick Robertson": "Darick Robertson",
+  "Marc Bernadin": "Marc Bernardin",
+  "Mario DelPennino": "Mario Del Pennino",
+  "Mark Miller": "Mark Millar",
+  "Marty Egeland": "Martin Egeland",
+  "Michael OHare": "Michael O'hare",
+  "Mike O Sullivan": "Mike O'sullivan",
+  "Nel Tomitov": "Nel Yomtov",
+  "Philip J. Noto": "Phil Noto",
+  "Phillip Bond": "Philip Bond",
+  "Pop Mahn": "Pop Mhan",
+  "R. Jones": "R.A. Jones",
+  "Ramon Rosasnas": "Ramon Rosanas",
+  "Ricardo LÓpez Ortiz": "Ricardo Lopez-Ortiz",
+  "Roberto Delatorre": "Roberto De La Torre",
+  "Roger R. Robinson": "Roger Robinson",
+  "Stephan Roux": "Stephane Roux",
+  "Steve Butler": "Steven Butler",
+  "Steve Harris": "Steven Harris",
+  "Steve Leiber": "Steve Lieber",
+  "Tod Smith": "Todd Smith",
+  "Trevor von Eedon": "Trevor Von Eeden",
+  "Val Semekis": "Val Semeiks",
+  "Valentine Delandro": "Valentine De Landro",
+  "Vincent Evans": "Vince Evans",
+  "Walter M. Simonson": "Walt Simonson",
+  "Wellinton Alves": "Wellington Alves",
+  "William Messnerloebs": "William Messner-Loebs",
+  "William Meugniot": "Will Meugniot",
 }
 SWITCHATTRS = {
   "jean grey": ["image_url"]
@@ -201,6 +290,20 @@ def build_graph(nodes_type, links_type, comics, nodes):
         else:
             nodes_map[label] = n["id"]
             G.add_node(n["id"], **attrs)
+
+    # Handle bad cleaning cases
+    for n in list(G.nodes):
+        label = G.nodes[n]["label"].lower()
+
+        # Handle blurry name duplicates from fixed list
+        for dupe, good in DUPENAMES.items():
+            if label == dupe.lower():
+                dupesIds[n] = nodes_map[good.lower()]
+                # TODO: better merge attributes (keep best pic/url/descr from one with most stories)
+                G.remove_node(n)
+                break
+        if not G.has_node(n):
+            continue
 
     for comic in comics:
         # Apply threshold : remove stories with too many authors or characters
