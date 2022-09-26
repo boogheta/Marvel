@@ -195,6 +195,7 @@ DUPENAMES = {
   "Ultimate Spider-Man (USM)": "Spider-Man (Ultimate)",
   "Victor Von Doom": "Doctor Doom",
   "Yellowjacket (Hank Pym)": "Hank Pym",
+  "Rhodey": "War Machine (James Rhodes)",
 
   "ALEC FRANCIS SIEGEL": "Alec Siegel",
   "Alex Sviuk": "Alex Saviuk",
@@ -287,12 +288,12 @@ SPLITNAMES = {
   "Rob Liefeld, ": ","
 }
 SWITCHATTRS = {
-  "captain marvel (phyla-vell)": ["image"],
   "green goblin (norman osborn)": ["image"],
   "hank pym": ["image_url"],
   "jean grey": ["image_url"],
   "multiple man (jamie madrox)": ["image"],
-  "scarlet spider (Ben Reilly)": ["image_url"],
+  "quasar (phyla-vell)": ["image"],
+  "scarlet spider (ben reilly)": ["image_url"],
   "wolverine": ["image_url"]
 }
 def build_graph(nodes_type, links_type, comics, nodes):

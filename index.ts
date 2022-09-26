@@ -1,7 +1,6 @@
 /* TODO:
-- one more check with takoyaki on authors/characters labels
-- align louvain on characters small/full
-- fix search names with quotes, ex http://localhost:3000/#creators/full/colors/Dennis+%22Hopeless%22+Hallum
+- one more check with takoyaki on authors/characters labels + readjust louvain after
+- fix search names with quotes and some other cases like Hank Pym, ex http://localhost:3000/#creators/full/colors/Dennis+%22Hopeless%22+Hallum
 - optimize by ramcaching loaded netwotks + use loader while loading images
 IDEAS:
 - list comics associated with clicked node
@@ -89,11 +88,6 @@ const conf = {},
         hide: true,
         color: "#8d32a7"
       },
-      "Inhumans & Starjammers": {
-        match: ["Lilandra"],
-        hide: true,
-        color: "#904f13"
-      },
       "Iron Fist & Luke Cage": {
         match: ["Fat Cobra"],
         hide: true,
@@ -104,17 +98,12 @@ const conf = {},
         hide: true,
         color: "#bce25b"
       },
-      "Iron Armors": {
+      "Stark Tech": {
         match: ["Calamity"],
         hide: true,
         color: "#5fb1ff"
       },
-      "Diverse teams": {
-        match: ["Clint Barton"],
-        hide: true,
-        color: "#904f13"
-      },
-      "New Mutants": {
+      "New Mutants & Young X-Men": {
         match: ["Rockslide"],
         hide: true,
         color: "#ff993e"
