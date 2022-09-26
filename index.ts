@@ -114,7 +114,7 @@ const conf = {},
         hide: true,
         color: "#904f13"
       },
-      "Young X-Men": {
+      "New Mutants": {
         match: ["Rockslide"],
         hide: true,
         color: "#ff993e"

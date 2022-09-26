@@ -69,7 +69,7 @@ function processGraph(graph){
   });
 
   // Run Louvain to field community
-  louvain.assign(graph, {resolution: 1.32});
+  louvain.assign(graph, {resolution: 1.2});
 
   // Spatializing with FA2
   console.log('Starting ForceAtlas2 for ' + FA2Iterations + ' iterations by batches of ' + batchIterations);
