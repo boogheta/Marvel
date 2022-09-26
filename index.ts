@@ -1,4 +1,5 @@
 /* TODO:
+- one more check with takoyaki on authors/characters labels
 - align louvain on characters small/full
 - fix search names with quotes, ex http://localhost:3000/#creators/full/colors/Dennis+%22Hopeless%22+Hallum
 - optimize by ramcaching loaded netwotks + use loader while loading images

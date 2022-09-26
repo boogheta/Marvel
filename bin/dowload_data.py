@@ -242,6 +242,11 @@ DUPENAMES = {
   "William Messnerloebs": "William Messner-Loebs",
   "William Meugniot": "Will Meugniot",
 }
+SPLITNAMES = {
+  "Chad Bowers & Chris Sims": " & ",
+  "Chriscross and Chris Sotomayor": " and ",
+  "Rob Liefeld, ": ","
+}
 SWITCHATTRS = {
   "jean grey": ["image_url"]
 }
@@ -250,6 +255,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
     dupesIds = {}
     G = nx.Graph()
     nodes_map = {}
+    split_map = {}
     for n in nodes:
         attrs = {
             "id": n["id"],
@@ -305,10 +311,31 @@ def build_graph(nodes_type, links_type, comics, nodes):
         if not G.has_node(n):
             continue
 
+        # Handle unsplit names by remembering to replace the entry by the splitted list of ids from nodes map
+        for begin, splitter in SPLITNAMES.items():
+            if label.startswith(begin.lower()) and splitter in label:
+                split_map[n] = []
+                for subname in label.split(splitter):
+                    subname = subname.strip()
+                    if subname in nodes_map:
+                        split_map[n].append(nodes_map[subname])
+                    else:
+                        print("WARNING could not find", nodes_type, subname, "from splitted", label, file=sys.stderr)
+                G.remove_node(n)
+                break
+
     for comic in comics:
         # Apply threshold : remove stories with too many authors or characters
         if comic[nodes_type]["returned"] > CONF["cooccurrence_threshold_for_" + nodes_type]:
             continue
+
+        # Replace unsplit nodes by the splitted list
+        for i, c in enumerate(comic[nodes_type]["items"]):
+            cid = extractID(c)
+            if cid in split_map:
+                comic[nodes_type]["items"].pop(i)
+                comic[nodes_type]["items"] += [{"id": i, "role": c.get("role", "")} for i in split_map[cid]]
+
         for i, c1 in enumerate(comic[nodes_type]["items"]):
             c1id = extractID(c1)
 
