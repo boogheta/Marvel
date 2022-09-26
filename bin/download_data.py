@@ -144,6 +144,11 @@ extractID = lambda n: int(n["id"] if "id" in n else n["resourceURI"].split("/")[
 # Duplicates and bad names from creators data curated with the help of Takoyaki <https://yomguithereal.github.io/takoyaki/>
 SKIPNAMES = ["Various", "Blank", "Virtual", "#X", "ART & COMICS INT", "METROPOLIS", "Oh Sheeps", "KNIGHT AGENCY", "And More", "Mile High Comics", "Digikore Studios"]
 CLEANNAMES = {
+  "Eddie Brock": "Venom (Eddie Brock)",
+  "Multiple Man": "Multiple Man (Jamie Madrox)",
+  "Phil Coulson (Phil Coulson)": "Phil Coulson",
+  "Thunderbolt Ross": "Thaddeus (Thunderbolt) Ross",
+
   "A CO": "Aco",
   "Andrea DI Vito": "Andrea Di Vito",
   "Carmine DI Giandomenico": "Carmine Di Giandomenico",
@@ -157,6 +162,36 @@ CLEANNAMES = {
   "R. a. Jones": "R.A. Jones",
 }
 DUPENAMES = {
+  "Ben Grimm": "Thing",
+  "Ben Reilly": "Scarlet Spider (Ben Reilly)",
+  "Bruce Banner": "Hulk",
+  "Captain Marvel (Phyla-Vell)": "Quasar (Phyla-Vell)",
+  "Carol Danvers": "Captain Marvel (Carol Danvers)",
+  "Charles Xavier": "Professor X",
+  "Clint Barton": "Hawkeye",
+  "Felicia Hardy": "Black Cat",
+  "Frank Castle": "Punisher",
+  "James Buchanan Barnes": "Bucky",
+  "James Howlett": "Wolverine",
+  "Jessica Drew": "Spider-Woman (Jessica Drew)",
+  "Johnny Storm": "Human Torch",
+  "Logan": "Wolverine",
+  "Madrox": "Multiple Man (Jamie Madrox)",
+  "Matthew Murdock": "Daredevil",
+  "Natasha Romanoff": "Black Widow",
+  "Norman Osborn": "Green Goblin (Norman Osborn)",
+  "Peter Parker": "Spider-Man (Peter Parker)",
+  "Phyla-Vell": "Quasar (Phyla-Vell)",
+  "Stephen Strange": "Doctor Strange",
+  "Steve Rogers": "Captain America",
+  "Sue Storm": "Invisible Woman",
+  "Thaddeus Ross": "Thaddeus (Thunderbolt) Ross",
+  "The Professor": "Professor X",
+  "Tony Stark": "Iron Man",
+  "Ultimate Spider-Man (USM)": "Spider-Man (Ultimate)",
+  "Victor Von Doom": "Doctor Doom",
+  "Yellowjacket (Hank Pym)": "Hank Pym",
+
   "ALEC FRANCIS SIEGEL": "Alec Siegel",
   "Alex Sviuk": "Alex Saviuk",
   "Andre Aruajo": "Andre Lima Araujo",
@@ -248,7 +283,13 @@ SPLITNAMES = {
   "Rob Liefeld, ": ","
 }
 SWITCHATTRS = {
-  "jean grey": ["image_url"]
+  "captain marvel (phyla-vell)": ["image"],
+  "green goblin (norman osborn)": ["image"],
+  "hank pym": ["image_url"],
+  "jean grey": ["image_url"],
+  "multiple man (jamie madrox)": ["image"],
+  "scarlet spider (Ben Reilly)": ["image_url"],
+  "wolverine": ["image_url"]
 }
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
@@ -304,8 +345,12 @@ def build_graph(nodes_type, links_type, comics, nodes):
         # Handle blurry name duplicates from fixed list
         for dupe, good in DUPENAMES.items():
             if label == dupe.lower():
-                dupesIds[n] = nodes_map[good.lower()]
-                # TODO: better merge attributes (keep best pic/url/descr from one with most stories)
+                good = good.lower()
+                dupesIds[n] = nodes_map[good]
+                if good in SWITCHATTRS:
+                    for key in SWITCHATTRS[good]:
+                        if G.nodes[n][key] and "available" not in G.nodes[n][key]:
+                            G.nodes[dupesIds[n]][key] = G.nodes[n][key]
                 G.remove_node(n)
                 break
         if not G.has_node(n):
