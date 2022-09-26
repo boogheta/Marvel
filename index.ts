@@ -89,11 +89,6 @@ const conf = {},
         hide: true,
         color: "#8d32a7"
       },
-      "Inhumans & Starjammers": {
-        match: ["Lilandra"],
-        hide: true,
-        color: "#904f13"
-      },
       "Iron Fist & Luke Cage": {
         match: ["Fat Cobra"],
         hide: true,
@@ -104,17 +99,12 @@ const conf = {},
         hide: true,
         color: "#bce25b"
       },
-      "Iron Armors": {
+      "Stark Tech": {
         match: ["Calamity"],
         hide: true,
         color: "#5fb1ff"
       },
-      "Diverse teams": {
-        match: ["Clint Barton"],
-        hide: true,
-        color: "#904f13"
-      },
-      "New Mutants": {
+      "New Mutants & Young X-Men": {
         match: ["Rockslide"],
         hide: true,
         color: "#ff993e"
