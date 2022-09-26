@@ -139,15 +139,31 @@ def download_entity(entity, options, filters={}):
         page += 1
     return entities
 
-extractID = lambda n: int(n["resourceURI"].split("/")[-1])
+extractID = lambda n: int(n["id"] if "id" in n else n["resourceURI"].split("/")[-1])
 
+# Duplicates and bad names from creators data curated with the help of Takoyaki <https://yomguithereal.github.io/takoyaki/>
+SKIPNAMES = ["Various", "Blank", "Virtual", "#X", "ART & COMICS INT", "METROPOLIS", "Oh Sheeps", "KNIGHT AGENCY", "And More", "Mile High Comics", "Digikore Studios"]
+CLEANNAMES = {
+  "A CO": "Aco",
+  "Andrea Divito": "Andrea Di Vito",
+  "Carmine DI Giandomenico": "Carmine Di Giandomenico",
+  "David&#233; Fabbri": "Davidé Fabbri",
+  "Dynamite Patrick Berkenkotter": "Patrick Berkenkotter",
+  "Gary Hallgren painting": "Gary Hallgren",
+  "Jim Shooter - Duplicate": "Jim Shooter",
+  "R. a. Jones": "R.A. Jones",
+}
+SWITCHATTRS = {
+  "jean grey": ["image_url"]
+}
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
+    dupesIds = {}
     G = nx.Graph()
+    nodes_map = {}
     for n in nodes:
         attrs = {
             "id": n["id"],
-            "resourceURI": n["resourceURI"],
             "description": n.get("description", ""),
             "image": n["image"],
             "image_url": n["thumbnail"]["path"] + "." + n["thumbnail"]["extension"],
@@ -158,22 +174,48 @@ def build_graph(nodes_type, links_type, comics, nodes):
             attrs["label"] = n.get("fullName") or " ".join(n[k] for k in ["firstName", "middleName", "lastName", "suffix"] if n[k])
             attrs["writer"] = 0
             attrs["artist"] = 0
-            attrs["unknown_role"] = 0
         elif nodes_type == "characters":
             attrs["label"] = n["name"]
             attrs["description"] = n["description"]
-        if attrs["label"].startswith("Various"):
-            skipIDs.add(n["id"])
-            continue
-        G.add_node(n["id"], **attrs)
+        label = attrs["label"].lower()
+
+        # Skip names from blacklist
+        for skip in SKIPNAMES:
+            if label.startswith(skip.lower()):
+                skipIDs.add(n["id"])
+                continue
+
+        # Clean known bad names
+        for bad, good in CLEANNAMES.items():
+            if label == bad.lower():
+                attrs["label"] = good
+                label = good.lower()
+
+        # Handle perfect name duplicates
+        if label in nodes_map:
+            dupesIds[n["id"]] = nodes_map[label]
+            if label in SWITCHATTRS:
+                for key in SWITCHATTRS[label]:
+                    G.nodes[nodes_map[label]][key] = attrs[key]
+        # Keep others and store map of label -> id
+        else:
+            nodes_map[label] = n["id"]
+            G.add_node(n["id"], **attrs)
 
     for comic in comics:
+        # Apply threshold : remove stories with too many authors or characters
         if comic[nodes_type]["returned"] > CONF["cooccurrence_threshold_for_" + nodes_type]:
             continue
         for i, c1 in enumerate(comic[nodes_type]["items"]):
             c1id = extractID(c1)
+
+            # Replace duplicates nodes by their proper id and skip bad ones
+            if c1id in dupesIds:
+                c1id = dupesIds[c1id]
             if c1id in skipIDs:
                 continue
+
+            # Keep only artists and writers for creators and count the repartition and total
             if nodes_type == "creators":
                 role = c1.get("role", "").lower().strip()
                 if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
@@ -182,24 +224,39 @@ def build_graph(nodes_type, links_type, comics, nodes):
                     role_key = "artist"
                 elif role == "writer":
                     role_key = "writer"
-                elif not role:
-                    role_key = "unknown_role"
                 G.nodes[c1id][role_key] += 1
             G.nodes[c1id][links_type] += 1
+
             for c2 in comic[nodes_type]["items"][i+1:]:
+
+                # Keep only artists and writers for creators
                 if nodes_type == "creators":
                     role = c2.get("role", "").lower().strip()
                     if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
                         continue
                 c2id = extractID(c2)
+
+                # Skip autolinks
+                if c1id == c2id:
+                    continue
+
+                # Replace duplicates nodes by their proper id and skip bad ones
+                if c2id in dupesIds:
+                    c2id = dupesIds[c2id]
                 if c2id in skipIDs:
                     continue
+
+                # Add edge or weight
                 if G.has_edge(c1id, c2id):
                     G.edges[c1id, c2id]["weight"] += 1
                 else:
                     G.add_edge(c1id, c2id, weight=1)
+
+    # Keep first connex component and save "full" graph as such
     biggest_component = max(nx.connected_components(G), key=len)
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
+
+    # Remove less frequent nodes for "small" graph,then keep first connex component again ans save
     for node in list(G.nodes):
         if G.nodes[node][links_type] < CONF["min_" + links_type + "_for_" + nodes_type]:
             G.remove_node(node)
