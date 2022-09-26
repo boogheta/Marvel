@@ -1,8 +1,9 @@
 /* TODO:
+- one more check with takoyaki on authors/characters labels
 - align louvain on characters small/full
-- investigate authors with , like Rob Liefeld, JimShooter Duplicate, Virtual Calligr
+- fix search names with quotes, ex http://localhost:3000/#creators/full/colors/Dennis+%22Hopeless%22+Hallum
+- optimize by ramcaching loaded netwotks + use loader while loading images
 IDEAS:
-- optimize by ramcaching loaded netwotks
 - list comics associated with clicked node
   lazyload full csv of stories
   in nodeExtra: click to view comic books (if list loaded)

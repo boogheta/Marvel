@@ -14,7 +14,7 @@ const fileroot = filename.replace(/gexf$/, "");
 const entity = /creators/.test(filename) ? "creators" : "characters";
 const network_size= /full/.test(filename) ? "full" : "small";
 const links_type = /stories/.test(filename) ? "stories" : "comics";
-const FA2Iterations = (args.length < 2 ? 10000 : parseInt(args[1]));
+const FA2Iterations = (args.length < 2 ? 15000 : parseInt(args[1]));
 const batchIterations = (args.length < 3 ? 1000 : parseInt(args[2]));
 
 function readGEXF(filename) {
@@ -30,8 +30,8 @@ function readGEXF(filename) {
       x: circularPositions[node].x,
       y: circularPositions[node].y,
       size: Math.pow(size, 0.2)
-        * (entity == "characters" ? 2 : 1.25)
-        * (network_size === "small" ? 2 : 1.25)
+        * (entity == "characters" ? 1.75 : 1.25)
+        * (network_size === "small" ? 1.75 : 1.25)
     });
   });
 
@@ -69,7 +69,7 @@ function processGraph(graph){
   });
 
   // Run Louvain to field community
-  louvain.assign(graph, {resolution: entity === "creators" ? 1 : 1.2});
+  louvain.assign(graph, {resolution: 1.32});
 
   // Spatializing with FA2
   console.log('Starting ForceAtlas2 for ' + FA2Iterations + ' iterations by batches of ' + batchIterations);

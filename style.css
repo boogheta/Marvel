@@ -391,3 +391,15 @@ label {
     display: block;
   }
 }
+@media (pointer: coarse) and (max-height: 600px) {
+  #controls {
+    width: 116px;
+  }
+  #sigma-buttons button {
+    width: 25px;
+    height: 25px;
+  }
+  #suggestions-select {
+    width: 112px;
+  }
+}

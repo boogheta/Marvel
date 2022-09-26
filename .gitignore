@@ -3,6 +3,7 @@ config.yml
 node_modules
 package-lock.json
 build
+data/Marvel*_by_comics*
 images/other_formats
 images/creators.*
 images/characters.*
