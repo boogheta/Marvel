@@ -11,9 +11,12 @@ const args = process.argv.slice(2);
 const filename = args[0];
 const refFile = args[1];
 const backup = filename + "_backup";
-const FA2Iterations = (args.length < 3 ? 5000 : parseInt(args[2]));
-const mirrorX = args.slice(2).indexOf("--mirror-x") === "-1" ? 1 : -1;
-const mirrorY = args.slice(2).indexOf("--mirror-y") === "-1" ? 1 : -1;
+const copyLouvain = args.slice(2).indexOf("--copy-communities") !== "-1"
+const mirrorX = args.slice(2).indexOf("--mirror-x") === -1 ? 1 : -1;
+const mirrorY = args.slice(2).indexOf("--mirror-y") === -1 ? 1 : -1;
+const angle = args.slice(2).indexOf("--rotate") === -1 ? 0 : Math.PI * parseInt(args.indexOf("--rotate") + 1) / 180;
+const FA2Iterations = 3000;
+
 function readPakoJSON(filename) {
   console.log("Reading " + filename + " ...");
   const pakofile = fs.readFileSync(filename, {flag:'r'});
@@ -34,6 +37,10 @@ function mirrorGraph(graph) {
   );
 }
 
+function rotateGraph(graph) {
+  layouts.rotation.assign(graph, angle);
+}
+
 function alignGraph(graph, reference, output) {
   // Displaying graphs stats
   console.log('Number of nodes (file/ref):', graph.order, "|", ref.order);
@@ -44,15 +51,16 @@ function alignGraph(graph, reference, output) {
   console.log("Copying positions from", refFile, "into", filename, "...");
   const circularPositions = layouts.circular(graph, { scale: 50 });
   let missing = 0;
-  graph.forEachNode(node => {
+  graph.forEachNode((node, {community}) => {
     const refAttrs = (reference.hasNode(node)
       ? reference.getNodeAttributes(node)
       : {}
     );
     if (!refAttrs) missing++;
     graph.mergeNodeAttributes(node, {
-      x: refAttrs.x || circularPositions[node].x,
-      y: refAttrs.y || circularPositions[node].y
+      x: refAttrs.x !== undefined ? refAttrs.x : circularPositions[node].x,
+      y: refAttrs.y !== undefined ? refAttrs.y : circularPositions[node].y,
+      community: copyLouvain ? refAttrs.community : community
     });
   });
   console.log(missing, "nodes are missing from ref file");
@@ -85,8 +93,10 @@ function alignGraph(graph, reference, output) {
 const g = readPakoJSON(filename),
   ref = readPakoJSON(refFile);
 writePakoJSON(g, filename + ".backup");
-if (mirrorX === -1 || mirrorY === -1) {
+console.log(mirrorX, mirrorY, angle);
+if (mirrorX === -1 || mirrorY === -1 || angle !== 0) {
   writePakoJSON(ref, refFile + ".backup");
+  rotateGraph(ref);
   mirrorGraph(ref);
   writePakoJSON(ref, refFile);
 }
