@@ -27,8 +27,12 @@ def retry_get(url, stream=False, retries=5):
 
 def cache_download(url, cache_file):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
-        with open(cache_file) as f:
-            return json.load(f)
+        try:
+            with open(cache_file) as f:
+                return json.load(f)
+        except Exception as e:
+            print("ERROR while loading cache file for", url, cache_file, e, file=sys.sderr)
+            raise e
 
     print("Calling " + url)
     res = retry_get(url)
