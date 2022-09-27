@@ -128,11 +128,18 @@ const conf = {},
 // Init global vars for each view variant
 ["creators", "characters"].forEach(e => {
   networks[e] = {};
-  ["small", "full"].forEach((s) => networks[e][s] = {
+  ["small", "full"].forEach((s) => {
+    networks[e][s] = {
       graph: null,
       communities: {},
       counts: {},
-      clusters: {...clusters[e]}
+      clusters: {}
+    }
+    for (let cl in clusters[e]) {
+      networks[e][s].clusters[cl] = {};
+      for (let at in clusters[e][cl])
+        networks[e][s].clusters[cl][at] = clusters[e][cl][at];
+    }
   });
 });
 
