@@ -1,4 +1,5 @@
 /* TODO:
+- really center loader
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
@@ -85,20 +86,20 @@ const conf = {},
         hide: true,
         color: "#8d32a7"
       },
-      "Iron Fist & Luke Cage": {
+      "Starjammers": {
+        match: ["Corsair"],
+        hide: true,
+        color: "#bce25b"
+      },
+      "Heroes for Hire": {
         match: ["Fat Cobra"],
         hide: true,
         color: "#c45ecf"
       },
-      "New Warriors, The Initiative & Agents of Atlas": {
-        match: ["The Initiative"],
+      "Diverse Heroes": {
+        match: ["Gorilla Man"],
         hide: true,
         color: "#bce25b"
-      },
-      "Stark Tech": {
-        match: ["Calamity"],
-        hide: true,
-        color: "#5fb1ff"
       },
       "New Mutants & Young X-Men": {
         match: ["Rockslide"],
@@ -108,7 +109,7 @@ const conf = {},
       "X-Statix": {
         match: ["Dead Girl"],
         hide: true,
-        color: "#bce25b"
+        color: "#5fb1ff"
       }
     }
   },
