@@ -280,7 +280,7 @@ function renderNetwork(firstLoad = false) {
     .map(k =>
       '<b style="color: ' + data.clusters[k].color + '">'
       + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
-      + " (" + fmtNumber(data.counts[data.clusters[k].community]) + ')</b>'
+      + ' (<span class="color">' + fmtNumber(data.counts[data.clusters[k].community]) + '</span>)</b>'
     ).join(", ");
 
   // Instantiate sigma:
@@ -709,7 +709,7 @@ function readUrl() {
   // Setup optional SelectedNode (before setting view which depends on it)
   if (args.length >= 4 && args[3]) {
     selectedNodeLabel = decodeURIComponent(args[3].replace(/\+/g, " "));
-    searchInput.value = decodeURIComponent(args[3].replace(/\+/g, " "));
+    searchInput.value = selectedNodeLabel;
   } else selectedNodeLabel = null;
   const graph = networks[args[0]][args[1]].graph;
   if (graph && (
@@ -742,12 +742,20 @@ function readUrl() {
     renderer = null;
     camera = null;
     container.innerHTML = '';
-    orderSpan.innerHTML = '';
+    orderSpan.innerHTML = '...';
 
     // Setup Sidebar default content
     const title = "ap of " + (networkSize === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
     document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
     document.getElementById("title").innerHTML = "This is a m" + title;
+    if (entity === "creators")
+      Object.keys(creatorsRoles).forEach((k) => {
+        const role = document.getElementById(k + "-color");
+        role.style.color = creatorsRoles[k];
+        role.innerHTML = k + " (...)";
+      });
+    else document.querySelectorAll("#clusters-legend .color")
+      .forEach(el => el.innerHTML = "...");
     if (!selectedNodeLabel)
       defaultSidebar();
 
