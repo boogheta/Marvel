@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "postinstall": "git clone -b 1257-fix-memory-saturation-with-many-node-images https://github.com/boogheta/sigma.js.git && npm run buildsigma",
+    "postinstall": "git clone -b marvel-branch https://github.com/boogheta/sigma.js.git && npm run buildsigma",
     "buildsigma": "cd sigma.js && npm install && npm run prepare && cd -",
     "build": "npm run buildsigma && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
     "start": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
