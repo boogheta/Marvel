@@ -3804,8 +3804,8 @@
           <attvalue for="1" value="./images/creators/536.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/e/b0/4bb4ed903bd0c.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/536/greg_pak?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="585" />
-          <attvalue for="5" value="584" />
+          <attvalue for="4" value="589" />
+          <attvalue for="5" value="588" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -8721,8 +8721,8 @@
           <attvalue for="1" value="./images/creators/1231.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/4/90/4badd4a70accf.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/1231/kurt_busiek?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="264" />
-          <attvalue for="5" value="264" />
+          <attvalue for="4" value="258" />
+          <attvalue for="5" value="258" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -15013,8 +15013,8 @@
           <attvalue for="1" value="./images/creators/11463.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/7/10/5cd9c7870670e.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/11463/jason_aaron?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="953" />
-          <attvalue for="5" value="952" />
+          <attvalue for="4" value="952" />
+          <attvalue for="5" value="951" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -16949,8 +16949,8 @@
           <attvalue for="1" value="./images/creators/12174.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/f/a0/5cd9d91f33dcc.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12174/al_ewing?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="618" />
-          <attvalue for="5" value="617" />
+          <attvalue for="4" value="617" />
+          <attvalue for="5" value="616" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -17554,8 +17554,8 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12371/charles_soule?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="596" />
-          <attvalue for="5" value="596" />
+          <attvalue for="4" value="609" />
+          <attvalue for="5" value="609" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -17829,9 +17829,9 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12417/raffaele_ienco?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="5" />
+          <attvalue for="4" value="6" />
           <attvalue for="5" value="0" />
-          <attvalue for="6" value="5" />
+          <attvalue for="6" value="6" />
         </attvalues>
       </node>
       <node id="12418" label="Paul Scheer">
@@ -19523,8 +19523,8 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12699/ed_brisson?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="225" />
-          <attvalue for="5" value="225" />
+          <attvalue for="4" value="219" />
+          <attvalue for="5" value="219" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -23571,9 +23571,9 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/5138/cafu?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="14" />
+          <attvalue for="4" value="13" />
           <attvalue for="5" value="0" />
-          <attvalue for="6" value="14" />
+          <attvalue for="6" value="13" />
         </attvalues>
       </node>
       <node id="13330" label="Jess Ruffner">
@@ -40193,7 +40193,7 @@
       <edge source="536" target="12696" id="11079" weight="11" />
       <edge source="536" target="5105" id="11080" weight="1" />
       <edge source="536" target="13692" id="11081" weight="1" />
-      <edge source="536" target="12417" id="11082" weight="2" />
+      <edge source="536" target="12417" id="11082" weight="3" />
       <edge source="536" target="13919" id="11083" weight="3" />
       <edge source="536" target="13110" id="11084" weight="5" />
       <edge source="536" target="14056" id="11085" weight="1" />
@@ -50998,7 +50998,7 @@
       <edge source="11463" target="11539" id="21884" weight="1" />
       <edge source="11463" target="8012" id="21885" weight="1" />
       <edge source="11463" target="12374" id="21886" weight="2" />
-      <edge source="11463" target="12174" id="21887" weight="26" />
+      <edge source="11463" target="12174" id="21887" weight="25" />
       <edge source="11463" target="12983" id="21888" weight="1" />
       <edge source="11463" target="12371" id="21889" weight="1" />
       <edge source="11463" target="12449" id="21890" weight="42" />
@@ -51018,7 +51018,7 @@
       <edge source="11463" target="6170" id="21904" weight="4" />
       <edge source="11463" target="12902" id="21905" weight="1" />
       <edge source="11463" target="12516" id="21906" weight="2" />
-      <edge source="11463" target="5138" id="21907" weight="4" />
+      <edge source="11463" target="5138" id="21907" weight="3" />
       <edge source="11463" target="13625" id="21908" weight="1" />
       <edge source="11463" target="13061" id="21909" weight="2" />
       <edge source="11463" target="12817" id="21910" weight="1" />
@@ -52051,31 +52051,31 @@
       <edge source="12174" target="4052" id="22937" weight="9" />
       <edge source="12174" target="13973" id="22938" weight="3" />
       <edge source="12174" target="13744" id="22939" weight="1" />
-      <edge source="12174" target="5138" id="22940" weight="3" />
-      <edge source="12174" target="12471" id="22941" weight="2" />
-      <edge source="12174" target="12624" id="22942" weight="3" />
-      <edge source="12174" target="13602" id="22943" weight="1" />
-      <edge source="12174" target="12699" id="22944" weight="1" />
-      <edge source="12174" target="4039" id="22945" weight="2" />
-      <edge source="12174" target="12696" id="22946" weight="2" />
-      <edge source="12174" target="13471" id="22947" weight="1" />
-      <edge source="12174" target="13558" id="22948" weight="2" />
-      <edge source="12174" target="14148" id="22949" weight="14" />
-      <edge source="12174" target="4574" id="22950" weight="1" />
-      <edge source="12174" target="13974" id="22951" weight="1" />
-      <edge source="12174" target="13031" id="22952" weight="1" />
-      <edge source="12174" target="14061" id="22953" weight="2" />
-      <edge source="12174" target="13111" id="22954" weight="1" />
-      <edge source="12174" target="13614" id="22955" weight="2" />
-      <edge source="12174" target="12447" id="22956" weight="1" />
-      <edge source="12174" target="13236" id="22957" weight="1" />
-      <edge source="12174" target="12368" id="22958" weight="3" />
-      <edge source="12174" target="13757" id="22959" weight="10" />
-      <edge source="12174" target="14335" id="22960" weight="1" />
-      <edge source="12174" target="12435" id="22961" weight="1" />
-      <edge source="12174" target="13539" id="22962" weight="1" />
-      <edge source="12174" target="13233" id="22963" weight="1" />
-      <edge source="12174" target="14145" id="22964" weight="1" />
+      <edge source="12174" target="12471" id="22940" weight="2" />
+      <edge source="12174" target="12624" id="22941" weight="3" />
+      <edge source="12174" target="13602" id="22942" weight="1" />
+      <edge source="12174" target="12699" id="22943" weight="1" />
+      <edge source="12174" target="4039" id="22944" weight="2" />
+      <edge source="12174" target="12696" id="22945" weight="2" />
+      <edge source="12174" target="13471" id="22946" weight="1" />
+      <edge source="12174" target="13558" id="22947" weight="2" />
+      <edge source="12174" target="14148" id="22948" weight="14" />
+      <edge source="12174" target="4574" id="22949" weight="1" />
+      <edge source="12174" target="13974" id="22950" weight="1" />
+      <edge source="12174" target="13031" id="22951" weight="1" />
+      <edge source="12174" target="14061" id="22952" weight="2" />
+      <edge source="12174" target="13111" id="22953" weight="1" />
+      <edge source="12174" target="13614" id="22954" weight="2" />
+      <edge source="12174" target="12447" id="22955" weight="1" />
+      <edge source="12174" target="13236" id="22956" weight="1" />
+      <edge source="12174" target="12368" id="22957" weight="3" />
+      <edge source="12174" target="13757" id="22958" weight="10" />
+      <edge source="12174" target="14335" id="22959" weight="1" />
+      <edge source="12174" target="12435" id="22960" weight="1" />
+      <edge source="12174" target="13539" id="22961" weight="1" />
+      <edge source="12174" target="13233" id="22962" weight="1" />
+      <edge source="12174" target="14145" id="22963" weight="1" />
+      <edge source="12174" target="5138" id="22964" weight="2" />
       <edge source="12174" target="12475" id="22965" weight="1" />
       <edge source="12174" target="12449" id="22966" weight="1" />
       <edge source="12174" target="7909" id="22967" weight="1" />

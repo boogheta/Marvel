@@ -64,8 +64,8 @@
           <attvalue for="1" value="./images/creators/11463.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/7/10/5cd9c7870670e.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/11463/jason_aaron?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="953" />
-          <attvalue for="5" value="952" />
+          <attvalue for="4" value="952" />
+          <attvalue for="5" value="951" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -1010,8 +1010,8 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12699/ed_brisson?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="225" />
-          <attvalue for="5" value="225" />
+          <attvalue for="4" value="219" />
+          <attvalue for="5" value="219" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -1230,8 +1230,8 @@
           <attvalue for="1" value="./images/creators/1231.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/4/90/4badd4a70accf.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/1231/kurt_busiek?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="264" />
-          <attvalue for="5" value="264" />
+          <attvalue for="4" value="258" />
+          <attvalue for="5" value="258" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -2528,8 +2528,8 @@
           <attvalue for="1" value="./images/creators/12174.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/f/a0/5cd9d91f33dcc.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12174/al_ewing?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="618" />
-          <attvalue for="5" value="617" />
+          <attvalue for="4" value="617" />
+          <attvalue for="5" value="616" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -6532,8 +6532,8 @@
           <attvalue for="1" value="./images/creators/536.jpg" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/e/b0/4bb4ed903bd0c.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/536/greg_pak?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="585" />
-          <attvalue for="5" value="584" />
+          <attvalue for="4" value="589" />
+          <attvalue for="5" value="588" />
           <attvalue for="6" value="1" />
         </attvalues>
       </node>
@@ -8303,8 +8303,8 @@
           <attvalue for="1" value="./images/not_available.gif" />
           <attvalue for="2" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="3" value="http://marvel.com/comics/creators/12371/charles_soule?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
-          <attvalue for="4" value="596" />
-          <attvalue for="5" value="596" />
+          <attvalue for="4" value="609" />
+          <attvalue for="5" value="609" />
           <attvalue for="6" value="0" />
         </attvalues>
       </node>
@@ -9874,7 +9874,7 @@
       <edge source="11463" target="11539" id="175" weight="1" />
       <edge source="11463" target="600" id="176" weight="1" />
       <edge source="11463" target="312" id="177" weight="25" />
-      <edge source="11463" target="12174" id="178" weight="26" />
+      <edge source="11463" target="12174" id="178" weight="25" />
       <edge source="11463" target="1340" id="179" weight="2" />
       <edge source="11463" target="12983" id="180" weight="1" />
       <edge source="11463" target="12371" id="181" weight="1" />

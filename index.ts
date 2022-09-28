@@ -3,9 +3,6 @@
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
-  lazyload full csv of stories
-  in nodeExtra: click to view comic books (if list loaded)
-  other sidebar static over network
   list table (sortable? virtuallist?)
   on click (on hover?) :
    + display cover with modal options in lower zone of sidebar
@@ -15,6 +12,8 @@ IDEAS:
 */
 
 import pako from "pako";
+
+import Papa from "papaparse";
 
 import Graph from "graphology";
 import { animateNodes } from "./sigma.js/utils/animate";
@@ -32,10 +31,13 @@ let entity = "",
   renderer = null,
   camera = null,
   sigmaDim = null,
-  suggestions = [];
+  suggestions = [],
+  comicsReady = null;
 
 const conf = {},
   networks = {},
+  charactersComics = {},
+  creatorsComics = {},
   creatorsRoles = {
     writer: "#234fac",
     artist: "#2b6718",
@@ -182,6 +184,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
+  comicImg = document.getElementById("comic-img") as HTMLImageElement,
+  comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   searchInput = document.getElementById("search-input") as HTMLInputElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
   selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
@@ -209,6 +213,7 @@ function defaultSidebar() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
+  document.getElementById("comics-bar").style.display = "none";
   resize();
 }
 
@@ -219,6 +224,50 @@ function computeNodeSize(node, stories, ratio) {
     * sigmaDim / 1000
     / ratio;
 };
+
+function loadComics(comicsData) {
+  const comicsStr = pako.ungzip(comicsData, {to: "string"});
+  Papa.parse(comicsStr, {
+	worker: true,
+    header: true,
+    skipEmptyLines: "greedy",
+	step: function(c) {
+      c = c.data;
+      c.creators = c.creators.split("|").filter(x => x);
+      c.characters = c.characters.split("|").filter(x => x);
+      c.creators.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        creatorsComics[cr].push(c);
+      });
+      c.characters.forEach(ch => {
+        if (!charactersComics[ch])
+          charactersComics[ch] = [];
+        charactersComics[ch].push(c);
+      });
+	},
+	complete: function() {
+      comicsReady = true;
+      document.getElementById("loader-comics").style.display = "none";
+	}
+  });
+}
+
+function displayComics(comics) {
+  document.getElementById("comics-bar").style.display = "block";
+  document.getElementById("list-comics").innerHTML = comics.map(x => "<li>" + x.title + "</li>").join("");
+  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("comics") + "px";
+
+// TODO: 
+// - plug click/hover comics
+// - add creators/characters by comic
+// - select nodes on graph
+// - add modal on pic
+  document.getElementById("comic-title").innerHTML = comics[0].title;
+  document.getElementById("comic-desc").innerHTML = comics[0].description;
+  comicImg.src = comics[0].image_url;
+  comicUrl.href = comics[0].url;
+}
 
 function buildNetwork(networkData) {
   const data = networks[entity][networkSize];
@@ -469,13 +518,20 @@ function renderNetwork(firstLoad = false) {
       animateNodes(data.graph, newSizes, { duration: 100, easing: "quadraticOut" });
     }, 100);
     if (camera.ratio <= 5) {
+      clearInterval(initLoop);
       if (entity === "creators")
         clustersLayer.style.display = "block";
       camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
       renderer.setSetting("maxCameraRatio", 1.3);
       clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
       selectedNodeLabel = null;
-      return clearInterval(initLoop);
+      if (comicsReady === null) {
+        comicsReady = false;
+        document.getElementById("loader-comics").style.display = "block";
+        fetch("./data/Marvel_comics.csv.gz")
+          .then((res) => res.arrayBuffer())
+          .then((content) => loadComics(content))
+      }
     }
     camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
   }, firstLoad ? 250 : 0);
@@ -543,6 +599,13 @@ function clickNode(node, updateURL=true) {
     nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
+  if (comicsReady && entity === "characters" && charactersComics[node]) {
+    nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
+    document.getElementById('view-comics').onclick = x => displayComics(charactersComics[node]);
+  } else if (comicsReady && entity === "creators" && creatorsComics[node]) {
+    nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</p>';
+    document.getElementById('view-comics').onclick = x => displayComics(creatorsComics[node]);
+  }
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
   data.graph.setNodeAttribute(node, "highlighted", true);
