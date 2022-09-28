@@ -1,5 +1,4 @@
 /* TODO:
-- really center loader
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
