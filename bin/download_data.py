@@ -31,7 +31,7 @@ def cache_download(url, cache_file):
             with open(cache_file) as f:
                 return json.load(f)
         except Exception as e:
-            print("ERROR while loading cache file for", url, cache_file, e, file=sys.sderr)
+            print("ERROR while loading cache file for", url, cache_file, e, file=sys.stderr)
             raise e
 
     print("Calling " + url)
@@ -72,6 +72,9 @@ def complete_data(data):
                     page += 1
     return data
 
+def image_url(item, option=""):
+    return item["path"] + option + "." + item["extension"]
+
 def download_thumbnails(entity, data):
     for item in data["data"]["results"]:
         if item.get("image") and os.path.exists(item["image"]):
@@ -79,7 +82,7 @@ def download_thumbnails(entity, data):
         if "image_not_available" in item["thumbnail"]["path"]:
             item["image"] = "./images/not_available.gif"
             continue
-        thumbnail_url = item["thumbnail"]["path"] + "/standard_medium." + item["thumbnail"]["extension"]
+        thumbnail_url = image_url(item["thumbnail"], "/standard_medium")
         thumbnail_file = os.path.join("images", entity, "%s.%s" % (item["id"], item["thumbnail"]["extension"]))
         if not os.path.exists(thumbnail_file):
             print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
@@ -307,7 +310,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
             "id": n["id"],
             "description": n.get("description", ""),
             "image": n["image"],
-            "image_url": n["thumbnail"]["path"] + "." + n["thumbnail"]["extension"],
+            "image_url": image_url(n["thumbnail"]),
             "url": n["urls"][0]["url"],
             links_type: 0
         }
@@ -444,12 +447,22 @@ def build_graph(nodes_type, links_type, comics, nodes):
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
-def build_csv(entity, rows, fields):
+def build_csv(entity, rows):
     with open(os.path.join("data", "Marvel_%s.csv" % entity), "w") as csvf:
         writer = csv.writer(csvf)
+        fields = ["id", "title", "description", "creators", "characters", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
-            writer.writerow([row[f] for f in fields])
+            el = {
+                "id": row["id"],
+                "title": row["title"],
+                "description": row["description"] or "",
+                "characters": "|".join(str(extractID(i)) for i in row["characters"]["items"]),
+                "creators": "|".join(str(extractID(i)) for i in row["creators"]["items"]),
+                "image_url": image_url(row["images"][0] if row["images"] else row.get("thumbnail")),
+                "url": sorted(row["urls"], key=lambda x: "z" if x["type"] != "details" else "a")[0]["url"]
+            }
+            writer.writerow([el[f] for f in fields])
 
 if __name__ == "__main__":
     comics = []
@@ -466,5 +479,4 @@ if __name__ == "__main__":
     build_graph("creators", "stories", stories, creators)
     build_graph("characters", "comics", comics, characters)
     build_graph("creators", "comics", comics, creators)
-    build_csv("comics", comics, [])
-    build_csv("stories", stories, [])
+    build_csv("comics", comics)

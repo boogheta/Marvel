@@ -21,7 +21,8 @@
     "graphology-layout": "^0.6.0",
     "graphology-layout-forceatlas2": "^0.9.2",
     "graphology-layout-noverlap": "^0.4.2",
-    "pako": "^2.0.4"
+    "pako": "^2.0.4",
+    "papaparse": "^5.3.2"
   },
   "devDependencies": {
     "kotatsu": "^0.22.3",

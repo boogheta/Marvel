@@ -48,7 +48,7 @@ Icons used or adapted from SVG creations under CC Zero Public Domain by [agomjo]
 
 Data collection and preparation in Python 3 using [requests](https://requests.readthedocs.io/) and [NetworkX](https://networkx.org/).
 
-Web interface and network visualization in Node.js using [graphology](https://graphology.github.io/), [Sigma.js](https://sigmajs.org/) and [pako](http://nodeca.github.io/pako/), built in TypeScript with [kotatsu](https://www.npmjs.com/package/kotatsu).
+Web interface and network visualization in Node.js using [graphology](https://graphology.github.io/), [Sigma.js](https://sigmajs.org/), [pako](http://nodeca.github.io/pako/) and [PapaParse](https://www.papaparse.com/), built in TypeScript with [kotatsu](https://www.npmjs.com/package/kotatsu).
 
 Thanks to [@Yomguithereal](https://github.com/Yomguithereal), [@paulgirard](https://github.com/paulgirard), [@jacomyal](https://github.com/jacomyal) and [@jacomyMa](https://github.com/jacomyMa) for their precious help and ideas!
 
