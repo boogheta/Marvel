@@ -45,16 +45,24 @@ html, body {
   padding: 5px;
   text-align: center;
   overflow-y: auto;
-  line-height: 13px;
+  line-height: 20px;
 }
 #comic-details {
   border-top: 1px solid #555;
+}
+#list-title {
+  font-size: 18px;
+  color: var(--marvel-red);
+  font-weight: bold;
+  margin: 0;
+  padding: 4px;
 }
 #comics ul {
   display: table-row;
 }
 #comics li {
-  padding: 2px 4px;
+  padding: 2px;
+  font-size: 16px;
 }
 #comics li:nth-child(even) {
   background: #2F2F2F;

@@ -1,4 +1,5 @@
 /* TODO:
+- fix autozoom too strong on reload
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
@@ -254,8 +255,9 @@ function loadComics(comicsData) {
 
 function displayComics(comics) {
   document.getElementById("comics-bar").style.display = "block";
+  document.getElementById("list-title").innerHTML = "Comics listing " + selectedNodeLabel + " within Marvel's API";
   document.getElementById("list-comics").innerHTML = comics.map(x => "<li>" + x.title + "</li>").join("");
-  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("comics") + "px";
+  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") + "px";
 
 // TODO: 
 // - plug click/hover comics
