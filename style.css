@@ -45,16 +45,24 @@ html, body {
   padding: 5px;
   text-align: center;
   overflow-y: auto;
-  line-height: 13px;
+  line-height: 20px;
 }
 #comic-details {
   border-top: 1px solid #555;
+}
+#list-title {
+  font-size: 18px;
+  color: var(--marvel-red);
+  font-weight: bold;
+  margin: 0;
+  padding: 4px;
 }
 #comics ul {
   display: table-row;
 }
 #comics li {
-  padding: 2px 4px;
+  padding: 2px;
+  font-size: 16px;
 }
 #comics li:nth-child(even) {
   background: #2F2F2F;
@@ -162,14 +170,15 @@ h2 {
 }
 #loader {
   position: absolute;
-  top: 45%;
-  left: 62%;
+  top: calc(50% - 35px);
+  left: calc(50% + 115px);
   z-index: 10;
   display: none;
 }
 #loader img {
   padding: 10px;
   opacity: 0.85;
+  width: 50px;
 }
 #loader-comics {
   display: none;
@@ -436,7 +445,7 @@ label {
     left: 1em;
   }
   #loader {
-    left: 35%;
+    left: calc(50% - 185px);
   }
   #search input {
     display: none;
@@ -455,5 +464,10 @@ label {
   }
   #suggestions-select {
     width: 112px;
+  }
+}
+@media (pointer: coarse) and (max-width: 700px) {
+  #loader {
+    left: calc(50% - 135px);
   }
 }

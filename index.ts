@@ -1,11 +1,11 @@
 /* TODO:
-- really center loader
+- fix autozoom too strong on reload
+- add cross to close comics bar
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
   list table (sortable? virtuallist?)
   on click (on hover?) :
-   + display cover with modal options in lower zone of sidebar
    + highlight related nodes
    + if click, story_id bound in url args
 - test bipartite network between authors and characters filtered by category of author
@@ -254,19 +254,24 @@ function loadComics(comicsData) {
 }
 
 function displayComics(comics) {
+  comicImg.src = "";
   document.getElementById("comics-bar").style.display = "block";
+  document.getElementById("list-title").innerHTML = "Comics listing " + selectedNodeLabel + " within Marvel's API";
   document.getElementById("list-comics").innerHTML = comics.map(x => "<li>" + x.title + "</li>").join("");
-  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("comics") + "px";
+  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") + "px";
 
 // TODO: 
 // - plug click/hover comics
 // - add creators/characters by comic
 // - select nodes on graph
-// - add modal on pic
   document.getElementById("comic-title").innerHTML = comics[0].title;
   document.getElementById("comic-desc").innerHTML = comics[0].description;
-  comicImg.src = comics[0].image_url;
   comicUrl.href = comics[0].url;
+  comicImg.src = comics[0].image_url.replace(/^http:/, '');
+  comicImg.onclick = () => {
+    modalImg.src = comics[0].image_url.replace(/^http:/, '');
+    modal.style.display = "block";
+  };
 }
 
 function buildNetwork(networkData) {
@@ -579,8 +584,8 @@ function clickNode(node, updateURL=true) {
   nodeDetails.style.display = "block";
   nodeLabel.innerHTML = attrs.label;
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
-  modalImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
+    modalImg.src = attrs.image_url.replace(/^http:/, '');
     modal.style.display = "block";
   };
 
