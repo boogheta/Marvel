@@ -1,4 +1,5 @@
 /* TODO:
+- fix selectedNodeLabel when switching networks
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
@@ -7,6 +8,7 @@ IDEAS:
   on click (on hover?) :
    + highlight related nodes
   sortable list ?
+  bind arrow keys to next/previous comic?
   mentions role authors ?
 - test bipartite network between authors and characters filtered by category of author
 */
@@ -279,13 +281,19 @@ function loadComics(comicsData) {
   });
 }
 
+const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
+
 function displayComics(node) {
   const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
   selectComic();
   comicsBarView = true;
   comicsBar.style.display = "block";
   document.getElementById("list-title").innerHTML = "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API";
-  document.getElementById("list-comics").innerHTML = comics ? comics.map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>").join("") : "No comic-book found.";
+  document.getElementById("list-comics").innerHTML = comics
+    ? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))
+        .map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>")
+        .join("")
+    : "No comic-book found.";
   comics.forEach(c => {
     document.getElementById("comic-" + c.id).onclick = () => selectComic(c);
     //document.getElementById("comic-" + c.id).onover = () => selectComic(c);
@@ -599,14 +607,14 @@ function clickNode(node, updateURL=true) {
     if (data.graph.hasNode(selectedNode))
       data.graph.setNodeAttribute(selectedNode, "highlighted", false)
     selectedNode = null;
-    nodeImg.src = "";
-    modalImg.src = "";
   }
 
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
     selectedNodeLabel = null;
+    nodeImg.src = "";
+    modalImg.src = "";
     if (updateURL)
       setPermalink(entity, networkSize, view, node);
     selectSuggestions.selectedIndex = 0;
@@ -639,7 +647,7 @@ function clickNode(node, updateURL=true) {
   };
 
   nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-  nodeExtra.innerHTML += "<p>Accounted in <b>" + attrs.stories + " stories</b> shared with <b>" + data.graph.degree(node) + " other " + entity + "</b></p>";
+  nodeExtra.innerHTML += "<p>" + (entity === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with <b>" + data.graph.degree(node) + " other " + entity + "</b></p>";
   // Display roles in stories for creators
   if (entity === "creators") {
     if (attrs.writer === 0 && attrs.artist)
@@ -861,6 +869,7 @@ function readUrl() {
     const title = "ap of " + (networkSize === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
     document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
     document.getElementById("title").innerHTML = "This is a m" + title;
+    defaultSidebar();
     if (entity === "creators")
       Object.keys(creatorsRoles).forEach(k => {
         const role = document.getElementById(k + "-color");
@@ -869,8 +878,6 @@ function readUrl() {
       });
     else document.querySelectorAll("#clusters-legend .color")
       .forEach(el => el.innerHTML = "...");
-    if (!selectedNodeLabel)
-      defaultSidebar();
 
     setTimeout(() => {
       // If graph already loaded, just render it
