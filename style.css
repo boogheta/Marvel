@@ -78,7 +78,7 @@ html, body {
   width: calc(100% - 42px);
 }
 #comics ul {
-  display: table-row;
+  display: contents;
 }
 #comics li {
   padding: 2px;
@@ -419,7 +419,7 @@ label {
   display: none;
 }
 @media (max-width: 700px) {
-  #sidebar, .footer {
+  #sidebar, .footer, #comics-bar {
     width: 200px;
   }
   h1 {
@@ -437,6 +437,12 @@ label {
   .names > div {
     font-size: 12px;
   }
+  #list-title {
+    font-size: 14px;
+  }
+  #comics li {
+    font-size: 13px;
+  }
 }
 @media (max-height: 600px) {
   .network-choice {
@@ -453,6 +459,12 @@ label {
   }
   #credits, .asterisk, #title {
     display: none;
+  }
+  #list-title {
+    font-size: 14px;
+  }
+  #comics li {
+    font-size: 13px;
   }
 }
 @media not (pointer: coarse) {
