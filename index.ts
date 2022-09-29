@@ -1,8 +1,8 @@
 /* TODO:
-- add cross to close comics bar
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
+  adjust responsive comic bar
   bind url with selected comic ?
   on click (on hover?) :
    + highlight related nodes
@@ -221,6 +221,14 @@ function setPermalink(ent, siz, vie, sel) {
   window.location.hash = ent + "/" + siz + "/" + vie + selection;
 }
 
+function hideComicsBar() {
+  comicsBarView = false;
+  comicsBar.style.display = "none";
+  selectComic();
+  // TODO: reclick selectedNode ?
+}
+document.getElementById("close-bar").onclick = hideComicsBar;
+
 function defaultSidebar() {
   explanations.style.display = "block";
   nodeDetails.style.display = "none";
@@ -229,9 +237,7 @@ function defaultSidebar() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
-  comicsBarView = false;
-  comicsBar.style.display = "none";
-  selectComic();
+  hideComicsBar();
   resize();
 }
 
@@ -267,7 +273,9 @@ function loadComics(comicsData) {
 	complete: function() {
       comicsReady = true;
       loaderComics.style.display = "none";
-	}
+      if (selectedNode)
+        addViewComicsButton(selectedNode);
+    }
   });
 }
 
@@ -276,7 +284,7 @@ function displayComics(node) {
   selectComic();
   comicsBarView = true;
   comicsBar.style.display = "block";
-  document.getElementById("list-title").innerHTML = "Comics listing " + selectedNodeLabel + " within Marvel's API";
+  document.getElementById("list-title").innerHTML = "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API";
   document.getElementById("list-comics").innerHTML = comics ? comics.map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>").join("") : "No comic-book found.";
   comics.forEach(c => {
     document.getElementById("comic-" + c.id).onclick = () => selectComic(c);
@@ -288,7 +296,7 @@ function displayComics(node) {
 }
 
 // TODO: 
-// - plug click/hover comics
+// - plug hover comics ?
 // - add creators/characters by comic
 // - select nodes on graph
 function selectComic(comic = null) {
@@ -578,6 +586,11 @@ function renderNetwork(firstLoad = false) {
   }, firstLoad ? 250 : 0);
 }
 
+function addViewComicsButton(node) {
+  nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
+  document.getElementById('view-comics').onclick = () => displayComics(node);
+}
+
 function clickNode(node, updateURL=true) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
@@ -640,10 +653,8 @@ function clickNode(node, updateURL=true) {
     nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
-  if (comicsReady) {
-    nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
-    document.getElementById('view-comics').onclick = () => displayComics(node);
-  }
+  if (comicsReady)
+    addViewComicsButton(node);
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
   data.graph.setNodeAttribute(node, "highlighted", true);
