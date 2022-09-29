@@ -1,5 +1,4 @@
 /* TODO:
-- fix autozoom too strong on reload
 - add cross to close comics bar
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
@@ -32,7 +31,8 @@ let entity = "",
   camera = null,
   sigmaDim = null,
   suggestions = [],
-  comicsReady = null;
+  comicsReady = null,
+  comicsBarView = false;
 
 const conf = {},
   networks = {},
@@ -131,7 +131,7 @@ const conf = {},
 // Init global vars for each view variant
 ["creators", "characters"].forEach(e => {
   networks[e] = {};
-  ["small", "full"].forEach((s) => {
+  ["small", "full"].forEach(s => {
     networks[e][s] = {
       graph: null,
       communities: {},
@@ -176,6 +176,7 @@ function meanArray(arr) {
 
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
+  loaderComics = document.getElementById("loader-comics") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
@@ -184,11 +185,25 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
-  comicImg = document.getElementById("comic-img") as HTMLImageElement,
+  comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
+  comicDetails = document.getElementById("comic-details") as HTMLImageElement,
+  comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
+  comicImg = document.getElementById("comic-img") as HTMLImageElement,
+  comicDesc = document.getElementById("comic-desc") as HTMLLinkElement,
   searchInput = document.getElementById("search-input") as HTMLInputElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
-  selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement;
+  selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement,
+  switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
+  switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
+  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
+  entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
+  charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
+  creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
+  colorsDetailsSpans = document.querySelectorAll(".colors-details") as NodeListOf<HTMLElement>,
+  picturesDetailsSpans = document.querySelectorAll(".pictures-details") as NodeListOf<HTMLElement>,
+  smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
+  fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
 
@@ -213,7 +228,9 @@ function defaultSidebar() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
-  document.getElementById("comics-bar").style.display = "none";
+  comicsBarView = false;
+  comicsBar.style.display = "none";
+  selectComic();
   resize();
 }
 
@@ -248,30 +265,48 @@ function loadComics(comicsData) {
 	},
 	complete: function() {
       comicsReady = true;
-      document.getElementById("loader-comics").style.display = "none";
+      loaderComics.style.display = "none";
 	}
   });
 }
 
-function displayComics(comics) {
-  comicImg.src = "";
-  document.getElementById("comics-bar").style.display = "block";
+function displayComics(node) {
+  const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
+  selectComic();
+  comicsBarView = true;
+  comicsBar.style.display = "block";
   document.getElementById("list-title").innerHTML = "Comics listing " + selectedNodeLabel + " within Marvel's API";
-  document.getElementById("list-comics").innerHTML = comics.map(x => "<li>" + x.title + "</li>").join("");
-  document.getElementById("comic-details").style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") + "px";
+  document.getElementById("list-comics").innerHTML = comics ? comics.map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>").join("") : "No comic-book found.";
+  comics.forEach(c => {
+    document.getElementById("comic-" + c.id).onclick = () => selectComic(c);
+    //document.getElementById("comic-" + c.id).onover = () => selectComic(c);
+  });
+  resize();
+  if (comics)
+    selectComic(comics[0]);
+}
 
 // TODO: 
 // - plug click/hover comics
 // - add creators/characters by comic
 // - select nodes on graph
-  document.getElementById("comic-title").innerHTML = comics[0].title;
-  document.getElementById("comic-desc").innerHTML = comics[0].description;
-  comicUrl.href = comics[0].url;
-  comicImg.src = comics[0].image_url.replace(/^http:/, '');
+function selectComic(comic = null) {
+  comicTitle.innerHTML = "";
+  comicImg.src = "";
+  comicDesc.innerHTML = "";
+  comicUrl.style.display = "none";
+  if (!comic)
+    return;
+
+  comicTitle.innerHTML = comic.title;
+  comicImg.src = comic.image_url.replace(/^http:/, '');
   comicImg.onclick = () => {
-    modalImg.src = comics[0].image_url.replace(/^http:/, '');
+    modalImg.src = comic.image_url.replace(/^http:/, '');
     modal.style.display = "block";
   };
+  comicDesc.innerHTML = comic.description;
+  comicUrl.style.display = "inline";
+  comicUrl.href = comic.url;
 }
 
 function buildNetwork(networkData) {
@@ -332,7 +367,7 @@ function renderNetwork(firstLoad = false) {
   // Feed communities size to explanations
   orderSpan.innerHTML = fmtNumber(data.graph.order);
   if (entity === "creators") {
-    Object.keys(creatorsRoles).forEach((k) => {
+    Object.keys(creatorsRoles).forEach(k => {
       const role = document.getElementById(k + "-color");
       role.style.color = creatorsRoles[k];
       role.innerHTML = k + " (" + fmtNumber(data.counts[k]) + ")";
@@ -532,7 +567,7 @@ function renderNetwork(firstLoad = false) {
       selectedNodeLabel = null;
       if (comicsReady === null) {
         comicsReady = false;
-        document.getElementById("loader-comics").style.display = "block";
+        loaderComics.style.display = "block";
         fetch("./data/Marvel_comics.csv.gz")
           .then((res) => res.arrayBuffer())
           .then((content) => loadComics(content))
@@ -604,12 +639,10 @@ function clickNode(node, updateURL=true) {
     nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
-  if (comicsReady && entity === "characters" && charactersComics[node]) {
+  if (comicsReady) {
     nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
-    document.getElementById('view-comics').onclick = x => displayComics(charactersComics[node]);
-  } else if (comicsReady && entity === "creators" && creatorsComics[node]) {
-    nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</p>';
-    document.getElementById('view-comics').onclick = x => displayComics(creatorsComics[node]);
+    document.getElementById('view-comics').onclick = () =>
+      displayComics(node);
   }
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
@@ -660,6 +693,9 @@ function clickNode(node, updateURL=true) {
   renderer.setSetting(
     "labelColor", {attribute: "hlcolor", color: "#CCC"}
   );
+
+  if (comicsBarView)
+    displayComics(node);
 };
 
 // Fullscreen button
@@ -688,36 +724,25 @@ regScreenBtn.onclick = () => {
 };
 
 // Network switch buttons
-const switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
-  switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
-  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
-  entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
-  charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
-  creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
-  colorsDetailsSpans = document.querySelectorAll(".colors-details") as NodeListOf<HTMLElement>,
-  picturesDetailsSpans = document.querySelectorAll(".pictures-details") as NodeListOf<HTMLElement>,
-  smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
-  fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
-
 function setEntity(val) {
   entity = val;
-  entitySpans.forEach((span) => span.innerHTML = val);
-  charactersDetailsSpans.forEach((span) => span.style.display = (val === "characters" ? "inline-block" : "none"));
-  creatorsDetailsSpans.forEach((span) => span.style.display = (val === "creators" ? "inline" : "none"));
+  entitySpans.forEach(span => span.innerHTML = val);
+  charactersDetailsSpans.forEach(span => span.style.display = (val === "characters" ? "inline-block" : "none"));
+  creatorsDetailsSpans.forEach(span => span.style.display = (val === "creators" ? "inline" : "none"));
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
 }
 
 function setSize(val) {
   networkSize = val;
-  smallDetailsSpans.forEach((span) => span.style.display = (val === "small" ? "inline" : "none"));
-  fullDetailsSpans.forEach((span) => span.style.display = (val === "full" ? "inline" : "none"));
+  smallDetailsSpans.forEach(span => span.style.display = (val === "small" ? "inline" : "none"));
+  fullDetailsSpans.forEach(span => span.style.display = (val === "full" ? "inline" : "none"));
 }
 
 function setView(val) {
   view = val
-  colorsDetailsSpans.forEach((span) => span.style.display = (val === "colors" ? "inline" : "none"));
-  picturesDetailsSpans.forEach((span) => span.style.display = (val === "pictures" ? "inline" : "none"));
+  colorsDetailsSpans.forEach(span => span.style.display = (val === "colors" ? "inline" : "none"));
+  picturesDetailsSpans.forEach(span => span.style.display = (val === "pictures" ? "inline" : "none"));
 };
 function switchView() {
   const graph = networks[entity][networkSize].graph;
@@ -738,6 +763,8 @@ function doResize() {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
+  comicDetails.style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") - 11 + "px";
+  comicDetails.style["max-height"] = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") - 11 + "px";
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
@@ -825,7 +852,7 @@ function readUrl() {
     document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
     document.getElementById("title").innerHTML = "This is a m" + title;
     if (entity === "creators")
-      Object.keys(creatorsRoles).forEach((k) => {
+      Object.keys(creatorsRoles).forEach(k => {
         const role = document.getElementById(k + "-color");
         role.style.color = creatorsRoles[k];
         role.innerHTML = k + " (...)";
@@ -860,7 +887,7 @@ window.onhashchange = readUrl;
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confData) => {
-  confData.split("\n").forEach((line) => {
+  confData.split("\n").forEach(line => {
     const keyval = line.split(/:\s*/);
     conf[keyval[0]] = keyval[1];
   });
