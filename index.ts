@@ -825,7 +825,7 @@ function readUrl() {
     searchInput.value = selectedNodeLabel;
   } else selectedNodeLabel = null;
   const graph = networks[args[0]][args[1]].graph;
-  if (graph && (
+  if (graph && args[0] === entity && (
     (selectedNodeLabel && (!selectedNode || selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label")))
     || (!selectedNodeLabel && selectedNode)
   ))
