@@ -149,7 +149,7 @@ def download_entity(entity, options, filters={}):
 extractID = lambda n: int(n["id"] if "id" in n else n["resourceURI"].split("/")[-1])
 
 # Duplicates and bad names from creators data curated with the help of Takoyaki <https://yomguithereal.github.io/takoyaki/>
-SKIPNAMES = ["Various", "Blank", "Virtual", "#X", "ART & COMICS INT", "METROPOLIS", "Oh Sheeps", "KNIGHT AGENCY", "And More", "Mile High Comics", "Digikore Studios"]
+SKIPNAMES = ["Various", "Blank", "Virtual", "#X", "ART & COMICS INT", "METROPOLIS", "Oh Sheeps", "KNIGHT AGENCY", "And More", "Mile High Comics", "Digikore Studios", "Avalon Studios", "Udon Studios"]
 CLEANNAMES = {
   "Eddie Brock": "Venom (Eddie Brock)",
   "Multiple Man": "Multiple Man (Jamie Madrox)",
