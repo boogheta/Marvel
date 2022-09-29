@@ -51,12 +51,30 @@ html, body {
 #comic-details {
   border-top: 1px solid #555;
 }
+#close-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 33px;
+  height: 33px;
+  margin: 2px;
+  background: #eee;
+  outline: none;
+  border: 1px solid dimgrey;
+  cursor: pointer;
+  padding: 0;
+}
+#close-bar img {
+  width: 20px;
+  margin-top: 2px;
+}
 #list-title {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--marvel-red);
   font-weight: bold;
   margin: 0;
   padding: 4px;
+  margin-left: 35px
 }
 #comics ul {
   display: table-row;
@@ -227,7 +245,7 @@ h2 {
   width: 33px;
   height: 33px;
   margin: 2px;
-  background: white;
+  background: #eee;
   outline: none;
   border: 1px solid dimgrey;
   cursor: pointer;
@@ -263,6 +281,7 @@ h2 {
   text-align: center;
   font-family: monospace;
   font-size: 14px;
+  background: #eee;
 }
 #suggestions-select {
   display: none;
