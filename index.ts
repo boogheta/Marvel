@@ -187,7 +187,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
-  comicDetails = document.getElementById("comic-details") as HTMLImageElement,
+  comicsList = document.getElementById("comics") as HTMLImageElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
@@ -774,8 +774,7 @@ function doResize() {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicDetails.style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") - 11 + "px";
-  comicDetails.style["max-height"] = divHeight("comics-bar") - divHeight("list-title") - divHeight("comics") - 11 + "px";
+  comicsList.style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comic-details") - 11 + "px";
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));

@@ -40,24 +40,25 @@ html, body {
   text-align: center;
 }
 #comics, #comic-details {
-  max-height: 50%;
-}
-#comics, #comic-details {
   padding: 5px;
   text-align: center;
   overflow-y: auto;
   line-height: 20px;
 }
+#comics {
+  border-top: 1px dashed #444;
+}
 #comic-details {
-  border-top: 1px solid #555;
+  height: calc(100% / 2);
+  border-top: 1px solid #444;
 }
 #close-bar {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 33px;
-  height: 33px;
-  margin: 2px;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  margin: 5px;
   background: #eee;
   outline: none;
   border: 1px solid dimgrey;
@@ -74,7 +75,7 @@ html, body {
   font-weight: bold;
   margin: 0;
   padding: 4px;
-  margin-left: 35px
+  width: calc(100% - 42px);
 }
 #comics ul {
   display: table-row;
@@ -124,7 +125,7 @@ h2 {
   text-align: center;
   overflow-y: auto;
   max-height: 60%;
-  border-top: 1px solid #555;
+  border-top: 1px solid #444;
   line-height: 13px;
 }
 #node-label, #comic-title {
@@ -159,7 +160,7 @@ h2 {
 .footer p {
   font-size: 11px;
   padding: 2px 0px 7px 0px;
-  border-top: 1px solid #555;
+  border-top: 1px solid #444;
   margin: 0;
 }
 #sigma-container {
