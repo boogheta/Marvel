@@ -3,10 +3,11 @@
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 IDEAS:
 - list comics associated with clicked node
-  list table (sortable? virtuallist?)
+  bind url with selected comic ?
   on click (on hover?) :
    + highlight related nodes
-   + if click, story_id bound in url args
+  sortable list ?
+  mentions role authors ?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -558,7 +559,6 @@ function renderNetwork(firstLoad = false) {
       animateNodes(data.graph, newSizes, { duration: 100, easing: "quadraticOut" });
     }, 100);
     if (camera.ratio <= 5) {
-      clearInterval(initLoop);
       if (entity === "creators")
         clustersLayer.style.display = "block";
       camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
@@ -572,6 +572,7 @@ function renderNetwork(firstLoad = false) {
           .then((res) => res.arrayBuffer())
           .then((content) => loadComics(content))
       }
+      return clearInterval(initLoop);
     }
     camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
   }, firstLoad ? 250 : 0);
@@ -641,8 +642,7 @@ function clickNode(node, updateURL=true) {
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
   if (comicsReady) {
     nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
-    document.getElementById('view-comics').onclick = () =>
-      displayComics(node);
+    document.getElementById('view-comics').onclick = () => displayComics(node);
   }
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
