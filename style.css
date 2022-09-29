@@ -40,24 +40,25 @@ html, body {
   text-align: center;
 }
 #comics, #comic-details {
-  max-height: 50%;
-}
-#comics, #comic-details {
   padding: 5px;
   text-align: center;
   overflow-y: auto;
   line-height: 20px;
 }
+#comics {
+  border-top: 1px dashed #444;
+}
 #comic-details {
-  border-top: 1px solid #555;
+  height: calc(100% / 2);
+  border-top: 1px solid #444;
 }
 #close-bar {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 33px;
-  height: 33px;
-  margin: 2px;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  margin: 5px;
   background: #eee;
   outline: none;
   border: 1px solid dimgrey;
@@ -74,10 +75,10 @@ html, body {
   font-weight: bold;
   margin: 0;
   padding: 4px;
-  margin-left: 35px
+  width: calc(100% - 42px);
 }
 #comics ul {
-  display: table-row;
+  display: contents;
 }
 #comics li {
   padding: 2px;
@@ -124,7 +125,7 @@ h2 {
   text-align: center;
   overflow-y: auto;
   max-height: 60%;
-  border-top: 1px solid #555;
+  border-top: 1px solid #444;
   line-height: 13px;
 }
 #node-label, #comic-title {
@@ -159,7 +160,7 @@ h2 {
 .footer p {
   font-size: 11px;
   padding: 2px 0px 7px 0px;
-  border-top: 1px solid #555;
+  border-top: 1px solid #444;
   margin: 0;
 }
 #sigma-container {
@@ -213,22 +214,26 @@ h2 {
 }
 #modal {
   position: absolute;
-  top: 2%;
-  left: 2%;
-  width: 96%;
-  height: 96%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 10;
   display: none;
   background-color: rgba(0, 0, 0, 0.75);
   text-align: center;
-  border-radius: 10px;
   cursor: pointer;
 }
+#modal-helper {
+  height: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
 #modal-img {
-  padding: 10px;
-  max-width: 99%;
-  max-height: 99%;
+  max-width: 95%;
+  max-height: 95%;
   z-index: 20;
+  vertical-align: middle;
 }
 #controls {
   position: absolute;
@@ -414,7 +419,7 @@ label {
   display: none;
 }
 @media (max-width: 700px) {
-  #sidebar, .footer {
+  #sidebar, .footer, #comics-bar {
     width: 200px;
   }
   h1 {
@@ -432,6 +437,12 @@ label {
   .names > div {
     font-size: 12px;
   }
+  #list-title {
+    font-size: 14px;
+  }
+  #comics li {
+    font-size: 13px;
+  }
 }
 @media (max-height: 600px) {
   .network-choice {
@@ -448,6 +459,12 @@ label {
   }
   #credits, .asterisk, #title {
     display: none;
+  }
+  #list-title {
+    font-size: 14px;
+  }
+  #comics li {
+    font-size: 13px;
   }
 }
 @media not (pointer: coarse) {
