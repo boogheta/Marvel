@@ -280,10 +280,20 @@ function loadComics(comicsData) {
       c = c.data;
       c.creators = c.creators.split("|").filter(x => x);
       c.characters = c.characters.split("|").filter(x => x);
-      c.creators.forEach(cr => {
+      const artistsIds = {};
+      c.artists.forEach(cr => {
         if (!creatorsComics[cr])
           creatorsComics[cr] = [];
-        creatorsComics[cr].push(c);
+        creatorsComics[cr].push({...c, "role": "artist"});
+        artistsIds[c.id] = creatorsComics.length - 1;
+      });
+      c.writers.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        if (artistsIds[c.id])
+          creatorsComics[cr][artistsIds[c.id]].role = "both";
+        else
+          creatorsComics[cr].push({...c, "role": "writer"});
       });
       c.characters.forEach(ch => {
         if (!charactersComics[ch])
@@ -313,7 +323,7 @@ function displayComics(node) {
   document.getElementById("list-title").innerHTML = comics ? "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API" : "";
   document.getElementById("list-comics").innerHTML = comics
     ? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))
-        .map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>")
+        .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' class="' + x.role + '"' : "") + '>' + x.title + "</li>")
         .join("")
     : "No comic-book found.";
   comics.forEach(c => {

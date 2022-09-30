@@ -299,6 +299,33 @@ SWITCHATTRS = {
   "scarlet spider (ben reilly)": ["image_url"],
   "wolverine": ["image_url"]
 }
+
+# Cleanup authors by completing missing info
+def get_authors(comic):
+    artists = []
+    potential_artists = []
+    writers = []
+    potential_writers = []
+    for i, c in enumerate(comic["creators"]["items"]):
+        cid = extractID(c)
+        role = c.get("role", "").lower().strip()
+        if role === "writer":
+            writers.push(cid)
+            continue
+        for job in ["artist", "painter", "penciller", "penciler"]:
+            if job in role:
+                if "cover" in role:
+                    potential_artists.push(cid)
+                else:
+                    artists.push(cid)
+                break
+    if not artists and potential_artists:
+        artists.push(potential_artists[0])
+        potential_writers.push(potential_artists[0])
+    if not writers and potential_writers:
+        writers.push(potential_writers[0])
+    return [{"id": c, "role": "writer"} for c in writers] + [{"id": c, "role": "artist"} for c in artists]
+
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
     dupesIds = {}
@@ -389,7 +416,12 @@ def build_graph(nodes_type, links_type, comics, nodes):
                 comic[nodes_type]["items"].pop(i)
                 comic[nodes_type]["items"] += [{"id": i, "role": c.get("role", "")} for i in split_map[cid]]
 
-        for i, c1 in enumerate(comic[nodes_type]["items"]):
+        if nodes_type == "creators":
+            entities = get_authors(comic)
+        else:
+            entities = comic["characters"]["items"]
+
+        for i, c1 in enumerate(entities):
             c1id = extractID(c1)
 
             # Replace duplicates nodes by their proper id and skip bad ones
@@ -400,23 +432,12 @@ def build_graph(nodes_type, links_type, comics, nodes):
 
             # Keep only artists and writers for creators and count the repartition and total
             if nodes_type == "creators":
-                role = c1.get("role", "").lower().strip()
-                if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
-                    continue
-                if role in ["artist", "painter", "penciller", "penciler"]:
-                    role_key = "artist"
-                elif role == "writer":
-                    role_key = "writer"
-                G.nodes[c1id][role_key] += 1
+                G.nodes[c1id][c1["role"]] += 1
             G.nodes[c1id][links_type] += 1
 
-            for c2 in comic[nodes_type]["items"][i+1:]:
+            for c2 in entities[i+1:]:
 
                 # Keep only artists and writers for creators
-                if nodes_type == "creators":
-                    role = c2.get("role", "").lower().strip()
-                    if "cover" in role or role in ["editor", "letterer", "inker", "colorist"]:
-                        continue
                 c2id = extractID(c2)
 
                 # Skip autolinks
@@ -453,18 +474,21 @@ def build_csv(entity, rows):
         fields = ["id", "title", "description", "creators", "characters", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
+            authors = get_authors(row)
             el = {
                 "id": row["id"],
                 "title": row["title"],
                 "description": row["description"] or "",
                 "characters": "|".join(str(extractID(i)) for i in row["characters"]["items"]),
-                "creators": "|".join(str(extractID(i)) for i in row["creators"]["items"]),
+                "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),
+                "artists": "|".join(str(extractID(i)) for i in authors if i["role"] == "artist"),
                 "image_url": image_url(row["images"][0] if row["images"] else row.get("thumbnail")),
                 "url": sorted(row["urls"], key=lambda x: "z" if x["type"] != "details" else "a")[0]["url"]
             }
             writer.writerow([el[f] for f in fields])
 
 if __name__ == "__main__":
+    # Load all API data
     comics = []
     for comics_type in ["comic", "digital comic", "infinite comic"]:
         comics += download_entity("comics", {
@@ -475,8 +499,10 @@ if __name__ == "__main__":
     stories = download_entity("stories", {"orderBy": "id"}, {"type": "story"})
     characters = download_entity("characters", {"orderBy": "name"})
     creators = download_entity("creators", {"orderBy": ["lastName", "firstName"]})
+
+    # Build network graphs using granular stories as links
     build_graph("characters", "stories", stories, characters)
     build_graph("creators", "stories", stories, creators)
-    build_graph("characters", "comics", comics, characters)
-    build_graph("creators", "comics", comics, creators)
+
+    # Build CSV export of all comics
     build_csv("comics", comics)
