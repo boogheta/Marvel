@@ -1,9 +1,7 @@
 /* TODO:
 - fix selectedNodeLabel when switching networks
 - one more check with takoyaki on authors/characters labels + readjust louvain after
-
 - use colors when image non available
-- click stage 2 steps,n first remove comics bar
 
 IDEAS:
 - list comics associated with clicked node
@@ -569,7 +567,11 @@ function renderNetwork(firstLoad = false) {
 
   // Handle clicks on nodes
   renderer.on("clickNode", (event) => clickNode(event.node));
-  renderer.on("clickStage", () => setSearchQuery());
+  renderer.on("clickStage", () => {
+    if (comicsBarView)
+      hideComicsBar();
+    else setSearchQuery()
+  });
 
   // Prepare list of nodes for search/select suggestions
   const allSuggestions = data.graph.nodes()
