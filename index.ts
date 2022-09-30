@@ -310,7 +310,7 @@ function displayComics(node) {
     selectComic(null, true);
   comicsBarView = true;
   comicsBar.style.display = "block";
-  document.getElementById("list-title").innerHTML = "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API";
+  document.getElementById("list-title").innerHTML = comics ? "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API" : "";
   document.getElementById("list-comics").innerHTML = comics
     ? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))
         .map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>")
@@ -324,7 +324,7 @@ function displayComics(node) {
   resize();
 }
 
-// TODO: 
+// TODO:
 // - plug hover comics ?
 // - add creators/characters by comic
 // - select nodes on graph
