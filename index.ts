@@ -285,7 +285,7 @@ function loadComics(comicsData) {
         if (!creatorsComics[cr])
           creatorsComics[cr] = [];
         creatorsComics[cr].push({...c, "role": "artist"});
-        artistsIds[c.id] = creatorsComics.length - 1;
+        artistsIds[c.id] = creatorsComics[cr].length - 1;
       });
       c.writers.forEach(cr => {
         if (!creatorsComics[cr])
