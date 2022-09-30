@@ -1,8 +1,14 @@
 /* TODO:
 - fix selectedNodeLabel when switching networks
 - one more check with takoyaki on authors/characters labels + readjust louvain after
+
+- use colors when image non available
+- click stage 2 steps,n first remove comics bar
+
 IDEAS:
 - list comics associated with clicked node
+  zoom in on comic
+  unzoom on clicked node
   adjust responsive comic bar
   bind url with selected comic?
   sortable list?
