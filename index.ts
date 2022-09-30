@@ -1,11 +1,9 @@
 /* TODO:
-- fix selectedNodeLabel when switching networks
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - use colors when image non available
-
 IDEAS:
 - list comics associated with clicked node
-  zoom in on comic
+  zoom in on comic only when outside view ?
   unzoom on clicked node
   adjust responsive comic bar
   bind url with selected comic?
@@ -223,7 +221,12 @@ function divHeight(divId) {
 
 function setPermalink(ent, siz, vie, sel) {
   const graph = networks[entity][networkSize].graph,
-    selection = graph && sel && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
+    selection = ent === entity && sel && graph && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
+  if ((ent !== entity || siz !== networkSize) && graph && selectedNode) {
+    graph.setNodeAttribute(selectedNode, "highlighted", false);
+    selectedNode = null;
+    selectedNodeLabel = null;
+  }
   window.location.hash = ent + "/" + siz + "/" + vie + selection;
 }
 
@@ -239,13 +242,14 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
+  const graph = networks[entity][networkSize].graph;
   comicsBarView = false;
   comicsBar.style.display = "none";
   selectedComic = null;
-  selectComic();
-  if (selectedNode) {
-    clickNode(selectedNode);
-    centerNode(selectedNode);
+  selectComic(null, true);
+  if (graph && selectedNode && graph.hasNode(selectedNode)) {
+    clickNode(selectedNode, false);
+    //centerNode(selectedNode);
   }
 }
 document.getElementById("close-bar").onclick = hideComicsBar;
@@ -259,6 +263,7 @@ function computeNodeSize(node, stories, ratio) {
 };
 
 function centerNode(node) {
+  if (!camera) return;
   camera.animate(
     renderer.getNodeDisplayData(node),
     {duration: 300}
@@ -325,7 +330,9 @@ function displayComics(node) {
 // - select nodes on graph
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
-  if (graph && comic)
+  if (!graph || !renderer) return;
+
+  if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
 
   comicTitle.innerHTML = "";
@@ -337,8 +344,6 @@ function selectComic(comic = null, keep = false) {
   if (!comic) {
     if (!keep && selectedComic)
       selectComic(selectedComic);
-    else if (graph)
-      graph.setNodeAttribute(selectedNode, "highlighted", true)
     return;
   }
 
@@ -386,23 +391,23 @@ function selectComic(comic = null, keep = false) {
     "labelColor", {attribute: "hlcolor", color: "#CCC"}
   );
 
-    let x0, x1, y0, y1;
-    comic[entity].filter(n => graph.hasNode(n))
-      .forEach(n => {
-        const attrs = renderer.getNodeDisplayData(n);
-        if (!x0 || x0 > attrs.x) x0 = attrs.x;
-        if (!x1 || x1 < attrs.x) x1 = attrs.x;
-        if (!y0 || y0 > attrs.y) y0 = attrs.y;
-        if (!y1 || y1 < attrs.y) y1 = attrs.y;
-      });
-    const comicsBarWidth = divWidth("comics-bar"),
-      viewPortPosition = renderer.framedGraphToViewport({
-        x: (x0 + x1) / 2,
-        y: (y0 + y1) / 2
-      });
-    if (comicsBarWidth !== 200)
-      viewPortPosition.x += comicsBarWidth / 2;
-    camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
+  let x0, x1, y0, y1;
+  comic[entity].filter(n => graph.hasNode(n))
+    .forEach(n => {
+      const attrs = renderer.getNodeDisplayData(n);
+      if (!x0 || x0 > attrs.x) x0 = attrs.x;
+      if (!x1 || x1 < attrs.x) x1 = attrs.x;
+      if (!y0 || y0 > attrs.y) y0 = attrs.y;
+      if (!y1 || y1 < attrs.y) y1 = attrs.y;
+    });
+  const comicsBarWidth = divWidth("comics-bar"),
+    viewPortPosition = renderer.framedGraphToViewport({
+      x: (x0 + x1) / 2,
+      y: (y0 + y1) / 2
+    });
+  if (comicsBarWidth !== 200)
+    viewPortPosition.x += comicsBarWidth / 2;
+  camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
 }
 
 function buildNetwork(networkData) {
