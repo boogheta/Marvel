@@ -9,8 +9,7 @@ IDEAS:
   bind url with selected comic?
   sortable list?
   bind arrow keys to next/previous comic?
-  mentions role authors?
-  add publiation dates for better sort?
+  add publication dates for better sort?
 - test bipartite network between authors and characters filtered by category of author
 */
 
