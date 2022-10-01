@@ -6,11 +6,11 @@ IDEAS:
   freeze hover after click until left zone
   zoom in on comic only when outside view ?
   unzoom on clicked node
-  adjust responsive comic bar
   bind url with selected comic?
   sortable list?
   bind arrow keys to next/previous comic?
   allow only comics full list searchable
+  reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -194,6 +194,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
+  comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
@@ -234,7 +235,9 @@ function setPermalink(ent, siz, vie, sel) {
 
 function defaultSidebar() {
   explanations.style.display = "block";
+  explanations.scrollTo(0, 0);
   nodeDetails.style.display = "none";
+  nodeDetails.scrollTo(0, 0);
   modal.style.display = "none";
   modalImg.src = "";
   nodeLabel.innerHTML = "";
@@ -323,23 +326,25 @@ function loadComics(comicsData) {
 
 function displayComics(node) {
   const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
-  if (selectedComic && comics.indexOf(selectedComic) !== -1)
-    selectComic(selectedComic, true);
-  else {
-    selectComic(null, true);
-    comicsList.scrollTo(0, 0);
-  }
+  selectComic(
+    (selectedComic && comics.filter(c => c.id === selectedComic.id).length
+      ? selectedComic
+      : null),
+    true
+  );
+  comicsDiv.scrollTo(0, 0);
   comicsBarView = true;
   comicsBar.style.display = "block";
   comicsTitle.innerHTML = "";
+  comicsSubtitle.innerHTML = "";
   if (comics) {
-    comicsTitle.innerHTML = comics.length + " comic" + (comics.length > 1 ? "s" : "") + " listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+    comicsTitle.innerHTML = comics.length + " comic" + (comics.length > 1 ? "s" : "") + " listing<br/>"
+      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
     if (entity === "creators")
-      comicsTitle.innerHTML += (" as " +
-        Object.keys(creatorsRoles)
+      comicsSubtitle.innerHTML = Object.keys(creatorsRoles)
         .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
         .join("&nbsp;")
-      ).replace(/&nbsp;([^&]+)$/, " or $1");
+        .replace(/&nbsp;([^&]+)$/, " or $1");
   }
   comicsList.innerHTML = comics
     ? comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
@@ -365,7 +370,8 @@ function selectComic(comic = null, keep = false) {
   if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
 
-  document.getElementById("comic-details").scrollTo(0, 0);
+  if (!comic || !selectedComic || comic.id !== selectedComic.id)
+    document.getElementById("comic-details").scrollTo(0, 0);
   comicTitle.innerHTML = "";
   comicImg.src = "";
   comicDesc.innerHTML = "";
@@ -756,6 +762,7 @@ function clickNode(node, updateURL=true) {
   const attrs = data.graph.getNodeAttributes(node);
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
+  nodeDetails.scrollTo(0, 0);
   nodeLabel.innerHTML = attrs.label;
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {

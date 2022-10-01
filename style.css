@@ -69,13 +69,19 @@ html, body {
   width: 20px;
   margin-top: 2px;
 }
+#comics-bar h3 {
+  margin: 0;
+  padding: 0px 4px 4px 4px;
+}
 #comics-title {
   font-size: 16px;
   color: var(--marvel-red);
   font-weight: bold;
-  margin: 0;
-  padding: 4px;
   width: calc(100% - 42px);
+  padding: 4px 4px 0px 4px!important;
+}
+#comics-subtitle {
+  font-size: 15px;
 }
 #comics-list {
   display: contents;
@@ -439,6 +445,17 @@ label {
   }
   #comics-title {
     font-size: 14px;
+    width: calc(100% - 38px);
+  }
+  #comics-subtitle {
+    font-size: 14px;
+  }
+  #comics-subtitle-extra {
+    display: none;
+  }
+  #close-bar {
+    width: 26px;
+    height: 26px;
   }
   #comics li {
     font-size: 13px;
