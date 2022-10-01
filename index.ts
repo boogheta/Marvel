@@ -1,6 +1,5 @@
 /* TODO:
 - one more check with takoyaki on authors/characters labels + readjust louvain after
-- freeze hover after click until left zone
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - bind url with selected comic?
@@ -190,9 +189,10 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
-  comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
   comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
+  comicsList = document.getElementById("comics-list") as HTMLElement,
+  comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
@@ -212,6 +212,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
+comicsCache.onmouseout = () => comicsCache.style.display = "none";
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -359,7 +360,6 @@ function displayComics(node) {
 }
 
 // TODO:
-// - plug hover comics ?
 // - display date + creators/characters by comic
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
@@ -374,8 +374,11 @@ function selectComic(comic = null, keep = false) {
   comicImg.src = "";
   comicDesc.innerHTML = "";
   comicUrl.style.display = "none";
-  if (keep)
+  if (keep) {
     selectedComic = comic;
+    if (comic)
+      comicsCache.style.display = "block";
+  }
   if (!comic) {
     if (!keep && selectedComic)
       selectComic(selectedComic);
@@ -905,6 +908,10 @@ function doResize() {
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-list") - divHeight("comic-details") - 11 + "px";
+  const comicsDims = comicsDiv.getBoundingClientRect();
+  ["width", "height", "top"].forEach(k =>
+    comicsCache.style[k] = comicsDims[k] + "px"
+  );
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));

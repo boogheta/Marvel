@@ -91,6 +91,12 @@ html, body {
   font-size: 16px;
   cursor: pointer;
 }
+#comics-cache {
+  display: none;
+  opacity: 0;
+  position: absolute;
+  z-index: 5;
+}
 #comics-list li:nth-child(even) {
   background: #2F2F2F;
 }
@@ -508,6 +514,9 @@ label {
   }
   #suggestions-select {
     display: block;
+  }
+  #comics-cache {
+    display: none!important;
   }
 }
 @media (pointer: coarse) and (max-height: 600px) {
