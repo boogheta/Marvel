@@ -325,8 +325,10 @@ function displayComics(node) {
   const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
   if (selectedComic && comics.indexOf(selectedComic) !== -1)
     selectComic(selectedComic, true);
-  else
+  else {
     selectComic(null, true);
+    comicsList.scrollTo(0, 0);
+  }
   comicsBarView = true;
   comicsBar.style.display = "block";
   comicsTitle.innerHTML = "";
@@ -363,6 +365,7 @@ function selectComic(comic = null, keep = false) {
   if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
 
+  document.getElementById("comic-details").scrollTo(0, 0);
   comicTitle.innerHTML = "";
   comicImg.src = "";
   comicDesc.innerHTML = "";
@@ -708,7 +711,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
+  nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
 }
 
