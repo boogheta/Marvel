@@ -1,5 +1,7 @@
 /* TODO:
+- buttons Click one node or Explore All comics
 - one more check with takoyaki on authors/characters labels + readjust louvain after
+- display date + creators/characters by comic
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - bind url with selected comic?
@@ -7,7 +9,7 @@
 - bind arrow keys to next/previous comic?
 - allow only comics full list searchable
 IDEAS:
-  reset regular position for smartphone and keep double bar except low width?
+- reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -190,7 +192,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
-  comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
+  comicsSubtitleList = document.getElementById("comics-subtitle-list") as HTMLElement,
+  comicsSubtitleExtra = document.getElementById("comics-subtitle-extra") as HTMLElement,
   comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
@@ -335,12 +338,13 @@ function displayComics(node) {
   comicsBarView = true;
   comicsBar.style.display = "block";
   comicsTitle.innerHTML = "";
-  comicsSubtitle.innerHTML = "";
+  comicsSubtitleList.innerHTML = "";
+  comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
   if (comics) {
     comicsTitle.innerHTML = comics.length + " comic" + (comics.length > 1 ? "s" : "") + " listing<br/>"
       + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
     if (entity === "creators")
-      comicsSubtitle.innerHTML = Object.keys(creatorsRoles)
+      comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
         .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
         .join("&nbsp;")
         .replace(/&nbsp;([^&]+)$/, " or $1");
@@ -359,8 +363,6 @@ function displayComics(node) {
   resize();
 }
 
-// TODO:
-// - display date + creators/characters by comic
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
@@ -907,7 +909,7 @@ function doResize() {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-list") - divHeight("comic-details") - 11 + "px";
+  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-title") - divHeight("comics-subtitle") - divHeight("comic-details") - 11 + "px";
   const comicsDims = comicsDiv.getBoundingClientRect();
   ["width", "height", "top"].forEach(k =>
     comicsCache.style[k] = comicsDims[k] + "px"
