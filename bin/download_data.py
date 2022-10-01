@@ -309,22 +309,36 @@ def get_authors(comic):
     for i, c in enumerate(comic["creators"]["items"]):
         cid = extractID(c)
         role = c.get("role", "").lower().strip()
-        if role === "writer":
-            writers.push(cid)
+        if role == "writer":
+            writers.append(cid)
             continue
         for job in ["artist", "painter", "penciller", "penciler"]:
             if job in role:
                 if "cover" in role:
-                    potential_artists.push(cid)
+                    potential_artists.append(cid)
                 else:
-                    artists.push(cid)
+                    artists.append(cid)
                 break
     if not artists and potential_artists:
-        artists.push(potential_artists[0])
-        potential_writers.push(potential_artists[0])
+        artists.append(potential_artists[0])
+        potential_writers.append(potential_artists[0])
     if not writers and potential_writers:
-        writers.push(potential_writers[0])
+        writers.append(potential_writers[0])
     return [{"id": c, "role": "writer"} for c in writers] + [{"id": c, "role": "artist"} for c in artists]
+
+def get_date_type(comic, typ):
+    return [d["date"] for d in comic["dates"] if d["type"] == typ][0][:7]
+
+BAD_DATES = ["-0001-1", "2029-12"]
+def get_date(comic):
+    date = get_date_type(comic, "onsaleDate")
+    if date in BAD_DATES:
+        altdate = get_date_type(comic, "focDate")
+        if altdate not in BAD_DATES:
+            return altdate
+    if date in BAD_DATES:
+        return "????-??"
+    return date
 
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
@@ -471,13 +485,14 @@ def build_graph(nodes_type, links_type, comics, nodes):
 def build_csv(entity, rows):
     with open(os.path.join("data", "Marvel_%s.csv" % entity), "w") as csvf:
         writer = csv.writer(csvf)
-        fields = ["id", "title", "description", "creators", "characters", "image_url", "url"]
+        fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
             authors = get_authors(row)
             el = {
                 "id": row["id"],
                 "title": row["title"],
+                "date": get_date(row),
                 "description": row["description"] or "",
                 "characters": "|".join(str(extractID(i)) for i in row["characters"]["items"]),
                 "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),

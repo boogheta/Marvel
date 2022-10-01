@@ -9,7 +9,6 @@ IDEAS:
   bind url with selected comic?
   sortable list?
   bind arrow keys to next/previous comic?
-  add publication dates for better sort?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -335,8 +334,7 @@ function displayComics(node) {
 
 // TODO:
 // - plug hover comics ?
-// - add creators/characters by comic
-// - select nodes on graph
+// - display date + creators/characters by comic
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
