@@ -3,12 +3,14 @@
 - use colors when image non available
 IDEAS:
 - list comics associated with clicked node
+  freeze hover after click until left zone
   zoom in on comic only when outside view ?
   unzoom on clicked node
   adjust responsive comic bar
   bind url with selected comic?
   sortable list?
   bind arrow keys to next/previous comic?
+  allow only comics full list searchable
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -276,28 +278,35 @@ function loadComics(comicsData) {
     skipEmptyLines: "greedy",
 	step: function(c) {
       c = c.data;
-      c.creators = c.creators.split("|").filter(x => x);
+
       c.characters = c.characters.split("|").filter(x => x);
-      const artistsIds = {};
-      c.artists.forEach(cr => {
-        if (!creatorsComics[cr])
-          creatorsComics[cr] = [];
-        creatorsComics[cr].push({...c, "role": "artist"});
-        artistsIds[c.id] = creatorsComics[cr].length - 1;
-      });
-      c.writers.forEach(cr => {
-        if (!creatorsComics[cr])
-          creatorsComics[cr] = [];
-        if (artistsIds[c.id])
-          creatorsComics[cr][artistsIds[c.id]].role = "both";
-        else
-          creatorsComics[cr].push({...c, "role": "writer"});
-      });
       c.characters.forEach(ch => {
         if (!charactersComics[ch])
           charactersComics[ch] = [];
         charactersComics[ch].push(c);
       });
+
+      const artistsIds = {};
+      c.artists = c.artists.split("|").filter(x => x);
+      c.writers = c.writers.split("|").filter(x => x);
+      c.creators = c.writers.concat(c.artists);
+
+      c.artists.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        creatorsComics[cr].push({...c, "role": "artist"});
+        artistsIds[cr] = creatorsComics[cr].length - 1;
+      });
+
+      c.writers.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        if (artistsIds[cr])
+          creatorsComics[cr][artistsIds[cr]].role = "both";
+        else
+          creatorsComics[cr].push({...c, "role": "writer"});
+      });
+
 	},
 	complete: function() {
       comicsReady = true;
