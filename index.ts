@@ -1,15 +1,13 @@
 /* TODO:
 - one more check with takoyaki on authors/characters labels + readjust louvain after
-- use colors when image non available
+- freeze hover after click until left zone
+- zoom in on comic only when outside view ?
+- unzoom on clicked node
+- bind url with selected comic?
+- sortable list?
+- bind arrow keys to next/previous comic?
+- allow only comics full list searchable
 IDEAS:
-- list comics associated with clicked node
-  freeze hover after click until left zone
-  zoom in on comic only when outside view ?
-  unzoom on clicked node
-  bind url with selected comic?
-  sortable list?
-  bind arrow keys to next/previous comic?
-  allow only comics full list searchable
   reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
@@ -471,7 +469,7 @@ function buildNetwork(networkData) {
   });
 
   // Adjust nodes visual attributes for rendering (size, color, images)
-  data.graph.forEachNode((node, {x, y, stories, thumbnail, artist, writer, community}) => {
+  data.graph.forEachNode((node, {x, y, stories, image, artist, writer, community}) => {
     const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
       role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
       color = (entity === "characters"
@@ -484,6 +482,7 @@ function buildNetwork(networkData) {
     data.counts[key]++;
     data.graph.mergeNodeAttributes(node, {
       type: "thumbnail",
+      image: /available/i.test(image) ? "" : image,
       size: computeNodeSize(node, stories, 1),
       color: color,
       hlcolor: color
