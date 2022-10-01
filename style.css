@@ -69,7 +69,7 @@ html, body {
   width: 20px;
   margin-top: 2px;
 }
-#list-title {
+#comics-title {
   font-size: 16px;
   color: var(--marvel-red);
   font-weight: bold;
@@ -77,15 +77,15 @@ html, body {
   padding: 4px;
   width: calc(100% - 42px);
 }
-#comics ul {
+#comics-list {
   display: contents;
 }
-#comics li {
+#comics-list li {
   padding: 2px;
   font-size: 16px;
   cursor: pointer;
 }
-#comics li:nth-child(even) {
+#comics-list li:nth-child(even) {
   background: #2F2F2F;
 }
 h1 {
@@ -437,7 +437,7 @@ label {
   .names > div {
     font-size: 12px;
   }
-  #list-title {
+  #comics-title {
     font-size: 14px;
   }
   #comics li {
@@ -460,7 +460,7 @@ label {
   #credits, .asterisk, #title {
     display: none;
   }
-  #list-title {
+  #comics-title {
     font-size: 14px;
   }
   #comics li {

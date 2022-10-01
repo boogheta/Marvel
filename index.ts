@@ -191,7 +191,9 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
-  comicsList = document.getElementById("comics") as HTMLImageElement,
+  comicsDiv = document.getElementById("comics") as HTMLImageElement,
+  comicsList = document.getElementById("comics-list") as HTMLElement,
+  comicsTitle = document.getElementById("comics-title") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
@@ -317,7 +319,7 @@ function loadComics(comicsData) {
   });
 }
 
-const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
+//const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
 
 function displayComics(node) {
   const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
@@ -327,11 +329,21 @@ function displayComics(node) {
     selectComic(null, true);
   comicsBarView = true;
   comicsBar.style.display = "block";
-  document.getElementById("list-title").innerHTML = comics ? "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API" : "";
-  document.getElementById("list-comics").innerHTML = comics
-    ? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))
-        .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' class="' + x.role + '"' : "") + '>' + x.title + "</li>")
-        .join("")
+  comicsTitle.innerHTML = "";
+  if (comics) {
+    comicsTitle.innerHTML = comics.length + " comic" + (comics.length > 1 ? "s" : "") + " listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+    if (entity === "creators")
+      comicsTitle.innerHTML += (" as " +
+        Object.keys(creatorsRoles)
+        .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
+        .join("&nbsp;")
+      ).replace(/&nbsp;([^&]+)$/, " or $1");
+  }
+  comicsList.innerHTML = comics
+    ? comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
+    //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
+      .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + '>' + x.title + "</li>")
+      .join("")
     : "No comic-book found.";
   comics.forEach(c => {
     document.getElementById("comic-" + c.id).onclick = () => selectComic(c, true);
@@ -884,7 +896,7 @@ function doResize() {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicsList.style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comic-details") - 11 + "px";
+  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-list") - divHeight("comic-details") - 11 + "px";
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
