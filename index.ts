@@ -1,16 +1,13 @@
 /* TODO:
 - one more check with takoyaki on authors/characters labels + readjust louvain after
-- use colors when image non available
+- zoom in on comic only when outside view ?
+- unzoom on clicked node
+- bind url with selected comic?
+- sortable list?
+- bind arrow keys to next/previous comic?
+- allow only comics full list searchable
 IDEAS:
-- list comics associated with clicked node
-  zoom in on comic only when outside view ?
-  unzoom on clicked node
-  adjust responsive comic bar
-  bind url with selected comic?
-  sortable list?
-  bind arrow keys to next/previous comic?
-  mentions role authors?
-  add publiation dates for better sort?
+  reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -191,7 +188,11 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
-  comicsList = document.getElementById("comics") as HTMLImageElement,
+  comicsDiv = document.getElementById("comics") as HTMLImageElement,
+  comicsTitle = document.getElementById("comics-title") as HTMLElement,
+  comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
+  comicsList = document.getElementById("comics-list") as HTMLElement,
+  comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
@@ -211,6 +212,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
+comicsCache.onmouseout = () => comicsCache.style.display = "none";
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -232,7 +234,9 @@ function setPermalink(ent, siz, vie, sel) {
 
 function defaultSidebar() {
   explanations.style.display = "block";
+  explanations.scrollTo(0, 0);
   nodeDetails.style.display = "none";
+  nodeDetails.scrollTo(0, 0);
   modal.style.display = "none";
   modalImg.src = "";
   nodeLabel.innerHTML = "";
@@ -278,18 +282,35 @@ function loadComics(comicsData) {
     skipEmptyLines: "greedy",
 	step: function(c) {
       c = c.data;
-      c.creators = c.creators.split("|").filter(x => x);
+
       c.characters = c.characters.split("|").filter(x => x);
-      c.creators.forEach(cr => {
-        if (!creatorsComics[cr])
-          creatorsComics[cr] = [];
-        creatorsComics[cr].push(c);
-      });
       c.characters.forEach(ch => {
         if (!charactersComics[ch])
           charactersComics[ch] = [];
         charactersComics[ch].push(c);
       });
+
+      const artistsIds = {};
+      c.artists = c.artists.split("|").filter(x => x);
+      c.writers = c.writers.split("|").filter(x => x);
+      c.creators = c.writers.concat(c.artists);
+
+      c.artists.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        creatorsComics[cr].push({...c, "role": "artist"});
+        artistsIds[cr] = creatorsComics[cr].length - 1;
+      });
+
+      c.writers.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        if (artistsIds[cr])
+          creatorsComics[cr][artistsIds[cr]].role = "both";
+        else
+          creatorsComics[cr].push({...c, "role": "writer"});
+      });
+
 	},
 	complete: function() {
       comicsReady = true;
@@ -300,21 +321,35 @@ function loadComics(comicsData) {
   });
 }
 
-const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
+//const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
 
 function displayComics(node) {
   const comics = (entity === "characters" ? charactersComics : creatorsComics)[node];
-  if (selectedComic && comics.indexOf(selectedComic) !== -1)
-    selectComic(selectedComic, true);
-  else
-    selectComic(null, true);
+  selectComic(
+    (selectedComic && comics.filter(c => c.id === selectedComic.id).length
+      ? selectedComic
+      : null),
+    true
+  );
+  comicsDiv.scrollTo(0, 0);
   comicsBarView = true;
   comicsBar.style.display = "block";
-  document.getElementById("list-title").innerHTML = "Comics listing " + networks[entity][networkSize].graph.getNodeAttribute(node, "label") + " within Marvel's API";
-  document.getElementById("list-comics").innerHTML = comics
-    ? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))
-        .map(x => '<li id="comic-' + x.id + '">' + x.title + "</li>")
-        .join("")
+  comicsTitle.innerHTML = "";
+  comicsSubtitle.innerHTML = "";
+  if (comics) {
+    comicsTitle.innerHTML = comics.length + " comic" + (comics.length > 1 ? "s" : "") + " listing<br/>"
+      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+    if (entity === "creators")
+      comicsSubtitle.innerHTML = Object.keys(creatorsRoles)
+        .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
+        .join("&nbsp;")
+        .replace(/&nbsp;([^&]+)$/, " or $1");
+  }
+  comicsList.innerHTML = comics
+    ? comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
+    //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
+      .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + '>' + x.title + "</li>")
+      .join("")
     : "No comic-book found.";
   comics.forEach(c => {
     document.getElementById("comic-" + c.id).onclick = () => selectComic(c, true);
@@ -324,10 +359,8 @@ function displayComics(node) {
   resize();
 }
 
-// TODO: 
-// - plug hover comics ?
-// - add creators/characters by comic
-// - select nodes on graph
+// TODO:
+// - display date + creators/characters by comic
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
@@ -335,12 +368,17 @@ function selectComic(comic = null, keep = false) {
   if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
 
+  if (!comic || !selectedComic || comic.id !== selectedComic.id)
+    document.getElementById("comic-details").scrollTo(0, 0);
   comicTitle.innerHTML = "";
   comicImg.src = "";
   comicDesc.innerHTML = "";
   comicUrl.style.display = "none";
-  if (keep)
+  if (keep) {
     selectedComic = comic;
+    if (comic)
+      comicsCache.style.display = "block";
+  }
   if (!comic) {
     if (!keep && selectedComic)
       selectComic(selectedComic);
@@ -434,7 +472,7 @@ function buildNetwork(networkData) {
   });
 
   // Adjust nodes visual attributes for rendering (size, color, images)
-  data.graph.forEachNode((node, {x, y, stories, thumbnail, artist, writer, community}) => {
+  data.graph.forEachNode((node, {x, y, stories, image, artist, writer, community}) => {
     const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
       role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
       color = (entity === "characters"
@@ -447,6 +485,7 @@ function buildNetwork(networkData) {
     data.counts[key]++;
     data.graph.mergeNodeAttributes(node, {
       type: "thumbnail",
+      image: /available/i.test(image) ? "" : image,
       size: computeNodeSize(node, stories, 1),
       color: color,
       hlcolor: color
@@ -592,7 +631,6 @@ function renderNetwork(firstLoad = false) {
 
   // Feed all nodes to select for touchscreens
   selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
-    .sort()
     .map((node) => "<option>" + node.label + "</option>")
     .join("\n");
   selectSuggestions.onchange = () => {
@@ -628,7 +666,7 @@ function renderNetwork(firstLoad = false) {
       feedAllSuggestions();
     }
     searchSuggestions.innerHTML = suggestions
-      .sort()
+      .sort((a, b) => a.label < b.label ? -1 : 1)
       .map((node) => "<option>" + node.label + "</option>")
       .join("\n");
   }
@@ -680,7 +718,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">See the list of comics!</a></p>';
+  nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
 }
 
@@ -725,6 +763,7 @@ function clickNode(node, updateURL=true) {
   const attrs = data.graph.getNodeAttributes(node);
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
+  nodeDetails.scrollTo(0, 0);
   nodeLabel.innerHTML = attrs.label;
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
@@ -868,7 +907,11 @@ function doResize() {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicsList.style.height = divHeight("comics-bar") - divHeight("list-title") - divHeight("comic-details") - 11 + "px";
+  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-list") - divHeight("comic-details") - 11 + "px";
+  const comicsDims = comicsDiv.getBoundingClientRect();
+  ["width", "height", "top"].forEach(k =>
+    comicsCache.style[k] = comicsDims[k] + "px"
+  );
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
   if (renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
