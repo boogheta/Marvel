@@ -457,7 +457,7 @@ label {
     font-size: 14px;
   }
   #comics-subtitle-extra {
-    display: none;
+    display: none!important;
   }
   #close-bar {
     width: 26px;
