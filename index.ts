@@ -629,7 +629,6 @@ function renderNetwork(firstLoad = false) {
 
   // Feed all nodes to select for touchscreens
   selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
-    .sort()
     .map((node) => "<option>" + node.label + "</option>")
     .join("\n");
   selectSuggestions.onchange = () => {
@@ -665,7 +664,7 @@ function renderNetwork(firstLoad = false) {
       feedAllSuggestions();
     }
     searchSuggestions.innerHTML = suggestions
-      .sort()
+      .sort((a, b) => a.label < b.label ? -1 : 1)
       .map((node) => "<option>" + node.label + "</option>")
       .join("\n");
   }
