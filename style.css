@@ -515,6 +515,12 @@ label {
   #controls {
     right: 1em;
   }
+  .desktop-details {
+    display: inline;
+  }
+  .phones-details {
+    display: none;
+  }
 }
 @media (pointer: coarse) {
   #sidebar {
@@ -535,6 +541,12 @@ label {
   }
   #comics-cache {
     display: none!important;
+  }
+  .desktop-details {
+    display: none;
+  }
+  .phones-details {
+    display: inline;
   }
 }
 @media (pointer: coarse) and (max-height: 600px) {
