@@ -5,7 +5,7 @@
 - bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
-- buttons Click one node or Explore All comics
+- buttons Click/Tap one node or Explore All comics
 - allow only comics full list searchable
 - sortable/filterable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
