@@ -353,7 +353,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
             "description": n.get("description", ""),
             "image": n["image"],
             "image_url": image_url(n["thumbnail"]),
-            "url": n["urls"][0]["url"],
+            "url": sorted(n["urls"], key=lambda x: "z" if x["type"] != "details" else "a")[0]["url"],
             links_type: 0
         }
         if nodes_type == "creators":
