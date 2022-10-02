@@ -48,6 +48,7 @@ html, body {
 }
 #comics {
   border-top: 1px dashed #444;
+  overflow-x: hidden;
 }
 #comic-details {
   height: calc(100% / 2);
