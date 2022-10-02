@@ -101,7 +101,7 @@ html, body {
 }
 #comics-list li.selected {
   background: var(--marvel-red);
-  color: white;
+  color: white!important;
   font-weight: bold;
 }
 #comics-cache {
