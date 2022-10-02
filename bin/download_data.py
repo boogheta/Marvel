@@ -5,6 +5,7 @@ import sys
 import csv
 import json
 import yaml
+import gzip
 import shutil
 import requests
 from time import time, sleep
@@ -483,7 +484,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
     return G
 
 def build_csv(entity, rows):
-    with open(os.path.join("data", "Marvel_%s.csv" % entity), "w") as csvf:
+    with gzip.open(os.path.join("data", "Marvel_%s.csv.gz" % entity), "wt") as csvf:
         writer = csv.writer(csvf)
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
