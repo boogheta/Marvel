@@ -340,7 +340,7 @@ function displayComics(node) {
       : null),
     true
   );
-  comicsDiv.scrollTo(0, 0);
+
   comicsBarView = true;
   comicsBar.style.display = "block";
   comicsTitle.innerHTML = "";
@@ -358,7 +358,7 @@ function displayComics(node) {
   comicsList.innerHTML = comics
     ? comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
     //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
-      .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + '>' + x.title + "</li>")
+      .map(x => '<li id="comic-' + x.id + '"' + (entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
       .join("")
     : "No comic-book found.";
   comics.forEach(c => {
@@ -367,6 +367,10 @@ function displayComics(node) {
     comicLi.onmouseenter = () => selectComic(c);
     comicLi.onmouseout = () => selectComic(null);
   });
+  setTimeout(() => comicsDiv.scrollTo(0, (selectedComic ? (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2) : 0))
+  , 0);
+document.getElementById("comics").scrollTo(0,1092-208)
+
   resize();
 }
 
