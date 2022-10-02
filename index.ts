@@ -378,7 +378,7 @@ function displayComics(node) {
   resize();
 }
 
-comicsDiv.onmouseout = () => {
+comicsList.onmouseleave = () => {
   if (!selectedComic)
     clickNode(selectedNode);
 };
