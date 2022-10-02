@@ -1,13 +1,13 @@
 /* TODO:
+- display creators/characters by comic (with link actions?)
 - bind arrow keys to next/previous comic?
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - buttons Click one node or Explore All comics
-- one more check with takoyaki on authors/characters labels + readjust louvain after
-- display creators/characters by comic (with link actions?)
 - bind url with selected comic?
 - allow only comics full list searchable
 - sortable/filterable list?
+- one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
 IDEAS:
 - reset regular position for smartphone and keep double bar except low width?
@@ -369,8 +369,6 @@ function displayComics(node) {
   });
   setTimeout(() => comicsDiv.scrollTo(0, (selectedComic ? (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2) : 0))
   , 0);
-document.getElementById("comics").scrollTo(0,1092-208)
-
   resize();
 }
 
