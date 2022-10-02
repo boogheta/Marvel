@@ -397,10 +397,13 @@ function selectComic(comic = null, keep = false) {
 
   if (!comic || !selectedComic || comic.id !== selectedComic.id)
     document.getElementById("comic-details").scrollTo(0, 0);
-  comicTitle.innerHTML = "";
-  comicImg.src = "";
-  comicDesc.innerHTML = "";
-  comicUrl.style.display = "none";
+
+  if (!comic || !selectedComic || comic.id !== selectedComic.id) {
+    comicTitle.innerHTML = "";
+    comicImg.src = "";
+    comicDesc.innerHTML = "";
+    comicUrl.style.display = "none";
+  }
   if (keep) {
     selectedComic = comic;
     document.querySelectorAll("#comics-list li.selected").forEach(el =>
@@ -751,7 +754,10 @@ function renderNetwork(firstLoad = false) {
 
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
-  document.getElementById('view-comics').onclick = () => displayComics(node);
+  document.getElementById('view-comics').onclick = () => {
+    displayComics(node);
+    comicsCache.style.display = "none";
+  };
 }
 
 function clickNode(node, updateURL=true) {
