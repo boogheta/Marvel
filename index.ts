@@ -1,8 +1,10 @@
 /* TODO:
+- fix position network on click comic on smartphones
 - fix smarthpne touch unclicks
 - set comics view under Main title on phones
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
+- remove cache when zoom fixed?
 - bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
