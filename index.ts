@@ -1,8 +1,9 @@
 /* TODO:
+- fix position network on click comic on smartphones
 - fix smarthpne touch unclicks
-- set comics view under Main title on phones
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
+- remove cache when zoom fixed?
 - bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
@@ -223,7 +224,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
-comicsCache.onmouseout = () => comicsCache.style.display = "none";
+comicsCache.onclick = () => comicsCache.style.display = "none";
+comicsCache.onmouseout = comicsCache.onclick;
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -260,7 +262,7 @@ function hideComicsBar() {
   const graph = networks[entity][networkSize].graph,
     clustersLayer = document.getElementById("clusters-layer");
   comicsBarView = false;
-  comicsBar.style.display = "none";
+  comicsBar.style.transform = "translate(0px, 0px)";
   selectedComic = null;
   selectComic(null, true);
   if (graph && entity === "creators" && clustersLayer)
@@ -348,6 +350,7 @@ function displayComics(node) {
 
   comicsBarView = true;
   comicsBar.style.display = "block";
+  comicsBar.style.transform = "translate(-" + divWidth("comics-bar") + "px, 0px)";
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
@@ -390,24 +393,35 @@ function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
-  if (comic && selectedNode && graph.hasNode(selectedNode))
-    graph.setNodeAttribute(selectedNode, "highlighted", false)
-
-  if (!comic || !selectedComic || comic.id !== selectedComic.id)
-    document.getElementById("comic-details").scrollTo(0, 0);
-  comicTitle.innerHTML = "";
-  comicImg.src = "";
-  comicDesc.innerHTML = "";
-  comicUrl.style.display = "none";
   if (keep) {
     selectedComic = comic;
     document.querySelectorAll("#comics-list li.selected").forEach(el =>
       el.className = ""
     );
     if (comic) {
-      document.getElementById("comic-" + comic.id).className = "selected";
+      const comicLi = document.getElementById("comic-" + comic.id);
+      comicLi.className = "selected";
+      comicLi.onclick = () => {
+        comicLi.className = "";
+        comicLi.onclick = () => selectComic(comic, true);
+        selectedComic = null;
+        selectComic(null);
+      };
       comicsCache.style.display = "block";
     }
+  }
+
+  if (comic && selectedNode && graph.hasNode(selectedNode))
+    graph.setNodeAttribute(selectedNode, "highlighted", false)
+
+  if (!comic || !selectedComic || comic.id !== selectedComic.id)
+    document.getElementById("comic-details").scrollTo(0, 0);
+
+  if (!comic || !selectedComic || comic.id !== selectedComic.id) {
+    comicTitle.innerHTML = "";
+    comicImg.src = "";
+    comicDesc.innerHTML = "";
+    comicUrl.style.display = "none";
   }
   if (!comic) {
     if (!keep && selectedComic)
@@ -749,7 +763,10 @@ function renderNetwork(firstLoad = false) {
 
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
-  document.getElementById('view-comics').onclick = () => displayComics(node);
+  document.getElementById('view-comics').onclick = () => {
+    displayComics(node);
+    comicsCache.style.display = "none";
+  };
 }
 
 function clickNode(node, updateURL=true) {

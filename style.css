@@ -25,11 +25,10 @@ html, body {
   text-align: center;
 }
 #comics-bar {
-  display: none;
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 300px;
+  bottom: 0;
+  right: -300px;
+  width: 298px;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -39,6 +38,12 @@ html, body {
   color: grey;
   float: left;
   text-align: center;
+  border: 1px solid #333;
+  border-radius: 10px 0 0 10px;
+  -webkit-transition: 0.5s ease-in-out;
+  -moz-transition: 0.5s ease-in-out;
+  -o-transition: 0.5s ease-in-out;
+  transition: 0.5s ease-in-out;
 }
 #comics, #comic-details {
   padding: 5px;
@@ -456,7 +461,11 @@ label {
 }
 @media (max-width: 700px) {
   #sidebar, .footer, #comics-bar {
-    width: 200px;
+    width: 198px;
+  }
+  #comics-bar {
+    width: 198px;
+    right: -200px;
   }
   h1 {
     font-size: 18px;
@@ -538,6 +547,9 @@ label {
     float: right;
     margin-left: 2px;
   }
+  #comics-bar {
+    height: calc(100% - 51px);
+  }
   #controls {
     left: 1em;
   }
@@ -561,6 +573,9 @@ label {
   }
 }
 @media (pointer: coarse) and (max-height: 600px) {
+  #comics-bar {
+    height: calc(100% - 32px);
+  }
   #controls {
     width: 116px;
   }
@@ -573,6 +588,9 @@ label {
   }
 }
 @media (pointer: coarse) and (max-width: 700px) {
+  #comics-bar {
+    height: calc(100% - 32px);
+  }
   #loader {
     left: calc(50% - 135px);
   }
