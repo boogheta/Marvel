@@ -374,8 +374,10 @@ function displayComics(node) {
     comicLi.onmouseenter = () => selectComic(c);
     comicLi.onmouseout = () => selectComic(null);
   });
-  setTimeout(() => comicsDiv.scrollTo(0, (selectedComic ? (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2) : 0))
-  , 0);
+  if (selectedComic) setTimeout(
+    () => comicsDiv.scrollTo(0, (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2))
+    , 0
+  );
   resize();
 }
 
@@ -754,6 +756,7 @@ function clickNode(node, updateURL=true) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
   // Unselect previous node
+  const sameNode = (node === selectedNode);
   if (selectedNode) {
     if (data.graph.hasNode(selectedNode))
       data.graph.setNodeAttribute(selectedNode, "highlighted", false)
@@ -869,6 +872,8 @@ function clickNode(node, updateURL=true) {
   if (comicsBarView) {
     displayComics(node);
     comicsCache.style.display = "none";
+    if (!sameNode)
+      comicsDiv.scrollTo(0, 0);
   }
 };
 
