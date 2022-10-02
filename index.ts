@@ -224,7 +224,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
-comicsCache.onmouseout = () => comicsCache.style.display = "none";
+comicsCache.onclick = () => comicsCache.style.display = "none";
+comicsCache.onmouseout = comicsCache.onclick;
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -392,6 +393,24 @@ function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
+  if (keep) {
+    selectedComic = comic;
+    document.querySelectorAll("#comics-list li.selected").forEach(el =>
+      el.className = ""
+    );
+    if (comic) {
+      const comicLi = document.getElementById("comic-" + comic.id);
+      comicLi.className = "selected";
+      comicLi.onclick = () => {
+        comicLi.className = "";
+        comicLi.onclick = () => selectComic(comic, true);
+        selectedComic = null;
+        selectComic(null);
+      };
+      comicsCache.style.display = "block";
+    }
+  }
+
   if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
 
@@ -403,16 +422,6 @@ function selectComic(comic = null, keep = false) {
     comicImg.src = "";
     comicDesc.innerHTML = "";
     comicUrl.style.display = "none";
-  }
-  if (keep) {
-    selectedComic = comic;
-    document.querySelectorAll("#comics-list li.selected").forEach(el =>
-      el.className = ""
-    );
-    if (comic) {
-      document.getElementById("comic-" + comic.id).className = "selected";
-      comicsCache.style.display = "block";
-    }
   }
   if (!comic) {
     if (!keep && selectedComic)
