@@ -1,7 +1,6 @@
 /* TODO:
 - fix position network on click comic on smartphones
 - fix smarthpne touch unclicks
-- set comics view under Main title on phones
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - remove cache when zoom fixed?
@@ -262,7 +261,7 @@ function hideComicsBar() {
   const graph = networks[entity][networkSize].graph,
     clustersLayer = document.getElementById("clusters-layer");
   comicsBarView = false;
-  comicsBar.style.display = "none";
+  comicsBar.style.transform = "translate(0px, 0px)";
   selectedComic = null;
   selectComic(null, true);
   if (graph && entity === "creators" && clustersLayer)
@@ -350,6 +349,7 @@ function displayComics(node) {
 
   comicsBarView = true;
   comicsBar.style.display = "block";
+  comicsBar.style.transform = "translate(-" + divWidth("comics-bar") + "px, 0px)";
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
