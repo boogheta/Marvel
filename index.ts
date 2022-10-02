@@ -1,5 +1,6 @@
 /* TODO:
-- use previous network as ref for positions
+- fix smarthpne touch unclicks
+- set comics view under Main title on phones
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - bind arrow keys to next/previous comic?
