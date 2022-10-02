@@ -1,4 +1,5 @@
 /* TODO:
+- use previous network as ref for positions
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - bind arrow keys to next/previous comic?
@@ -260,6 +261,8 @@ function hideComicsBar() {
   comicsBar.style.display = "none";
   selectedComic = null;
   selectComic(null, true);
+  if (graph && entity === "creators")
+    document.getElementById("clusters-layer").style.display = "block";
   if (graph && selectedNode && graph.hasNode(selectedNode)) {
     clickNode(selectedNode, false);
     //centerNode(selectedNode);
@@ -343,6 +346,8 @@ function displayComics(node) {
 
   comicsBarView = true;
   comicsBar.style.display = "block";
+  if (entity === "creators")
+    document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
