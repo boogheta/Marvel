@@ -1,5 +1,6 @@
 :root {
-  --marvel-red: #ec1d24
+  --marvel-red: #ec1d24;
+  --marvel-red-dark: #ba0000;
 }
 
 html, body {
@@ -87,18 +88,27 @@ html, body {
   display: contents;
 }
 #comics-list li {
-  padding: 2px;
-  font-size: 16px;
+  padding: 5px;
+  font-size: 15px;
   cursor: pointer;
+}
+#comics-list li:nth-child(even) {
+  background: #2F2F2F;
+}
+#comics-list li:hover {
+  background: var(--marvel-red-dark);
+  color: white;
+}
+#comics-list li.selected {
+  background: var(--marvel-red);
+  color: white;
+  font-weight: bold;
 }
 #comics-cache {
   display: none;
   opacity: 0;
   position: absolute;
   z-index: 5;
-}
-#comics-list li:nth-child(even) {
-  background: #2F2F2F;
 }
 h1 {
   font-size: 26px;
@@ -140,7 +150,7 @@ h2 {
   border-top: 1px solid #444;
   line-height: 13px;
 }
-#node-label, #comic-title {
+#node-label {
   margin: 7px 0px;
   width: 100%;
 }
@@ -148,6 +158,13 @@ h2 {
   max-width: 75%;
   max-height: 400px;
   cursor: pointer;
+}
+#comic-title {
+  margin: 0;
+}
+#comic-img {
+  max-width: 90%;
+  padding-top: 5px;
 }
 #view-comics {
   background-color: var(--marvel-red);
@@ -463,8 +480,8 @@ label {
     width: 26px;
     height: 26px;
   }
-  #comics li {
-    font-size: 13px;
+  #comics-list li {
+    padding: 2px;
   }
 }
 @media (max-height: 600px) {
@@ -486,8 +503,8 @@ label {
   #comics-title {
     font-size: 14px;
   }
-  #comics li {
-    font-size: 13px;
+  #comics-list li {
+    padding: 2px;
   }
 }
 @media not (pointer: coarse) {

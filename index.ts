@@ -1,13 +1,14 @@
 /* TODO:
-- buttons Click one node or Explore All comics
-- one more check with takoyaki on authors/characters labels + readjust louvain after
-- display date + creators/characters by comic
+- bind arrow keys to next/previous comic?
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
+- buttons Click one node or Explore All comics
+- one more check with takoyaki on authors/characters labels + readjust louvain after
+- display creators/characters by comic (with link actions?)
 - bind url with selected comic?
-- sortable list?
-- bind arrow keys to next/previous comic?
 - allow only comics full list searchable
+- sortable/filterable list?
+- check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
 IDEAS:
 - reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
@@ -176,6 +177,11 @@ function fmtNumber(x) {
 }
 function meanArray(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function formatMonth(dat) {
+  const d = new Date(dat);
+  return monthNames[new Date(dat).getMonth()] + " " + dat.slice(0, 4);
 }
 
 const container = document.getElementById("sigma-container") as HTMLElement,
@@ -356,12 +362,18 @@ function displayComics(node) {
       .join("")
     : "No comic-book found.";
   comics.forEach(c => {
-    document.getElementById("comic-" + c.id).onclick = () => selectComic(c, true);
-    document.getElementById("comic-" + c.id).onmouseenter = () => selectComic(c);
-    document.getElementById("comic-" + c.id).onmouseout = () => selectComic(null);
+    const comicLi = document.getElementById("comic-" + c.id);
+    comicLi.onclick = () => selectComic(c, true);
+    comicLi.onmouseenter = () => selectComic(c);
+    comicLi.onmouseout = () => selectComic(null);
   });
   resize();
 }
+
+comicsDiv.onmouseout = () => {
+  if (!selectedComic)
+    clickNode(selectedNode);
+};
 
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
@@ -378,8 +390,13 @@ function selectComic(comic = null, keep = false) {
   comicUrl.style.display = "none";
   if (keep) {
     selectedComic = comic;
-    if (comic)
+    document.querySelectorAll("#comics-list li.selected").forEach(el =>
+      el.className = ""
+    );
+    if (comic) {
+      document.getElementById("comic-" + comic.id).className = "selected";
       comicsCache.style.display = "block";
+    }
   }
   if (!comic) {
     if (!keep && selectedComic)
@@ -387,7 +404,7 @@ function selectComic(comic = null, keep = false) {
     return;
   }
 
-  comicTitle.innerHTML = comic.title;
+  comicTitle.innerHTML = formatMonth(comic.date);
   comicImg.src = comic.image_url.replace(/^http:/, '');
   comicImg.onclick = () => {
     modalImg.src = comic.image_url.replace(/^http:/, '');
@@ -840,8 +857,10 @@ function clickNode(node, updateURL=true) {
     "labelColor", {attribute: "hlcolor", color: "#CCC"}
   );
 
-  if (comicsBarView)
+  if (comicsBarView) {
     displayComics(node);
+    comicsCache.style.display = "none";
+  }
 };
 
 // Fullscreen button
