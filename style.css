@@ -91,6 +91,7 @@ html, body {
   padding: 5px;
   font-size: 15px;
   cursor: pointer;
+  list-style-type: none;
 }
 #comics-list li:nth-child(even) {
   background: #2F2F2F;
