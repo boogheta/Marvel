@@ -20,7 +20,7 @@ html, body {
   font-family: monospace;
   font-size: 12px;
   background-color: #222;
-  color: dimgrey;
+  color: grey;
   float: left;
   text-align: center;
 }
@@ -36,7 +36,7 @@ html, body {
   font-family: monospace;
   font-size: 12px;
   background-color: #222;
-  color: dimgrey;
+  color: grey;
   float: left;
   text-align: center;
 }
@@ -330,7 +330,7 @@ h2 {
   margin-top: 0;
 }
 .choices {
-  margin: 15px 0;
+  margin: 15px 0 10px 0;
 }
 .network-choice {
   display: flex;
@@ -442,6 +442,11 @@ label {
     display: none;
   }
 }
+#title {
+  display: block;
+  padding-bottom: 5px;
+  color: grey;
+}
 #credits, #title {
   display: block;
 }
@@ -454,9 +459,10 @@ label {
   }
   h1 {
     font-size: 18px;
+    padding: 5px;
   }
   .choices {
-    margin: 5px 0;
+    margin: 5px 0 10px 0;
   }
   label {
     width: 180px;
@@ -492,8 +498,12 @@ label {
   .footer p {
     padding: 4px 0px;
   }
+  h1 {
+    font-size: 18px;
+    padding: 5px;
+  }
   .choices {
-    margin: 5px 0;
+    margin: 5px 0 10px 0;
   }
   #credits-small {
     display: block;
