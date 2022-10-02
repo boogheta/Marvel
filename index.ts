@@ -1,5 +1,4 @@
 /* TODO:
-- fix position network on click comic on smartphones
 - fix smarthpne touch unclicks
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
@@ -192,6 +191,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
+  sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   orderSpan = document.getElementById("order") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
@@ -487,7 +487,7 @@ function selectComic(comic = null, keep = false) {
       x: (x0 + x1) / 2,
       y: (y0 + y1) / 2
     });
-  if (comicsBarWidth !== 200)
+  if (sideBar.style.float === "left")
     viewPortPosition.x += comicsBarWidth / 2;
   camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
 }
