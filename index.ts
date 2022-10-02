@@ -256,13 +256,14 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
-  const graph = networks[entity][networkSize].graph;
+  const graph = networks[entity][networkSize].graph,
+    clustersLayer = document.getElementById("clusters-layer");
   comicsBarView = false;
   comicsBar.style.display = "none";
   selectedComic = null;
   selectComic(null, true);
-  if (graph && entity === "creators")
-    document.getElementById("clusters-layer").style.display = "block";
+  if (graph && entity === "creators" && clustersLayer)
+    clustersLayer.style.display = "block";
   if (graph && selectedNode && graph.hasNode(selectedNode)) {
     clickNode(selectedNode, false);
     //centerNode(selectedNode);
