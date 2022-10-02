@@ -5,6 +5,7 @@ package-lock.json
 build
 data/Marvel*_by_comics*
 data/*.backup
+data/*.positions
 images/other_formats
 images/creators.*
 images/characters.*

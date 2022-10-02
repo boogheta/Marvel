@@ -5,6 +5,7 @@ import sys
 import csv
 import json
 import yaml
+import gzip
 import shutil
 import requests
 from time import time, sleep
@@ -352,7 +353,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
             "description": n.get("description", ""),
             "image": n["image"],
             "image_url": image_url(n["thumbnail"]),
-            "url": n["urls"][0]["url"],
+            "url": sorted(n["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"],
             links_type: 0
         }
         if nodes_type == "creators":
@@ -483,7 +484,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
     return G
 
 def build_csv(entity, rows):
-    with open(os.path.join("data", "Marvel_%s.csv" % entity), "w") as csvf:
+    with gzip.open(os.path.join("data", "Marvel_%s.csv.gz" % entity), "wt") as csvf:
         writer = csv.writer(csvf)
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
@@ -498,7 +499,7 @@ def build_csv(entity, rows):
                 "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),
                 "artists": "|".join(str(extractID(i)) for i in authors if i["role"] == "artist"),
                 "image_url": image_url(row["images"][0] if row["images"] else row.get("thumbnail")),
-                "url": sorted(row["urls"], key=lambda x: "z" if x["type"] != "details" else "a")[0]["url"]
+                "url": sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
             }
             writer.writerow([el[f] for f in fields])
 

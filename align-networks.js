@@ -14,7 +14,7 @@ const backup = filename + "_backup";
 const copyLouvain = args.slice(2).indexOf("--copy-communities") !== "-1"
 const mirrorX = args.slice(2).indexOf("--mirror-x") === -1 ? 1 : -1;
 const mirrorY = args.slice(2).indexOf("--mirror-y") === -1 ? 1 : -1;
-const angle = args.slice(2).indexOf("--rotate") === -1 ? 0 : Math.PI * parseInt(args.indexOf("--rotate") + 1) / 180;
+const angle = args.slice(2).indexOf("--rotate") === -1 ? 0 : Math.PI * parseInt(args[args.indexOf("--rotate") + 1]) / 180;
 const FA2Iterations = 3000;
 
 function readPakoJSON(filename) {
