@@ -320,7 +320,7 @@ function centerNode(node, neighbors = null, force = true) {
     }),
     sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
     sigmaDims.width -= shift;
-    const ratio = 1.5 / Math.min(
+    let ratio = 1.5 / Math.min(
       (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
       sigmaDims.height / (leftCorner.y - rightCorner.y)
     );
@@ -329,15 +329,19 @@ function centerNode(node, neighbors = null, force = true) {
     xMax = 85 * sigmaDims.width / 100,
     yMin = 15 * sigmaDims.height / 100,
     yMax = 85 * sigmaDims.height / 100;
-  if (force || leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || (neighbors.length > 3 && ratio < 0.35)) {
+  if (force ||
+    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.35)) ||
+    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.2))
+  ) {
+    if (ratio < 0.35) ratio = 2 * ratio;
     camera.animate(
       {
         ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * Math.sqrt(ratio)
+        ratio: camera.ratio * ratio
       },
       {duration: 300}
     );
-    adjustNodesSizeToZoom(Math.sqrt(ratio), true);
+    adjustNodesSizeToZoom(ratio, true);
   }
 }
 
