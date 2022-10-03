@@ -149,6 +149,9 @@ h2 {
 #clusters-legend b span {
   white-space: nowrap;
 }
+#explanations p.characters-details {
+  margin: 0;
+}
 #node-details {
   clear: both;
   margin-top: 4px;
@@ -175,7 +178,7 @@ h2 {
   max-width: 90%;
   padding-top: 5px;
 }
-#view-comics {
+#view-comics, #view-node {
   background-color: var(--marvel-red);
   color: #DDD!important;
   border: 2px solid #111;

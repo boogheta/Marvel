@@ -6,7 +6,7 @@
 - bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
-- buttons Click/Tap one node or Explore All comics
+- button Explore All comics
 - allow only comics full list searchable
 - sortable/filterable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
@@ -764,7 +764,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">Explore comics</a></p>';
+  nodeExtra.innerHTML += '<p id="view-comics">Explore comics!</p>';
   document.getElementById('view-comics').onclick = () => {
     displayComics(node);
     comicsCache.style.display = "none";
@@ -895,6 +895,15 @@ function clickNode(node, updateURL=true) {
       comicsDiv.scrollTo(0, 0);
   }
 };
+
+// Click a random node button
+document.getElementById("view-node").onclick = () => {
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer)
+    return;
+  const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
+  clickNode(node);
+}
 
 // Fullscreen button
 const win = document.documentElement as any,
