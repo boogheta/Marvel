@@ -1,7 +1,5 @@
 /* TODO:
 - fix phone touch graph unclicks
-- fix third comic click on list only hovers
-- remove cache when zoom fixed?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
@@ -491,6 +489,16 @@ function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
+  if (keep && comic && selectedComic && comic.id === selectedComic.id) {
+    comic = null;
+    selectedComic = null;
+    selectComic(null, true);
+    if (selectedNode && graph.hasNode(selectedNode)) {
+      clickNode(selectedNode, false);
+      centerNode(selectedNode);
+    }
+  }
+
   if (!comic || !selectedComic || comic.id !== selectedComic.id) {
     comicTitle.innerHTML = "";
     comicImg.src = "";
@@ -506,13 +514,6 @@ function selectComic(comic = null, keep = false) {
     if (comic) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
-      comicLi.onmouseup = () => {
-        comicLi.className = "";
-        comicLi.onmouseup = () => selectComic(comic, true);
-        selectedComic = null;
-        selectComic(null);
-        clickNode(selectedNode);
-      };
       comicsCache.style.display = "block";
     }
   }
