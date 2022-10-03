@@ -316,13 +316,14 @@ function centerNode(node, neighbors = null, force = true) {
 
   // Handle comicsbar hiding part of the graph
   sigmaDims.width -= shift;
-  viewPortPosition.x += ratio * shift / 2 ;
-
-  // Evaluate required zoom and acceptable window
+  // Evaluate required zoom ratio
   let ratio = 1.5 / Math.min(
     (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
     sigmaDims.height / (leftCorner.y - rightCorner.y)
   );
+  viewPortPosition.x += ratio * shift / 2 ;
+
+  // Evaluate acceptable window
   const xMin = 15 * sigmaDims.width / 100,
     xMax = 85 * sigmaDims.width / 100,
     yMin = 15 * sigmaDims.height / 100,
