@@ -312,16 +312,22 @@ function centerNode(node, neighbors = null, force = true) {
       y: (y0 + y1) / 2
     }),
     sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
-    sigmaDims.width -= shift;
-    let ratio = 1.5 / Math.min(
-      (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
-      sigmaDims.height / (leftCorner.y - rightCorner.y)
-    );
+
+  // Handle comicsbar hiding part of the graph
+  sigmaDims.width -= shift;
   viewPortPosition.x += ratio * shift / 2 ;
+
+  // Evaluate required zoom and acceptable window
+  let ratio = 1.5 / Math.min(
+    (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
+    sigmaDims.height / (leftCorner.y - rightCorner.y)
+  );
   const xMin = 15 * sigmaDims.width / 100,
     xMax = 85 * sigmaDims.width / 100,
     yMin = 15 * sigmaDims.height / 100,
     yMax = 85 * sigmaDims.height / 100;
+
+  // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close togethern, or if outside full window or nodes really close together
   if (force ||
     (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.35)) ||
     (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.2))
