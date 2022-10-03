@@ -546,8 +546,8 @@ function selectComic(comic = null, keep = false) {
 
   comicTitle.innerHTML = formatMonth(comic.date);
   comicImg.src = comic.image_url.replace(/^http:/, '');
+  modalImg.src = comic.image_url.replace(/^http:/, '');
   comicImg.onclick = () => {
-    modalImg.src = comic.image_url.replace(/^http:/, '');
     modal.style.display = "block";
   };
   comicDesc.innerHTML = comic.description;
