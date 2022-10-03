@@ -764,7 +764,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
+  nodeExtra.innerHTML += '<p id="view-comics">Explore comics</a></p>';
   document.getElementById('view-comics').onclick = () => {
     displayComics(node);
     comicsCache.style.display = "none";
