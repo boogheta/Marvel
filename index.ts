@@ -1,9 +1,5 @@
 /* TODO:
 - fix phone touch graph unclicks
-- fix weird first click on comic details reloads it on phones
-- zoom in on comic only when outside view ?
-- unzoom on clicked node
-- remove cache when zoom fixed?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
@@ -284,7 +280,19 @@ function computeNodeSize(node, stories, ratio) {
     / ratio;
 };
 
-function centerNode(node, neighbors = null) {
+function adjustNodesSizeToZoom(extraRatio, fast = false) {
+  const graph = networks[entity][networkSize].graph;
+  if (!camera || !graph) return;
+
+  const newSizes = {},
+    ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
+  graph.forEachNode((node, {stories}) => {
+    newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
+  });
+  animateNodes(graph, newSizes, { duration: fast ? 200 : (extraRatio == 1 ? 200 : 600), easing: "quadraticOut" });
+}
+
+function centerNode(node, neighbors = null, force = true) {
   if (!camera || !node) return;
 
   const graph = networks[entity][networkSize].graph;
@@ -299,13 +307,40 @@ function centerNode(node, neighbors = null) {
       if (!y0 || y0 > attrs.y) y0 = attrs.y;
       if (!y1 || y1 < attrs.y) y1 = attrs.y;
     });
-  const viewPortPosition = renderer.framedGraphToViewport({
-      x: (x0 + x1) / 2,
+  const shift = sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1"
+    ? divWidth("comics-bar")
+    : 0,
+    leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
+    rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
+    viewPortPosition = renderer.framedGraphToViewport({
+      x: (x0 + x1) / 2 ,
       y: (y0 + y1) / 2
-    });
-  if (sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1")
-    viewPortPosition.x += divWidth("comics-bar") / 2;
-  camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
+    }),
+    sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
+    sigmaDims.width -= shift;
+    let ratio = 1.5 / Math.min(
+      (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
+      sigmaDims.height / (leftCorner.y - rightCorner.y)
+    );
+  viewPortPosition.x += ratio * shift / 2 ;
+  const xMin = 15 * sigmaDims.width / 100,
+    xMax = 85 * sigmaDims.width / 100,
+    yMin = 15 * sigmaDims.height / 100,
+    yMax = 85 * sigmaDims.height / 100;
+  if (force ||
+    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.35)) ||
+    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.2))
+  ) {
+    if (ratio < 0.35) ratio = 2 * ratio;
+    camera.animate(
+      {
+        ...renderer.viewportToFramedGraph(viewPortPosition),
+        ratio: camera.ratio * ratio
+      },
+      {duration: 300}
+    );
+    adjustNodesSizeToZoom(ratio, true);
+  }
 }
 
 function loadComics(comicsData) {
@@ -394,16 +429,16 @@ function displayComics(node) {
     comicLi.comic = c;
     comicLi.onmouseup = () => selectComic(c, true);
     comicLi.onmouseenter = () => selectComic(c);
-    comicLi.onmouseout = () => selectComic(null);
   });
   if (selectedComic) scrollComicsList();
   resize();
 }
 function scrollComicsList() {
-  setTimeout(
-    () => comicsDiv.scrollTo(0, (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2))
-    , 0
-  );
+  setTimeout(() => {
+    const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
+    if (!offset) return;
+    comicsDiv.scrollTo(0, offset.offsetTop - (divHeight("comics") / 2));
+  }, 10);
 }
 function selectAndScroll(el) {
   if (!el) return;
@@ -454,6 +489,16 @@ function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
+  if (keep && comic && selectedComic && comic.id === selectedComic.id) {
+    comic = null;
+    selectedComic = null;
+    selectComic(null, true);
+    if (selectedNode && graph.hasNode(selectedNode)) {
+      clickNode(selectedNode, false);
+      centerNode(selectedNode);
+    }
+  }
+
   if (!comic || !selectedComic || comic.id !== selectedComic.id) {
     comicTitle.innerHTML = "";
     comicImg.src = "";
@@ -469,13 +514,6 @@ function selectComic(comic = null, keep = false) {
     if (comic) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
-      comicLi.onmouseup = () => {
-        comicLi.className = "";
-        comicLi.onmouseup = () => selectComic(comic, true);
-        selectedComic = null;
-        selectComic(null);
-        clickNode(selectedNode);
-      };
       comicsCache.style.display = "block";
     }
   }
@@ -532,11 +570,8 @@ function selectComic(comic = null, keep = false) {
             hidden: true
           }
   );
-  renderer.setSetting(
-    "labelColor", {attribute: "hlcolor", color: "#CCC"}
-  );
 
-  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)));
+  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
 }
 
 function buildNetwork(networkData) {
@@ -666,14 +701,6 @@ function renderNetwork(firstLoad = false) {
   }
 
   // Bind zoom manipulation buttons
-  function adjustNodesSizeToZoom(extraRatio) {
-    const newSizes = {},
-      ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
-    data.graph.forEachNode((node, {stories}) => {
-      newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
-    });
-    animateNodes(data.graph, newSizes, { duration: extraRatio == 1 ? 200 : 600, easing: "quadraticOut" });
-  }
   camera = renderer.getCamera();
   document.getElementById("zoom-in").onclick = () => {
     camera.animatedZoom({ duration: 600 });
@@ -746,7 +773,7 @@ function renderNetwork(firstLoad = false) {
       const suggestionsMatch = suggestions.filter(x => x.label === query);
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
-        // Move the camera to center it on the selected node:
+        // Move the camera to center it on the selected node and its neighbors:
         centerNode(selectedNode);
         suggestions = [];
       } else if (selectedNode) {
@@ -901,7 +928,7 @@ function clickNode(node, updateURL=true) {
       return n === node
         ? { ...attrs,
             zIndex: 2,
-            size: attrs.size * 1.5
+            size: attrs.size * 1.75
           }
         : data.graph.hasEdge(n, node)
           ? dataConnected(attrs)

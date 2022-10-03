@@ -484,11 +484,15 @@ def build_graph(nodes_type, links_type, comics, nodes):
     return G
 
 def build_csv(entity, rows):
+    done = set()
     with gzip.open(os.path.join("data", "Marvel_%s.csv.gz" % entity), "wt") as csvf:
         writer = csv.writer(csvf)
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
+            if row["id"] in done:
+                continue
+            done.add(row["id"])
             authors = get_authors(row)
             el = {
                 "id": row["id"],
