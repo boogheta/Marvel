@@ -1,5 +1,5 @@
 /* TODO:
-- fix smarthpne touch unclicks
+- fix phone touch graph unclicks
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - remove cache when zoom fixed?
@@ -224,9 +224,9 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
 modal.onclick = () => modal.style.display = "none";
-comicsCache.onclick = () => comicsCache.style.display = "none";
-comicsCache.onwheel = comicsCache.onclick;
-comicsCache.onmouseout = comicsCache.onclick;
+comicsCache.onwheel = () => comicsCache.style.display = "none";
+comicsCache.onmousedown = comicsCache.onwheel;
+comicsCache.onmouseout = comicsCache.onwheel;
 
 function divWidth(divId) {
   return document.getElementById(divId).getBoundingClientRect().width;
@@ -375,7 +375,7 @@ function displayComics(node) {
     : "No comic-book found.";
   comics.forEach(c => {
     const comicLi = document.getElementById("comic-" + c.id);
-    comicLi.onclick = () => selectComic(c, true);
+    comicLi.onmouseup = () => selectComic(c, true);
     comicLi.onmouseenter = () => selectComic(c);
     comicLi.onmouseout = () => selectComic(null);
   });
@@ -403,9 +403,9 @@ function selectComic(comic = null, keep = false) {
     if (comic) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
-      comicLi.onclick = () => {
+      comicLi.onmouseup = () => {
         comicLi.className = "";
-        comicLi.onclick = () => selectComic(comic, true);
+        comicLi.onmouseup = () => selectComic(comic, true);
         selectedComic = null;
         selectComic(null);
       };
@@ -764,7 +764,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">Explore comics!</p>';
+  nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics!</span></p>';
   document.getElementById('view-comics').onclick = () => {
     displayComics(node);
     comicsCache.style.display = "none";
