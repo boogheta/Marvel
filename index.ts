@@ -1,5 +1,6 @@
 /* TODO:
 - fix phone touch graph unclicks
+- fix weird first click on comic details reloads it on phones
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - remove cache when zoom fixed?
@@ -270,7 +271,7 @@ function hideComicsBar() {
     clustersLayer.style.display = "block";
   if (graph && selectedNode && graph.hasNode(selectedNode)) {
     clickNode(selectedNode, false);
-    //centerNode(selectedNode);
+    centerNode(selectedNode);
   }
 }
 document.getElementById("close-bar").onclick = hideComicsBar;
@@ -283,12 +284,28 @@ function computeNodeSize(node, stories, ratio) {
     / ratio;
 };
 
-function centerNode(node) {
-  if (!camera) return;
-  camera.animate(
-    renderer.getNodeDisplayData(node),
-    {duration: 300}
-  );
+function centerNode(node, neighbors = null) {
+  if (!camera || !node) return;
+
+  const graph = networks[entity][networkSize].graph;
+  if (!neighbors)
+    neighbors = graph.neighbors(node);
+
+  let x0, x1, y0, y1;
+  neighbors.forEach(n => {
+      const attrs = renderer.getNodeDisplayData(n);
+      if (!x0 || x0 > attrs.x) x0 = attrs.x;
+      if (!x1 || x1 < attrs.x) x1 = attrs.x;
+      if (!y0 || y0 > attrs.y) y0 = attrs.y;
+      if (!y1 || y1 < attrs.y) y1 = attrs.y;
+    });
+  const viewPortPosition = renderer.framedGraphToViewport({
+      x: (x0 + x1) / 2,
+      y: (y0 + y1) / 2
+    });
+  if (sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1")
+    viewPortPosition.x += divWidth("comics-bar") / 2;
+  camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
 }
 
 function loadComics(comicsData) {
@@ -401,6 +418,8 @@ comicsList.onmouseleave = () => {
 
 // Key Arrow handling on comics list
 document.onkeydown = function(e) {
+
+//TODO: handle more esc actions
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer || ! selectedComic) return;
 
@@ -517,23 +536,7 @@ function selectComic(comic = null, keep = false) {
     "labelColor", {attribute: "hlcolor", color: "#CCC"}
   );
 
-  let x0, x1, y0, y1;
-  comic[entity].filter(n => graph.hasNode(n))
-    .forEach(n => {
-      const attrs = renderer.getNodeDisplayData(n);
-      if (!x0 || x0 > attrs.x) x0 = attrs.x;
-      if (!x1 || x1 < attrs.x) x1 = attrs.x;
-      if (!y0 || y0 > attrs.y) y0 = attrs.y;
-      if (!y1 || y1 < attrs.y) y1 = attrs.y;
-    });
-  const comicsBarWidth = divWidth("comics-bar"),
-    viewPortPosition = renderer.framedGraphToViewport({
-      x: (x0 + x1) / 2,
-      y: (y0 + y1) / 2
-    });
-  if (sideBar.getBoundingClientRect()["x"] === 0)
-    viewPortPosition.x += comicsBarWidth / 2;
-  camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
+  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)));
 }
 
 function buildNetwork(networkData) {
@@ -936,6 +939,8 @@ function clickNode(node, updateURL=true) {
   }
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
+  if (!updateURL)
+    setTimeout(() => centerNode(node), 300);
 };
 
 // Click a random node button
