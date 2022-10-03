@@ -436,10 +436,11 @@ function displayComics(node) {
   resize();
 }
 function scrollComicsList() {
-  setTimeout(
-    () => comicsDiv.scrollTo(0, (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2))
-    , 0
-  );
+  setTimeout(() => {
+    const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
+    if (!offset) return;
+    comicsDiv.scrollTo(0, offset.offsetTop - (divHeight("comics") / 2));
+  }, 10);
 }
 function selectAndScroll(el) {
   if (!el) return;
