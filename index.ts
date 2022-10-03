@@ -225,6 +225,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 modal.onclick = () => modal.style.display = "none";
 comicsCache.onclick = () => comicsCache.style.display = "none";
+comicsCache.onwheel = comicsCache.onclick;
 comicsCache.onmouseout = comicsCache.onclick;
 
 function divWidth(divId) {
