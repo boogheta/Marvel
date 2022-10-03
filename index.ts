@@ -284,6 +284,18 @@ function computeNodeSize(node, stories, ratio) {
     / ratio;
 };
 
+function adjustNodesSizeToZoom(extraRatio, fast = false) {
+  const graph = networks[entity][networkSize].graph;
+  if (!camera || !graph) return;
+
+  const newSizes = {},
+    ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
+  graph.forEachNode((node, {stories}) => {
+    newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
+  });
+  animateNodes(graph, newSizes, { duration: fast ? 200 : (extraRatio == 1 ? 200 : 600), easing: "quadraticOut" });
+}
+
 function centerNode(node, neighbors = null) {
   if (!camera || !node) return;
 
@@ -299,13 +311,30 @@ function centerNode(node, neighbors = null) {
       if (!y0 || y0 > attrs.y) y0 = attrs.y;
       if (!y1 || y1 < attrs.y) y1 = attrs.y;
     });
-  const viewPortPosition = renderer.framedGraphToViewport({
-      x: (x0 + x1) / 2,
+  const shift = sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1"
+    ? divWidth("comics-bar")
+    : 0,
+    leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
+    rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
+    viewPortPosition = renderer.framedGraphToViewport({
+      x: (x0 + x1) / 2 ,
       y: (y0 + y1) / 2
-    });
-  if (sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1")
-    viewPortPosition.x += divWidth("comics-bar") / 2;
-  camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
+    }),
+    sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
+    const ratio = 1.5 / Math.min(
+      (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
+      (sigmaDims.width) / (rightCorner.x - leftCorner.x),
+      sigmaDims.height / (leftCorner.y - rightCorner.y)
+    );
+  viewPortPosition.x += ratio * shift / 2 ;
+  camera.animate(
+    {
+      ...renderer.viewportToFramedGraph(viewPortPosition),
+      ratio: camera.ratio * ratio
+    },
+    {duration: 300}
+  );
+  adjustNodesSizeToZoom(ratio, true);
 }
 
 function loadComics(comicsData) {
@@ -394,7 +423,6 @@ function displayComics(node) {
     comicLi.comic = c;
     comicLi.onmouseup = () => selectComic(c, true);
     comicLi.onmouseenter = () => selectComic(c);
-    comicLi.onmouseout = () => selectComic(null);
   });
   if (selectedComic) scrollComicsList();
   resize();
@@ -532,9 +560,6 @@ function selectComic(comic = null, keep = false) {
             hidden: true
           }
   );
-  renderer.setSetting(
-    "labelColor", {attribute: "hlcolor", color: "#CCC"}
-  );
 
   centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)));
 }
@@ -666,14 +691,6 @@ function renderNetwork(firstLoad = false) {
   }
 
   // Bind zoom manipulation buttons
-  function adjustNodesSizeToZoom(extraRatio) {
-    const newSizes = {},
-      ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
-    data.graph.forEachNode((node, {stories}) => {
-      newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
-    });
-    animateNodes(data.graph, newSizes, { duration: extraRatio == 1 ? 200 : 600, easing: "quadraticOut" });
-  }
   camera = renderer.getCamera();
   document.getElementById("zoom-in").onclick = () => {
     camera.animatedZoom({ duration: 600 });
@@ -746,7 +763,7 @@ function renderNetwork(firstLoad = false) {
       const suggestionsMatch = suggestions.filter(x => x.label === query);
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
-        // Move the camera to center it on the selected node:
+        // Move the camera to center it on the selected node and its neighbors:
         centerNode(selectedNode);
         suggestions = [];
       } else if (selectedNode) {
@@ -901,7 +918,7 @@ function clickNode(node, updateURL=true) {
       return n === node
         ? { ...attrs,
             zIndex: 2,
-            size: attrs.size * 1.5
+            size: attrs.size * 1.75
           }
         : data.graph.hasEdge(n, node)
           ? dataConnected(attrs)
