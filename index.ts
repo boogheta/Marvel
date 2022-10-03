@@ -261,14 +261,9 @@ function hideComicsBar() {
   comicsBarView = false;
   comicsBar.style.opacity = "0";
   comicsBar.style["z-index"] = "-1";
-  selectedComic = null;
-  selectComic(null, true);
+  unselectComic();
   if (graph && entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
-  if (graph && selectedNode && graph.hasNode(selectedNode)) {
-    clickNode(selectedNode, false);
-    centerNode(selectedNode);
-  }
 }
 document.getElementById("close-bar").onclick = hideComicsBar;
 
@@ -453,37 +448,53 @@ comicsList.onmouseleave = () => {
 
 // Key Arrow handling on comics list
 document.onkeydown = function(e) {
-
-//TODO: handle more esc actions
   const graph = networks[entity][networkSize].graph;
-  if (!graph || !renderer || ! selectedComic) return;
+  if (!graph || !renderer) return
 
-  const selected = document.querySelector("#comics-list li.selected") as any,
-    prev = selected.previousElementSibling as any,
-    next = selected.nextElementSibling as any;
-  switch(e.which) {
-    case 37: // left
-      selectAndScroll(prev);
-      break;
-    case 38: // up
-      selectAndScroll(prev);
-      break;
+  if (selectedComic) {
+    const selected = document.querySelector("#comics-list li.selected") as any,
+      prev = selected.previousElementSibling as any,
+      next = selected.nextElementSibling as any;
+    switch(e.which) {
+      case 37: // left
+        selectAndScroll(prev);
+        break;
+      case 38: // up
+        selectAndScroll(prev);
+        break;
 
-    case 39: // right
-      selectAndScroll(next);
-      break;
-    case 40: // down
-      selectAndScroll(next);
-      break;
+      case 39: // right
+        selectAndScroll(next);
+        break;
+      case 40: // down
+        selectAndScroll(next);
+        break;
 
-    case 27: // esc
-      selectComic(null, true);
-      break;
+      case 27: // esc
+        unselectComic();
+        break;
 
-    default: return; // exit this handler for other keys
-  }
+      default: return; // exit this handler for other keys
+    }
+  } else if (e.which === 27) {
+    if (comicsBarView)
+      hideComicsBar();
+    else if (selectedNode)
+      clickNode(null, true);
+    else return;
+  } else return;
   e.preventDefault(); // prevent the default action (scroll / move caret)
 };
+
+function unselectComic() {
+  const graph = networks[entity][networkSize].graph;
+  selectedComic = null;
+  selectComic(null, true);
+  if (selectedNode && graph.hasNode(selectedNode)) {
+    clickNode(selectedNode, false);
+    centerNode(selectedNode);
+  }
+}
 
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
@@ -491,12 +502,7 @@ function selectComic(comic = null, keep = false) {
 
   if (keep && comic && selectedComic && comic.id === selectedComic.id) {
     comic = null;
-    selectedComic = null;
-    selectComic(null, true);
-    if (selectedNode && graph.hasNode(selectedNode)) {
-      clickNode(selectedNode, false);
-      centerNode(selectedNode);
-    }
+    unselectComic();
   }
 
   if (!comic || !selectedComic || comic.id !== selectedComic.id) {
