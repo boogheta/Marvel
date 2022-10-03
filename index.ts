@@ -1,5 +1,4 @@
 /* TODO:
-- fix position network on click comic on smartphones
 - fix smarthpne touch unclicks
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
@@ -7,7 +6,7 @@
 - bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
-- buttons Click/Tap one node or Explore All comics
+- button Explore All comics
 - allow only comics full list searchable
 - sortable/filterable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
@@ -192,6 +191,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
+  sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   orderSpan = document.getElementById("order") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
@@ -225,6 +225,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 modal.onclick = () => modal.style.display = "none";
 comicsCache.onclick = () => comicsCache.style.display = "none";
+comicsCache.onwheel = comicsCache.onclick;
 comicsCache.onmouseout = comicsCache.onclick;
 
 function divWidth(divId) {
@@ -262,7 +263,8 @@ function hideComicsBar() {
   const graph = networks[entity][networkSize].graph,
     clustersLayer = document.getElementById("clusters-layer");
   comicsBarView = false;
-  comicsBar.style.transform = "translate(0px, 0px)";
+  comicsBar.style.opacity = "0";
+  comicsBar.style["z-index"] = "-1";
   selectedComic = null;
   selectComic(null, true);
   if (graph && entity === "creators" && clustersLayer)
@@ -349,8 +351,8 @@ function displayComics(node) {
   );
 
   comicsBarView = true;
-  comicsBar.style.display = "block";
-  comicsBar.style.transform = "translate(-" + divWidth("comics-bar") + "px, 0px)";
+  comicsBar.style.opacity = "1";
+  comicsBar.style["z-index"] = "1";
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
@@ -487,7 +489,7 @@ function selectComic(comic = null, keep = false) {
       x: (x0 + x1) / 2,
       y: (y0 + y1) / 2
     });
-  if (comicsBarWidth !== 200)
+  if (sideBar.getBoundingClientRect()["x"] === 0)
     viewPortPosition.x += comicsBarWidth / 2;
   camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
 }
@@ -762,7 +764,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">See all comics</a></p>';
+  nodeExtra.innerHTML += '<p id="view-comics">Explore comics!</p>';
   document.getElementById('view-comics').onclick = () => {
     displayComics(node);
     comicsCache.style.display = "none";
@@ -893,6 +895,15 @@ function clickNode(node, updateURL=true) {
       comicsDiv.scrollTo(0, 0);
   }
 };
+
+// Click a random node button
+document.getElementById("view-node").onclick = () => {
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer)
+    return;
+  const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
+  clickNode(node);
+}
 
 // Fullscreen button
 const win = document.documentElement as any,
