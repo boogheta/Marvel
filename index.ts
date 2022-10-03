@@ -1,8 +1,6 @@
 /* TODO:
 - fix phone touch graph unclicks
-- fix weird first click on comic details reloads it on phones
-- zoom in on comic only when outside view ?
-- unzoom on clicked node
+- fix third comic click on list only hovers
 - remove cache when zoom fixed?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
@@ -296,7 +294,7 @@ function adjustNodesSizeToZoom(extraRatio, fast = false) {
   animateNodes(graph, newSizes, { duration: fast ? 200 : (extraRatio == 1 ? 200 : 600), easing: "quadraticOut" });
 }
 
-function centerNode(node, neighbors = null) {
+function centerNode(node, neighbors = null, force = true) {
   if (!camera || !node) return;
 
   const graph = networks[entity][networkSize].graph;
@@ -321,20 +319,26 @@ function centerNode(node, neighbors = null) {
       y: (y0 + y1) / 2
     }),
     sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
+    sigmaDims.width -= shift;
     const ratio = 1.5 / Math.min(
       (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
-      (sigmaDims.width) / (rightCorner.x - leftCorner.x),
       sigmaDims.height / (leftCorner.y - rightCorner.y)
     );
   viewPortPosition.x += ratio * shift / 2 ;
-  camera.animate(
-    {
-      ...renderer.viewportToFramedGraph(viewPortPosition),
-      ratio: camera.ratio * ratio
-    },
-    {duration: 300}
-  );
-  adjustNodesSizeToZoom(ratio, true);
+  const xMin = 15 * sigmaDims.width / 100,
+    xMax = 85 * sigmaDims.width / 100,
+    yMin = 15 * sigmaDims.height / 100,
+    yMax = 85 * sigmaDims.height / 100;
+  if (force || leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || (neighbors.length > 3 && ratio < 0.35)) {
+    camera.animate(
+      {
+        ...renderer.viewportToFramedGraph(viewPortPosition),
+        ratio: camera.ratio * Math.sqrt(ratio)
+      },
+      {duration: 300}
+    );
+    adjustNodesSizeToZoom(Math.sqrt(ratio), true);
+  }
 }
 
 function loadComics(comicsData) {
@@ -561,7 +565,7 @@ function selectComic(comic = null, keep = false) {
           }
   );
 
-  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)));
+  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
 }
 
 function buildNetwork(networkData) {
