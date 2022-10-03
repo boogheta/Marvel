@@ -3,7 +3,6 @@
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - remove cache when zoom fixed?
-- bind arrow keys to next/previous comic?
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
@@ -374,16 +373,25 @@ function displayComics(node) {
       .join("")
     : "No comic-book found.";
   comics.forEach(c => {
-    const comicLi = document.getElementById("comic-" + c.id);
+    const comicLi = document.getElementById("comic-" + c.id) as any;
+    comicLi.comic = c;
     comicLi.onmouseup = () => selectComic(c, true);
     comicLi.onmouseenter = () => selectComic(c);
     comicLi.onmouseout = () => selectComic(null);
   });
-  if (selectedComic) setTimeout(
+  if (selectedComic) scrollComicsList();
+  resize();
+}
+function scrollComicsList() {
+  setTimeout(
     () => comicsDiv.scrollTo(0, (document.querySelector("#comics-list li.selected") as HTMLElement).offsetTop - (divHeight("comics") / 2))
     , 0
   );
-  resize();
+}
+function selectAndScroll(el) {
+  if (!el) return;
+  selectComic(el.comic, true);
+  scrollComicsList();
 }
 
 comicsList.onmouseleave = () => {
@@ -391,9 +399,48 @@ comicsList.onmouseleave = () => {
     clickNode(selectedNode);
 };
 
+// Key Arrow handling on comics list
+document.onkeydown = function(e) {
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer || ! selectedComic) return;
+
+  const selected = document.querySelector("#comics-list li.selected") as any,
+    prev = selected.previousElementSibling as any,
+    next = selected.nextElementSibling as any;
+  switch(e.which) {
+    case 37: // left
+      selectAndScroll(prev);
+      break;
+    case 38: // up
+      selectAndScroll(prev);
+      break;
+
+    case 39: // right
+      selectAndScroll(next);
+      break;
+    case 40: // down
+      selectAndScroll(next);
+      break;
+
+    case 27: // esc
+      selectComic(null, true);
+      break;
+
+    default: return; // exit this handler for other keys
+  }
+  e.preventDefault(); // prevent the default action (scroll / move caret)
+};
+
 function selectComic(comic = null, keep = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
+
+  if (!comic || !selectedComic || comic.id !== selectedComic.id) {
+    comicTitle.innerHTML = "";
+    comicImg.src = "";
+    comicDesc.innerHTML = "";
+    comicUrl.style.display = "none";
+  }
 
   if (keep) {
     selectedComic = comic;
@@ -408,6 +455,7 @@ function selectComic(comic = null, keep = false) {
         comicLi.onmouseup = () => selectComic(comic, true);
         selectedComic = null;
         selectComic(null);
+        clickNode(selectedNode);
       };
       comicsCache.style.display = "block";
     }
@@ -419,12 +467,6 @@ function selectComic(comic = null, keep = false) {
   if (!comic || !selectedComic || comic.id !== selectedComic.id)
     document.getElementById("comic-details").scrollTo(0, 0);
 
-  if (!comic || !selectedComic || comic.id !== selectedComic.id) {
-    comicTitle.innerHTML = "";
-    comicImg.src = "";
-    comicDesc.innerHTML = "";
-    comicUrl.style.display = "none";
-  }
   if (!comic) {
     if (!keep && selectedComic)
       selectComic(selectedComic);
