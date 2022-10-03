@@ -823,6 +823,7 @@ function renderNetwork(firstLoad = false) {
   const initLoop = setInterval(() => {
     loader.style.display = "none";
     document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
+    if (!camera) return clearInterval(initLoop);
     setTimeout(() => {
       const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5)),
         newSizes = {};
