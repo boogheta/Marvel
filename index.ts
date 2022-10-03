@@ -487,7 +487,7 @@ function selectComic(comic = null, keep = false) {
       x: (x0 + x1) / 2,
       y: (y0 + y1) / 2
     });
-  if (sideBar.style.float === "left")
+  if (sideBar.getBoundingClientRect()["x"] === 0)
     viewPortPosition.x += comicsBarWidth / 2;
   camera.animate(renderer.viewportToFramedGraph(viewPortPosition), {duration: 300});
 }
