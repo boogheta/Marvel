@@ -104,9 +104,11 @@ html, body {
 #comics-list li:nth-child(even) {
   background: #2F2F2F;
 }
-#comics-list li:hover {
-  background: var(--marvel-red-dark);
-  color: white;
+@media(hover: hover) and (pointer: fine) {
+  #comics-list li:hover {
+    background: var(--marvel-red-dark);
+    color: white;
+  }
 }
 #comics-list li.selected {
   background: var(--marvel-red);
@@ -179,20 +181,20 @@ h2 {
   padding-top: 5px;
 }
 #view-comics, #view-node {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 20px!important;
+  margin-bottom: 5px!important;
+  text-transform: uppercase;
+}
+#view-comics > span, #view-node > span {
+  width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
   border: 2px solid #111;
   border-radius: 5px;
   padding: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 15px!important;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  width: 150px;
-  position: relative;
-  left: calc(50% - 76px);
-  border: 2px solid #000;
 }
 #sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
   color: #af4f4f;

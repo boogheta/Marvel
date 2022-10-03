@@ -1,5 +1,5 @@
 /* TODO:
-- fix smarthpne touch unclicks
+- fix phone touch graph unclicks
 - zoom in on comic only when outside view ?
 - unzoom on clicked node
 - remove cache when zoom fixed?
@@ -764,7 +764,7 @@ function renderNetwork(firstLoad = false) {
 }
 
 function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics">Explore comics!</p>';
+  nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics!</span></p>';
   document.getElementById('view-comics').onclick = () => {
     displayComics(node);
     comicsCache.style.display = "none";
