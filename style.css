@@ -25,9 +25,11 @@ html, body {
   text-align: center;
 }
 #comics-bar {
+  opacity: 0;
+  z-index: -1;
   position: absolute;
   bottom: 0;
-  right: -300px;
+  right: 0;
   width: 298px;
   height: 100%;
   margin: 0;
@@ -465,7 +467,6 @@ label {
   }
   #comics-bar {
     width: 198px;
-    right: -200px;
   }
   h1 {
     font-size: 18px;

@@ -263,7 +263,8 @@ function hideComicsBar() {
   const graph = networks[entity][networkSize].graph,
     clustersLayer = document.getElementById("clusters-layer");
   comicsBarView = false;
-  comicsBar.style.transform = "translate(0px, 0px)";
+  comicsBar.style.opacity = "0";
+  comicsBar.style["z-index"] = "-1";
   selectedComic = null;
   selectComic(null, true);
   if (graph && entity === "creators" && clustersLayer)
@@ -350,8 +351,8 @@ function displayComics(node) {
   );
 
   comicsBarView = true;
-  comicsBar.style.display = "block";
-  comicsBar.style.transform = "translate(-" + divWidth("comics-bar") + "px, 0px)";
+  comicsBar.style.opacity = "1";
+  comicsBar.style["z-index"] = "1";
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
