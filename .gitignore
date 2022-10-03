@@ -2,7 +2,6 @@ config.yml
 .cache
 node_modules
 package-lock.json
-build
 data/Marvel*_by_comics*
 data/*.backup
 data/*.positions
