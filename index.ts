@@ -891,9 +891,9 @@ function clickNode(node, updateURL=true) {
   if (comicsBarView) {
     displayComics(node);
     comicsCache.style.display = "none";
-    if (!sameNode)
-      comicsDiv.scrollTo(0, 0);
   }
+  if (!sameNode)
+    comicsDiv.scrollTo(0, 0);
 };
 
 // Click a random node button
