@@ -7,6 +7,7 @@
 - sortable/filterable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
+=> scraper comics as counter-truth?
 IDEAS:
 - reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
