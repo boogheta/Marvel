@@ -459,7 +459,9 @@ document.onkeydown = function(e) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return
 
-  if (selectedComic) {
+  if (modal.style.display === "block" && e.which === 27)
+    modal.style.display = "none";
+  else if (selectedComic) {
     const selected = document.querySelector("#comics-list li.selected") as any,
       prev = selected.previousElementSibling as any,
       next = selected.nextElementSibling as any;
