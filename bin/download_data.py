@@ -1,5 +1,6 @@
 #!/usr/bin env python
 
+import re
 import os
 import sys
 import csv
@@ -341,6 +342,11 @@ def get_date(comic):
         return "????-??"
     return date
 
+def clean_html(t):
+    if not t:
+        return ""
+    return re.sub(r'</?(span|p|ul|li)( [^>]*)?>', '', t, re.I)
+
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
     dupesIds = {}
@@ -350,7 +356,6 @@ def build_graph(nodes_type, links_type, comics, nodes):
     for n in nodes:
         attrs = {
             "id": n["id"],
-            "description": n.get("description", ""),
             "image": n["image"],
             "image_url": image_url(n["thumbnail"]),
             "url": sorted(n["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"],
@@ -362,7 +367,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
             attrs["artist"] = 0
         elif nodes_type == "characters":
             attrs["label"] = n["name"]
-            attrs["description"] = n["description"]
+            attrs["description"] = clean_html(n["description"])
         label = attrs["label"].lower()
 
         # Skip names from blacklist
@@ -498,7 +503,7 @@ def build_csv(entity, rows):
                 "id": row["id"],
                 "title": row["title"],
                 "date": get_date(row),
-                "description": row["description"] or "",
+                "description": clean_html(row["description"]) or "",
                 "characters": "|".join(str(extractID(i)) for i in row["characters"]["items"]),
                 "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),
                 "artists": "|".join(str(extractID(i)) for i in authors if i["role"] == "artist"),

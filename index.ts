@@ -1,5 +1,4 @@
 /* TODO:
-- cleanup descriptions with html, ex http://localhost:3000/#characters/full/colors/War+Machine+(James+Rhodes)
 - lighten authors by removing community
 - fix phone touch graph unclicks
 - bind url with selected comic?
