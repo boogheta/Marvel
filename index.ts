@@ -1,5 +1,4 @@
 /* TODO:
-- lighten authors by removing community
 - fix phone touch graph unclicks
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
@@ -271,7 +270,7 @@ document.getElementById("close-bar").onclick = hideComicsBar;
 
 function computeNodeSize(node, stories, ratio) {
   return Math.pow(stories, 0.2)
-    * (entity == "characters" ? 1.75 : 1.25)
+    * (entity === "characters" ? 1.75 : 1.25)
     * (networkSize === "small" ? 1.75 : 1.25)
     * sigmaDim / 1000
     / ratio;
@@ -600,17 +599,18 @@ function buildNetwork(networkData) {
   data.graph.forEachNode((node, {x, y, label, community}) => {
     for (var cluster in data.clusters)
       if (data.clusters[cluster].match.indexOf(label) !== -1) {
-        data.clusters[cluster].community = community;
         if (entity === "creators") {
           data.clusters[cluster].label = cluster;
           data.clusters[cluster].id = cluster.toLowerCase().replace(/ .*$/, "");
           if (!data.clusters[cluster].positions)
             data.clusters[cluster].positions = [{x: x, y: y}];
           else data.clusters[cluster].positions.push({x: x, y: y});
+        } else {
+          data.clusters[cluster].community = community;
+          data.communities[community] = data.clusters[cluster];
+          data.communities[community].cluster = cluster;
+          data.communities[community].community = community;
         }
-        data.communities[community] = data.clusters[cluster];
-        data.communities[community].cluster = cluster;
-        data.communities[community].community = community;
       }
   });
 

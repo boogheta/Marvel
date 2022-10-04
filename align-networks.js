@@ -51,17 +51,18 @@ function alignGraph(graph, reference, output) {
   console.log("Copying positions from", refFile, "into", filename, "...");
   const circularPositions = layouts.circular(graph, { scale: 50 });
   let missing = 0;
-  graph.forEachNode((node, {community}) => {
+  graph.forEachNode(node => {
     const refAttrs = (reference.hasNode(node)
       ? reference.getNodeAttributes(node)
       : {}
     );
-    if (!refAttrs) missing++;
+    if (!refAttrs) return missing++;
     graph.mergeNodeAttributes(node, {
       x: refAttrs.x !== undefined ? refAttrs.x : circularPositions[node].x,
-      y: refAttrs.y !== undefined ? refAttrs.y : circularPositions[node].y,
-      community: copyLouvain ? refAttrs.community : community
+      y: refAttrs.y !== undefined ? refAttrs.y : circularPositions[node].y
     });
+    if (/characters/.test(filename) && copyLouvain)
+      graph.setNodeAttributes(node, "community", refAttrs.community);
   });
   console.log(missing, "nodes are missing from ref file");
 

@@ -30,7 +30,7 @@ function readGEXF(filename) {
       x: circularPositions[node].x,
       y: circularPositions[node].y,
       size: Math.pow(size, 0.2)
-        * (entity == "characters" ? 1.75 : 1.25)
+        * (entity === "characters" ? 1.75 : 1.25)
         * (network_size === "small" ? 1.75 : 1.25)
     });
   });
@@ -69,7 +69,8 @@ function processGraph(graph){
   });
 
   // Run Louvain to field community
-  louvain.assign(graph, {resolution: 1.2});
+  if (entity === "characters")
+    louvain.assign(graph, {resolution: 1.2});
 
   // Spatializing with FA2
   console.log('Starting ForceAtlas2 for ' + FA2Iterations + ' iterations by batches of ' + batchIterations);
