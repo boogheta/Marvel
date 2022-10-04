@@ -7,7 +7,10 @@
 - sortable/filterable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
-=> scraper comics as counter-truth?
+=> scraper comics as counter-truth? :
+ - Writer:
+ - Penciler: (check other names + different format with multiple ones
+ - Description, find good one
 IDEAS:
 - reset regular position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
@@ -608,7 +611,7 @@ function buildNetwork(networkData) {
         } else {
           data.clusters[cluster].community = community;
           data.communities[community] = data.clusters[cluster];
-          data.communities[community].cluster = cluster;
+          data.communities[community].label = cluster.replace(/([a-z&]) ([a-z])/ig, "$1&nbsp;$2");
           data.communities[community].community = community;
         }
       }
@@ -911,19 +914,21 @@ function clickNode(node, updateURL=true) {
     modal.style.display = "block";
   };
 
-  nodeExtra.innerHTML = "<p>" + attrs.description + "</p>";
-  nodeExtra.innerHTML += "<p>" + (entity === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with <b>" + data.graph.degree(node) + " other " + entity + "</b></p>";
+  nodeExtra.innerHTML = "";
+  if (attrs.description)
+    nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
+  nodeExtra.innerHTML += "<p>" + (entity === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with<br/><b>" + data.graph.degree(node) + " other " + entity + "</b></p>";
   // Display roles in stories for creators
   if (entity === "creators") {
     if (attrs.writer === 0 && attrs.artist)
-      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist</b></p>';
+      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist (' + attrs.artist + ')</b></p>';
     else if (attrs.artist === 0 && attrs.writer)
-      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.writer + '">writer</b></p>';
-    else nodeExtra.innerHTML += '<p>Including <b style="color: ' + creatorsRoles.writer + '">' + attrs.writer + ' as writer</b> and <b style="color: ' + creatorsRoles.artist + '">' + attrs.artist + " as artist</b></p>";
+      nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.writer + '">writer (' + attrs.writer + ')</b></p>';
+    else nodeExtra.innerHTML += '<p>Including <b style="color: ' + creatorsRoles.writer + '">' + attrs.writer + ' as writer</b><br/>and <b style="color: ' + creatorsRoles.artist + '">' + attrs.artist + " as artist</b></p>";
   }
   // Or communities if we have it for characters
   else if (data.communities[attrs.community])
-    nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].cluster + '</b> community<sup class="asterisk">*</sup></p>';
+    nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community<sup class="asterisk">*</sup></p>';
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
   if (comicsReady)
