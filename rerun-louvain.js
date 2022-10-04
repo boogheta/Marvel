@@ -7,7 +7,7 @@ const louvain = require ('graphology-communities-louvain');
 const args = process.argv.slice(2);
 const filename = args[0];
 const entity = /creators/.test(filename) ? "creators" : "characters";
-const resolution = args.length > 1 ? parseFloat(args[1]) : (entity === "creators" ? 1 : 1.2);
+const resolution = args.length > 1 ? parseFloat(args[1]) : 1.2;
 
 function readPakoJSON(filename) {
   console.log("Reading " + filename + " ...");
