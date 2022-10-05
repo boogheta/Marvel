@@ -42,8 +42,11 @@ def cache_download(url, cache_file, as_json=True):
     res = retry_get(url)
     with open(cache_file, "w") as f:
         if as_json:
-            json.dump(res.json(), f)
-        f.write(res.text)
+            data = res.json()
+            json.dump(data, f)
+        else:
+            data = res.text
+            f.write(data)
     return data
 
 CONF = None
@@ -502,7 +505,8 @@ def build_csv(entity, rows):
         writer.writerow(fields)
         for row in rows:
             url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
-            webpage = cache_download(url, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
+            url_clean = url.split("?")[0]
+            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
             if row["id"] in done:
                 continue
             done.add(row["id"])
