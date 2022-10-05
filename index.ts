@@ -1,5 +1,4 @@
 /* TODO:
-- fix phone touch graph unclicks
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
@@ -271,25 +270,12 @@ function hideComicsBar() {
 }
 document.getElementById("close-bar").onclick = hideComicsBar;
 
-function computeNodeSize(node, stories, ratio) {
+function computeNodeSize(node, stories) {
   return Math.pow(stories, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
     * (networkSize === "small" ? 1.75 : 1.25)
     * sigmaDim / 1000
-    / ratio;
 };
-
-function adjustNodesSizeToZoom(extraRatio, fast = false) {
-  const graph = networks[entity][networkSize].graph;
-  if (!camera || !graph) return;
-
-  const newSizes = {},
-    ratio = extraRatio ? Math.pow(1.1, Math.log(camera.ratio * extraRatio) / Math.log(1.5)) : 1;
-  graph.forEachNode((node, {stories}) => {
-    newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
-  });
-  animateNodes(graph, newSizes, { duration: fast ? 200 : (extraRatio == 1 ? 200 : 600), easing: "quadraticOut" });
-}
 
 function centerNode(node, neighbors = null, force = true) {
   if (!camera || !node) return;
@@ -341,11 +327,10 @@ function centerNode(node, neighbors = null, force = true) {
     camera.animate(
       {
         ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * ratio
+        ratio: camera.ratio * Math.sqrt(ratio)
       },
       {duration: 300}
     );
-    adjustNodesSizeToZoom(ratio, true);
   }
 }
 
@@ -632,7 +617,7 @@ function buildNetwork(networkData) {
     data.graph.mergeNodeAttributes(node, {
       type: "thumbnail",
       image: /available/i.test(image) ? "" : image,
-      size: computeNodeSize(node, stories, 1),
+      size: computeNodeSize(node, stories),
       color: color,
       hlcolor: color
     });
@@ -676,6 +661,7 @@ function renderNetwork(firstLoad = false) {
     labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
     labelGridCellSize: 180,
     labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
+    nodesSizeZoomAdjuster: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       thumbnail: getNodeProgramImage()
     }
@@ -724,24 +710,13 @@ function renderNetwork(firstLoad = false) {
   camera = renderer.getCamera();
   document.getElementById("zoom-in").onclick = () => {
     camera.animatedZoom({ duration: 600 });
-    if (camera.ratio > sigmaSettings.minCameraRatio)
-      adjustNodesSizeToZoom(1/1.5);
   };
   document.getElementById("zoom-out").onclick = () => {
     camera.animatedUnzoom({ duration: 600 });
-    if (camera.ratio < sigmaSettings.maxCameraRatio)
-      adjustNodesSizeToZoom(1.5);
   };
   document.getElementById("zoom-reset").onclick = () => {
     camera.animatedReset({ duration: 600 });
-    adjustNodesSizeToZoom(0);
   };
-  function handleWheel(e) {
-    setTimeout(() => adjustNodesSizeToZoom(1), 200);
-  }
-  renderer.on("wheelNode", (e) => handleWheel(e));
-  renderer.on("wheelEdge", (e) => handleWheel(e));
-  renderer.on("wheelStage", (e) => handleWheel(e));
 
   // Add pointer on hovering nodes
   renderer.on("enterNode", () => container.style.cursor = "pointer");
@@ -828,14 +803,6 @@ function renderNetwork(firstLoad = false) {
     loader.style.display = "none";
     document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
     if (!camera) return clearInterval(initLoop);
-    setTimeout(() => {
-      const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5)),
-        newSizes = {};
-      data.graph.forEachNode((node, {stories}) => {
-        newSizes[node] = {size: computeNodeSize(node, stories, ratio)}
-      });
-      animateNodes(data.graph, newSizes, { duration: 100, easing: "quadraticOut" });
-    }, 100);
     if (camera.ratio <= 5) {
       if (entity === "creators")
         clustersLayer.style.display = "block";
@@ -1077,7 +1044,7 @@ function doResize() {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim/1000);
     graph.forEachNode((node, {stories}) =>
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories, ratio))
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
     );
   }
   resizing = false;
