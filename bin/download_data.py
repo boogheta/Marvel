@@ -42,8 +42,11 @@ def cache_download(url, cache_file, as_json=True):
     res = retry_get(url)
     with open(cache_file, "w") as f:
         if as_json:
-            json.dump(res.json(), f)
-        f.write(res.text)
+            data = res.json()
+            json.dump(data, f)
+        else:
+            data = res.text
+            f.write(data)
     return data
 
 CONF = None
