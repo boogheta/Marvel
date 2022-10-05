@@ -27,20 +27,23 @@ def retry_get(url, stream=False, retries=5):
         print("%s: %s" % (type(e), e))
         sys.exit(1)
 
-def cache_download(url, cache_file):
+def cache_download(url, cache_file, as_json=True):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
         try:
             with open(cache_file) as f:
-                return json.load(f)
+                if as_json:
+                    return json.load(f)
+                return f.readlines()
         except Exception as e:
             print("ERROR while loading cache file for", url, cache_file, e, file=sys.stderr)
             raise e
 
     print("Calling " + url)
     res = retry_get(url)
-    data = res.json()
     with open(cache_file, "w") as f:
-        json.dump(data, f)
+        if as_json:
+            json.dump(res.json(), f)
+        f.write(res.text)
     return data
 
 CONF = None
@@ -489,12 +492,17 @@ def build_graph(nodes_type, links_type, comics, nodes):
     return G
 
 def build_csv(entity, rows):
+    cache_dir = os.path.join(".cache", "comics-web")
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
     done = set()
     with gzip.open(os.path.join("data", "Marvel_%s.csv.gz" % entity), "wt") as csvf:
         writer = csv.writer(csvf)
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
+            url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
+            webpage = cache_download(url, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
             if row["id"] in done:
                 continue
             done.add(row["id"])
@@ -508,7 +516,7 @@ def build_csv(entity, rows):
                 "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),
                 "artists": "|".join(str(extractID(i)) for i in authors if i["role"] == "artist"),
                 "image_url": image_url(row["images"][0] if row["images"] else row.get("thumbnail")),
-                "url": sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
+                "url": url
             }
             writer.writerow([el[f] for f in fields])
 
