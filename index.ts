@@ -1,5 +1,4 @@
 /* TODO:
-- fix phone touch graph unclicks
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
