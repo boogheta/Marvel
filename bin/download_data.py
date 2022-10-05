@@ -505,7 +505,8 @@ def build_csv(entity, rows):
         writer.writerow(fields)
         for row in rows:
             url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
-            webpage = cache_download(url, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
+            url_clean = url.split("?")[0]
+            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
             if row["id"] in done:
                 continue
             done.add(row["id"])
