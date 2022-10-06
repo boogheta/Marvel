@@ -25,21 +25,32 @@ def retry_get(url, stream=False, retries=5):
             return retry_get(url, stream=stream, retries=retries-1)
         print("Error with url " + url, res)
         print("%s: %s" % (type(e), e))
-        sys.exit(1)
+        return None
 
-def cache_download(url, cache_file, as_json=True):
+def cache_download(url, cache_file, as_json=True, incomplete_retries=5):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
         try:
             with open(cache_file) as f:
                 if as_json:
                     return json.load(f)
-                return f.readlines()
+                content = f.read()
+                if "</html>" in content:
+                    return content
         except Exception as e:
             print("ERROR while loading cache file for", url, cache_file, e, file=sys.stderr)
             raise e
 
     print("Calling " + url)
     res = retry_get(url)
+    if not res:
+        return None
+    if not as_json and "</html>" not in res.text:
+        if incomplete_retries:
+            print("...incomplete result, retrying...")
+            sleep(15 - 2 * retries)
+            return cache_download(url, cache_file, as_json=False, incomplete_retries=incomplete_retries-1)
+        print("...page keeps remaining incomplete, giving up for now.")
+        return None
     with open(cache_file, "w") as f:
         if as_json:
             data = res.json()
@@ -95,11 +106,11 @@ def download_thumbnails(entity, data):
         if not os.path.exists(thumbnail_file):
             print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
             res = retry_get(thumbnail_url, stream=True)
-            if res.status_code == 200:
+            if not res or res.status_code != 200:
+                item["image"] = "./images/not_available.gif"
+            else:
                 with open(thumbnail_file, 'wb') as img_file:
                     shutil.copyfileobj(res.raw, img_file)
-            else:
-                item["image"] = "./images/not_available.gif"
         item["image"] = "./" + thumbnail_file
     return data
 
@@ -118,6 +129,8 @@ def process_api_page(entity, args={}, filters={}, page=0):
         cache_file = os.path.join(".cache", entity, "{}_{:05d}.json".format(url_args["query_args"].replace("&", "_"), page))
 
     data = cache_download(url, cache_file)
+    if not data:
+        sys.exit(1)
     if entity == "comics":
         data = complete_data(data)
     elif entity in ["creators", "characters"]:
@@ -494,6 +507,71 @@ def build_graph(nodes_type, links_type, comics, nodes):
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
+re_blanks = re.compile(r"\s\s+")
+clean_blanks = lambda x: re_blanks.sub(" ", x)
+def scrape_comic(html):
+    data = {
+        "authorsMain": {},
+        "authorsStories": {},
+        "authorsCover": {},
+        "footerMetadata": {},
+        "descriptionNormal": "",
+        "descriptionOthers": "",
+        "descriptionHidden": ""
+    }
+    current = None
+    for line in html.split("\n"):
+        if "var comicDetailData = " in line:
+            data["comicDetail"] = json.loads(line.replace("var comicDetailData = ", "").strip("; "))
+        elif "var discoverDetailData = " in line:
+            data["discoverDetail"] = json.loads(line.replace("var discoverDetailData = ", "").strip("; "))
+        elif '<script type="application/ld+json">' in line:
+            data["metadata"] = json.loads(line.replace('<script type="application/ld+json">', "").replace("</script>", ""))
+        elif ' <div><strong>' in line and "a href" in line:
+            pieces = re.split('\s*[<>]+\s*', line)
+# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
+            data["authorsMain"][clean_blanks(pieces[3]).strip(": ").lower()] = {
+                "name": clean_blanks(pieces[8].strip()),
+                "id": pieces[7].split("/")[5]
+            }
+        elif '<li><strong>' in line:
+            pieces = re.split('\s*[<>]+\s*', line)
+            data["footerMetadata"][clean_blanks(pieces[3]).strip(": ").lower()] = clean_blanks(pieces[5].strip())
+        elif '<p data-blurb=' in line:
+            current = "description" + ("Hidden" if "style" in line else "Normal")
+        elif '<h6>The Story</h6>' in line:
+            current = "descriptionOthers"
+        elif '<h6>Stories</h6>' in line:
+            current = "authorsStories"
+        elif '<h6>Cover Information</h6>' in line:
+            current = "authorsCover"
+        elif current:
+            if current.startswith("description"):
+                if not data[current]:
+                    data[current] = []
+                data[current].append(line.replace("<p>", "").replace("</p>", "").strip())
+                if "</p>" in line:
+                    data[current] = "<br/>".join(data[current])
+                    current = None
+            elif current.startswith("authors"):
+# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
+                pieces = re.split('\s*[<>]+\s*', line)
+                if len(pieces) > 10:
+                    data[current][clean_blanks(pieces[5]).strip(": ").lower()] = {
+                        "name": clean_blanks(pieces[11].strip()),
+                        "id": pieces[10].split("/")[3]
+                    }
+                elif "</ul>" in line:
+                    current = None
+    if data["descriptionNormal"] != data["descriptionOthers"] or data["descriptionOthers"] != data["descriptionHidden"] or data["descriptionHidden"] != data["metadata"]["hasPart"]["abstract"] or data["metadata"]["hasPart"]["abstract"] != data["metadata"]["hasPart"]["description"]:
+        print("- Descriptions differ!")
+        print(data["descriptionNormal"])
+        print(data["descriptionOthers"])
+        print(data["descriptionHidden"])
+        print(data["metadata"]["hasPart"]["abstract"])
+        print(data["metadata"]["hasPart"]["description"])
+    return data
+
 def build_csv(entity, rows):
     cache_dir = os.path.join(".cache", "comics-web")
     if not os.path.exists(cache_dir):
@@ -504,12 +582,15 @@ def build_csv(entity, rows):
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
-            url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
-            url_clean = url.split("?")[0]
-            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
             if row["id"] in done:
                 continue
             done.add(row["id"])
+
+            url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
+            url_clean = url.split("?")[0]
+            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
+            data = scrape_comic(webpage) if webpage else {}
+
             authors = get_authors(row)
             el = {
                 "id": row["id"],
