@@ -25,21 +25,32 @@ def retry_get(url, stream=False, retries=5):
             return retry_get(url, stream=stream, retries=retries-1)
         print("Error with url " + url, res)
         print("%s: %s" % (type(e), e))
-        sys.exit(1)
+        return None
 
-def cache_download(url, cache_file, as_json=True):
+def cache_download(url, cache_file, as_json=True, incomplete_retries=5):
     if "--ignore-cache" not in sys.argv and os.path.exists(cache_file):
         try:
             with open(cache_file) as f:
                 if as_json:
                     return json.load(f)
-                return f.readlines()
+                content = f.read()
+                if "</html>" in content:
+                    return content
         except Exception as e:
             print("ERROR while loading cache file for", url, cache_file, e, file=sys.stderr)
             raise e
 
     print("Calling " + url)
     res = retry_get(url)
+    if not res:
+        return None
+    if not as_json and "</html>" not in res.text:
+        if incomplete_retries:
+            print("...incomplete result, retrying...")
+            sleep(15 - 2 * retries)
+            return cache_download(url, cache_file, as_json=False, incomplete_retries=incomplete_retries-1)
+        print("...page keeps remaining incomplete, giving up for now.")
+        return None
     with open(cache_file, "w") as f:
         if as_json:
             data = res.json()
@@ -95,11 +106,11 @@ def download_thumbnails(entity, data):
         if not os.path.exists(thumbnail_file):
             print("Downloading image for " + item.get("name", item.get("fullName")) + " at " + thumbnail_url)
             res = retry_get(thumbnail_url, stream=True)
-            if res.status_code == 200:
+            if not res or res.status_code != 200:
+                item["image"] = "./images/not_available.gif"
+            else:
                 with open(thumbnail_file, 'wb') as img_file:
                     shutil.copyfileobj(res.raw, img_file)
-            else:
-                item["image"] = "./images/not_available.gif"
         item["image"] = "./" + thumbnail_file
     return data
 
@@ -118,6 +129,8 @@ def process_api_page(entity, args={}, filters={}, page=0):
         cache_file = os.path.join(".cache", entity, "{}_{:05d}.json".format(url_args["query_args"].replace("&", "_"), page))
 
     data = cache_download(url, cache_file)
+    if not data:
+        sys.exit(1)
     if entity == "comics":
         data = complete_data(data)
     elif entity in ["creators", "characters"]:
@@ -504,12 +517,14 @@ def build_csv(entity, rows):
         fields = ["id", "title", "date", "description", "characters", "writers", "artists", "image_url", "url"]
         writer.writerow(fields)
         for row in rows:
-            url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
-            url_clean = url.split("?")[0]
-            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
             if row["id"] in done:
                 continue
             done.add(row["id"])
+
+            url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
+            url_clean = url.split("?")[0]
+            webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
+
             authors = get_authors(row)
             el = {
                 "id": row["id"],
