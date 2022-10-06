@@ -507,6 +507,71 @@ def build_graph(nodes_type, links_type, comics, nodes):
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
+re_blanks = re.compile(r"\s\s+")
+clean_blanks = lambda x: re_blanks.sub(" ", x)
+def scrape_comic(html):
+    data = {
+        "authorsMain": {},
+        "authorsStories": {},
+        "authorsCover": {},
+        "footerMetadata": {},
+        "descriptionNormal": "",
+        "descriptionOthers": "",
+        "descriptionHidden": ""
+    }
+    current = None
+    for line in html.split("\n"):
+        if "var comicDetailData = " in line:
+            data["comicDetail"] = json.loads(line.replace("var comicDetailData = ", "").strip("; "))
+        elif "var discoverDetailData = " in line:
+            data["discoverDetail"] = json.loads(line.replace("var discoverDetailData = ", "").strip("; "))
+        elif '<script type="application/ld+json">' in line:
+            data["metadata"] = json.loads(line.replace('<script type="application/ld+json">', "").replace("</script>", ""))
+        elif ' <div><strong>' in line and "a href" in line:
+            pieces = re.split('\s*[<>]+\s*', line)
+# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
+            data["authorsMain"][clean_blanks(pieces[3]).strip(": ").lower()] = {
+                "name": clean_blanks(pieces[8].strip()),
+                "id": pieces[7].split("/")[5]
+            }
+        elif '<li><strong>' in line:
+            pieces = re.split('\s*[<>]+\s*', line)
+            data["footerMetadata"][clean_blanks(pieces[3]).strip(": ").lower()] = clean_blanks(pieces[5].strip())
+        elif '<p data-blurb=' in line:
+            current = "description" + ("Hidden" if "style" in line else "Normal")
+        elif '<h6>The Story</h6>' in line:
+            current = "descriptionOthers"
+        elif '<h6>Stories</h6>' in line:
+            current = "authorsStories"
+        elif '<h6>Cover Information</h6>' in line:
+            current = "authorsCover"
+        elif current:
+            if current.startswith("description"):
+                if not data[current]:
+                    data[current] = []
+                data[current].append(line.replace("<p>", "").replace("</p>", "").strip())
+                if "</p>" in line:
+                    data[current] = "<br/>".join(data[current])
+                    current = None
+            elif current.startswith("authors"):
+# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
+                pieces = re.split('\s*[<>]+\s*', line)
+                if len(pieces) > 10:
+                    data[current][clean_blanks(pieces[5]).strip(": ").lower()] = {
+                        "name": clean_blanks(pieces[11].strip()),
+                        "id": pieces[10].split("/")[3]
+                    }
+                elif "</ul>" in line:
+                    current = None
+    if data["descriptionNormal"] != data["descriptionOthers"] or data["descriptionOthers"] != data["descriptionHidden"] or data["descriptionHidden"] != data["metadata"]["hasPart"]["abstract"] or data["metadata"]["hasPart"]["abstract"] != data["metadata"]["hasPart"]["description"]:
+        print("- Descriptions differ!")
+        print(data["descriptionNormal"])
+        print(data["descriptionOthers"])
+        print(data["descriptionHidden"])
+        print(data["metadata"]["hasPart"]["abstract"])
+        print(data["metadata"]["hasPart"]["description"])
+    return data
+
 def build_csv(entity, rows):
     cache_dir = os.path.join(".cache", "comics-web")
     if not os.path.exists(cache_dir):
@@ -524,6 +589,7 @@ def build_csv(entity, rows):
             url = sorted(row["urls"], key=lambda x: "a" if x["type"] == "details" or "marvel.com/characters" in x["url"] else "z")[0]["url"]
             url_clean = url.split("?")[0]
             webpage = cache_download(url_clean, os.path.join(cache_dir, "%s.html" % row["id"]), as_json=False)
+            data = scrape_comic(webpage) if webpage else {}
 
             authors = get_authors(row)
             el = {
