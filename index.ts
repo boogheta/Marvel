@@ -1,4 +1,6 @@
 /* TODO:
+- bug unzoom box smartphone
+- bug resize on smartphone
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - button Explore All comics
@@ -563,7 +565,7 @@ function selectComic(comic = null, keep = false) {
         ? { ...attrs,
             zIndex: 0,
             color: '#333',
-            size: 2
+            size: 3
           }
         : { ...attrs,
             zIndex: 0,
@@ -935,7 +937,7 @@ function clickNode(node, updateURL=true) {
         ? { ...attrs,
             zIndex: 0,
             color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-            size: Math.max(0.1, Math.log(data.graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 200000))
+            size: Math.max(0.5, Math.log(data.graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 300000))
           }
         : { ...attrs,
             zIndex: 0,
