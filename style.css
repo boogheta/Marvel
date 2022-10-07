@@ -453,6 +453,13 @@ label {
   font-weight: bold;
   padding: 10px 0px;
 }
+#rotate-modal p small {
+  font-size: 14px;
+  text-transform: lowercase;
+  padding: 15px 5px 5px 5px;
+  display: inline-block;
+  line-height: 20px;
+}
 @media (orientation: portrait) {
   #rotate-modal {
     display: block;
