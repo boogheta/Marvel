@@ -530,11 +530,12 @@ def scrape_comic(html):
             data["metadata"]["hasPart"]["description"] = clean_html(data["metadata"]["hasPart"]["description"])
         elif ' <div><strong>' in line and "a href" in line:
             pieces = re.split('\s*[<>]+\s*', line)
-# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
-            data["authorsMain"][clean_blanks(pieces[3]).strip(": ").lower()] = {
-                "name": clean_blanks(pieces[8].strip()),
-                "id": pieces[7].split("/")[5]
-            }
+            data["authorsMain"][clean_blanks(pieces[3]).strip(": ").lower()] = []
+            for i in range(line.count("</a>, <a") + 1):
+                data["authorsMain"][clean_blanks(pieces[3]).strip(": ").lower()].append({
+                    "name": clean_blanks(pieces[8 + 4 * i].strip()),
+                    "id": pieces[7 + 4 * i].split("/")[5]
+                })
         elif '<li><strong>' in line:
             pieces = re.split('\s*[<>]+\s*', line)
             data["footerMetadata"][clean_blanks(pieces[3]).strip(": ").lower()] = clean_blanks(pieces[5].strip())
@@ -554,13 +555,14 @@ def scrape_comic(html):
                 data["description"] = " ".join(data[current])
                 current = None
         elif current and current.startswith("authors"):
-# TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
-                pieces = re.split('\s*[<>]+\s*', line)
-                if len(pieces) > 10:
-                    data[current][clean_blanks(pieces[5]).strip(": ").lower()] = {
-                        "name": clean_blanks(pieces[11].strip()),
-                        "id": pieces[10].split("/")[3]
-                    }
+            pieces = re.split('\s*[<>]+\s*', line)
+            if len(pieces) > 10:
+                data[current][clean_blanks(pieces[5]).strip(": ").lower()] = []
+                for i in range(line.count("</a>, <a") + 1):
+                    data[current][clean_blanks(pieces[5]).strip(": ").lower()].append({
+                        "name": clean_blanks(pieces[11 + 4 * i].strip()),
+                        "id": pieces[10 + 4 * i].split("/")[3]
+                    })
             elif "</ul>" in line:
                 current = None
     return data
