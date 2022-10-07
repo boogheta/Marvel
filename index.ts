@@ -10,6 +10,8 @@
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
 => scraper comics as counter-truth? :
+- filter imprint marvel
+- rebuild creators network from cleaned comics instead
 IDEAS:
 - install app button?
 - reset regular sidebar position for smartphone and keep double bar except low width?
@@ -450,14 +452,22 @@ viewAllComicsButton.onclick = () => {
   comicsCache.style.display = "none";
 };
 
-// Key Arrow handling on comics list
+// Esc & Arrow keys handling on comics list
 document.onkeydown = function(e) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return
 
   if (modal.style.display === "block" && e.which === 27)
     modal.style.display = "none";
-  else if (selectedComic) {
+  else if (comicsBarView && !selectedComic) {
+    if (e.which === 37 || e.which === 38)
+      selectAndScroll(document.querySelector("#comics-list li:last-child") as any);
+    else if (e.which === 39 || e.which === 40)
+      selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
+    else if (e.which === 27)
+      hideComicsBar();
+    else return;
+  } else if (selectedComic) {
     const selected = document.querySelector("#comics-list li.selected") as any,
       prev = selected.previousElementSibling as any,
       next = selected.nextElementSibling as any;
