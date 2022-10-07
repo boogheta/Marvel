@@ -69,7 +69,8 @@
         <p class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</p>
         <p>Marvel API's data is not always perfect and some stories miss information, although it is quite rich and results look good enough!</p>
         <p><span class="desktop-details">Click</span><span class="phones-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p>
-        <p id="view-node"><span><span class="desktop-details">Click</span><span class="phones-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span>!</span></p>
+        <p id="view-node"><span><span class="desktop-details">Click</span><span class="phones-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
+        <p id="view-all-comics"><span>Explore all comics</span></p>
       </div>
       <div id="node-details">
         <h2 id="node-label"></h2>
@@ -115,6 +116,7 @@
       <h3 id="comics-subtitle"><span id="comics-subtitle-extra">as </span><span id="comics-subtitle-list"></span></h3>
       <div id="comics">
         <ul id="comics-list"></ul>
+        <div id="loader-list" title="Loading list of comics..."><img src="./images/loader.gif"/></div>
       </div>
       <div id="comics-cache"></div>
       <div id="comic-details">

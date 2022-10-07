@@ -42,10 +42,10 @@ html, body {
   text-align: center;
   border: 1px solid #333;
   border-radius: 10px 0 0 10px;
-  -webkit-transition: 0.5s ease-in-out;
-  -moz-transition: 0.5s ease-in-out;
-  -o-transition: 0.5s ease-in-out;
-  transition: 0.5s ease-in-out;
+  -webkit-transition: 0.25s ease-in-out;
+  -moz-transition: 0.25s ease-in-out;
+  -o-transition: 0.25s ease-in-out;
+  transition: 0.25s ease-in-out;
 }
 #comics, #comic-details {
   padding: 5px;
@@ -181,7 +181,7 @@ h2 {
   max-width: 90%;
   padding-top: 5px;
 }
-#view-comics, #view-node {
+#view-comics, #view-node, #view-all-comics {
   cursor: pointer;
   font-weight: bold;
   font-size: 14px;
@@ -189,7 +189,11 @@ h2 {
   margin-bottom: 15px!important;
   text-transform: uppercase;
 }
-#view-comics > span, #view-node > span {
+#view-all-comics {
+  display: none;
+  padding-top: 5px;
+}
+#view-comics > span, #view-node > span, #view-all-comics span {
   width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
@@ -260,6 +264,16 @@ h2 {
   right: 0;
   width: 15px;
   height: 15px;
+}
+#loader-list {
+  display: none;
+}
+#loader-list img {
+  position: relative;
+  top: 35px;
+  left: 0;
+  width: 25px;
+  height: 25px;
 }
 #modal {
   position: absolute;
