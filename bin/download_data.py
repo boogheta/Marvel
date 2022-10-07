@@ -13,13 +13,13 @@ from time import time, sleep
 from hashlib import md5
 import networkx as nx
 
-def retry_get(url, stream=False, retries=5):
+def retry_get(url, stream=False, retries=3):
     try:
         res = requests.get(url, stream=stream)
         assert(res.status_code == 200)
         return res
     except (ConnectionResetError, AssertionError, requests.exceptions.ConnectionError) as e:
-        if retries:
+        if "--no-retries" not in sys.argv and retries:
             print("...call failed, will retry in a few seconds...")
             sleep(15 - 2 * retries)
             return retry_get(url, stream=stream, retries=retries-1)
@@ -45,7 +45,7 @@ def cache_download(url, cache_file, as_json=True, incomplete_retries=5):
     if not res:
         return None
     if not as_json and "</html>" not in res.text:
-        if incomplete_retries:
+        if "--no-retries" not in sys.argv and incomplete_retries:
             print("...incomplete result, retrying...")
             sleep(15 - 2 * retries)
             return cache_download(url, cache_file, as_json=False, incomplete_retries=incomplete_retries-1)
@@ -361,10 +361,18 @@ def get_date(comic):
         return "????-??"
     return date
 
+re_blanks = re.compile(r"\s\s+")
+clean_blanks = lambda x: re_blanks.sub(" ", x)
 def clean_html(t):
     if not t:
         return ""
-    return re.sub(r'</?(span|p|ul|li)( [^>]*)?>', '', t, re.I)
+    t = clean_blanks(t)
+    t = clean_blanks(t)
+    t = re.sub(r'</?(span|p|ul|li)( [^>]*)?>', '', t, re.I)
+    t = re.sub(r'(\s*(\r|\n|<br/?>)\s*)+', '<br/>', t, re.I)
+    if t == "<br/>":
+        return ""
+    return t.strip()
 
 def build_graph(nodes_type, links_type, comics, nodes):
     skipIDs = set()
@@ -507,26 +515,19 @@ def build_graph(nodes_type, links_type, comics, nodes):
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s.gexf" % (nodes_type, links_type)))
     return G
 
-re_blanks = re.compile(r"\s\s+")
-clean_blanks = lambda x: re_blanks.sub(" ", x)
 def scrape_comic(html):
     data = {
         "authorsMain": {},
         "authorsStories": {},
         "authorsCover": {},
         "footerMetadata": {},
-        "descriptionNormal": "",
-        "descriptionOthers": "",
-        "descriptionHidden": ""
+        "description": ""
     }
     current = None
     for line in html.split("\n"):
-        if "var comicDetailData = " in line:
-            data["comicDetail"] = json.loads(line.replace("var comicDetailData = ", "").strip("; "))
-        elif "var discoverDetailData = " in line:
-            data["discoverDetail"] = json.loads(line.replace("var discoverDetailData = ", "").strip("; "))
-        elif '<script type="application/ld+json">' in line:
+        if '<script type="application/ld+json">' in line:
             data["metadata"] = json.loads(line.replace('<script type="application/ld+json">', "").replace("</script>", ""))
+            data["metadata"]["hasPart"]["description"] = clean_html(data["metadata"]["hasPart"]["description"])
         elif ' <div><strong>' in line and "a href" in line:
             pieces = re.split('\s*[<>]+\s*', line)
 # TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
@@ -537,23 +538,22 @@ def scrape_comic(html):
         elif '<li><strong>' in line:
             pieces = re.split('\s*[<>]+\s*', line)
             data["footerMetadata"][clean_blanks(pieces[3]).strip(": ").lower()] = clean_blanks(pieces[5].strip())
-        elif '<p data-blurb=' in line:
-            current = "description" + ("Hidden" if "style" in line else "Normal")
-        elif '<h6>The Story</h6>' in line:
-            current = "descriptionOthers"
+        elif '<p data-blurb=' in line and not "style" in line:
+            current = "description"
         elif '<h6>Stories</h6>' in line:
             current = "authorsStories"
         elif '<h6>Cover Information</h6>' in line:
             current = "authorsCover"
-        elif current:
-            if current.startswith("description"):
-                if not data[current]:
-                    data[current] = []
-                data[current].append(line.replace("<p>", "").replace("</p>", "").strip())
-                if "</p>" in line:
-                    data[current] = "<br/>".join(data[current])
-                    current = None
-            elif current.startswith("authors"):
+        elif current == "description":
+            if not data["description"]:
+                data["description"] = []
+            descline = clean_html(line)
+            if descline:
+                data["description"].append(descline)
+            if "</p>" in line:
+                data["description"] = " ".join(data[current])
+                current = None
+        elif current and current.startswith("authors"):
 # TODO: handle cases with multiples values separared by commas ex: https://www.marvel.com/comics/issue/75125/marvel_comics_2019_1000?utm_campaign=apiRef&utm_source=284cb61831f90658ed8f8e656311488c
                 pieces = re.split('\s*[<>]+\s*', line)
                 if len(pieces) > 10:
@@ -561,15 +561,8 @@ def scrape_comic(html):
                         "name": clean_blanks(pieces[11].strip()),
                         "id": pieces[10].split("/")[3]
                     }
-                elif "</ul>" in line:
-                    current = None
-    if data["descriptionNormal"] != data["descriptionOthers"] or data["descriptionOthers"] != data["descriptionHidden"] or data["descriptionHidden"] != data["metadata"]["hasPart"]["abstract"] or data["metadata"]["hasPart"]["abstract"] != data["metadata"]["hasPart"]["description"]:
-        print("- Descriptions differ!")
-        print(data["descriptionNormal"])
-        print(data["descriptionOthers"])
-        print(data["descriptionHidden"])
-        print(data["metadata"]["hasPart"]["abstract"])
-        print(data["metadata"]["hasPart"]["description"])
+            elif "</ul>" in line:
+                current = None
     return data
 
 def build_csv(entity, rows):
@@ -596,7 +589,7 @@ def build_csv(entity, rows):
                 "id": row["id"],
                 "title": row["title"],
                 "date": get_date(row),
-                "description": clean_html(row["description"]) or "",
+                "description": data.get("description") or clean_html(row["description"]) or (data.get("metadata") and data["metadata"]["hasPart"]["description"]) or "",
                 "characters": "|".join(str(extractID(i)) for i in row["characters"]["items"]),
                 "writers": "|".join(str(extractID(i)) for i in authors if i["role"] == "writer"),
                 "artists": "|".join(str(extractID(i)) for i in authors if i["role"] == "artist"),

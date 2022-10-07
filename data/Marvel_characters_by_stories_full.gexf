@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
-  <meta lastmodifieddate="2022-10-04">
+  <meta lastmodifieddate="2022-10-07">
     <creator>NetworkX 2.8.6</creator>
   </meta>
   <graph defaultedgetype="undirected" mode="static" name="">
@@ -27,7 +27,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/3/20/5232158de5b16.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/76/a-bomb?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="3" />
-          <attvalue for="4" value="Rick Jones has been Hulk's best bud since day one, but now he's more than a friend...he's a teammate! Transformed by a Gamma energy explosion, A-Bomb's thick, armored skin is just as strong and powerful as it is blue. And when he curls into action, he uses it like a giant bowling ball of destruction! " />
+          <attvalue for="4" value="Rick Jones has been Hulk's best bud since day one, but now he's more than a friend...he's a teammate! Transformed by a Gamma energy explosion, A-Bomb's thick, armored skin is just as strong and powerful as it is blue. And when he curls into action, he uses it like a giant bowling ball of destruction!" />
         </attvalues>
       </node>
       <node id="1009144" label="A.I.M.">
@@ -531,7 +531,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/f/90/4ce5a86dba8a8.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1011778/baron_mordo_karl_mordo?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="5" />
-          <attvalue for="4" value="Born in 1921, Karl Mordo was the son of Nikolai Mordo.  He vowed that, as the second Baron Mordo, he would achieve his father’s hopes and more." />
+          <attvalue for="4" value="Born in 1921, Karl Mordo was the son of Nikolai Mordo. He vowed that, as the second Baron Mordo, he would achieve his father’s hopes and more." />
         </attvalues>
       </node>
       <node id="1009169" label="Baron Strucker">
@@ -2034,7 +2034,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/c/80/535fedd611db9.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/538/demogoblin?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="2" />
-          <attvalue for="4" value="Jason Macendale, the newest Hobgoblin was down on his luck and offered the demon N'astirh his soul in exchange for power during the  Inferno crisis, turning him into the Demogoblin." />
+          <attvalue for="4" value="Jason Macendale, the newest Hobgoblin was down on his luck and offered the demon N'astirh his soul in exchange for power during the Inferno crisis, turning him into the Demogoblin." />
         </attvalues>
       </node>
       <node id="1009271" label="Destiny">
@@ -3159,7 +3159,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/2/70/50febd8be6b5d.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/70/guardians_of_the_galaxy?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="94" />
-          <attvalue for="4" value="A group of cosmic adventurers brought together by Star-Lord, the  Guardians of the Galaxy protect the universe from threats all  across space. The team also includes Drax, Gamora, Groot and Rocket  Raccoon!" />
+          <attvalue for="4" value="A group of cosmic adventurers brought together by Star-Lord, the Guardians of the Galaxy protect the universe from threats all across space. The team also includes Drax, Gamora, Groot and Rocket Raccoon!" />
         </attvalues>
       </node>
       <node id="1009619" label="Gwen Stacy">
@@ -3231,7 +3231,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/b/a0/4c002df3dd41f.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1011490/hank_pym?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="210" />
-          <attvalue for="4" value=" " />
+          <attvalue for="4" value="" />
         </attvalues>
       </node>
       <node id="1009348" label="Happy Hogan">
@@ -6642,7 +6642,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/f/60/535fec953eaab.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1010747/runaways?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="69" />
-          <attvalue for="4" value="The teens who became the Runaways found that some family secrets are bigger than others when they witnessed their parents, part of a cabal known as the Pride, murdering a young girl during a secret sacrificial ritual. " />
+          <attvalue for="4" value="The teens who became the Runaways found that some family secrets are bigger than others when they witnessed their parents, part of a cabal known as the Pride, murdering a young girl during a secret sacrificial ritual." />
         </attvalues>
       </node>
       <node id="1009552" label="S.H.I.E.L.D.">
@@ -7425,7 +7425,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/a/10/528d369de3e4f.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/2171/spider-girl?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="21" />
-          <attvalue for="4" value=" " />
+          <attvalue for="4" value="" />
         </attvalues>
       </node>
       <node id="1009609" label="Spider-Girl (May Parker)">
@@ -7893,7 +7893,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1011477/surtur?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="10" />
-          <attvalue for="4" value="Surtur was an enormous fiery demon native to the dimension of Asgard. Possessed of evil intelligence and vast power, Surtur was one of the major elemental forces of evil that the Asgardians feared. He was a mystical being whose existence predated that of Odin himself. Over 1,000 feet tall and wielding a huge fiery sword, he was once imprisoned by Odin at the Earth's core. Along with Ymir the Frost Giant and the Midgard Serpent, Surtur was the most powerful of Asgard's native enemies.&#10;&#10;Surtur has been freed from imprisonment a few times over the years. The first time the Asgardian god of mischief Loki set Surtur free to wreak havok on Earth. The second time Surtur was set free by Marduk of the Sons of Satannish, a cult of human demon-worshippers. Surtur was banished to some unnamed netherworld at the end of that encounter. He appeared, yet again, in what was to be one of the Asgardians greatest battles against Surtur. Surtur hatched a plan to lure Asgard's armies to Earth leaving the city vulnerable to attack. He crossed Bifrost with his newly forged Twilight blade believing Asgard to be defenseless; Odin, Thor and Loki were there to make a last stand to defeat Surtur. Their victory did not come easy though, as Odin fell along with Surtur into a dimensional rift.&#10;&#10;Surtur apparently died along with the Asgardians during Ragnarok." />
+          <attvalue for="4" value="Surtur was an enormous fiery demon native to the dimension of Asgard. Possessed of evil intelligence and vast power, Surtur was one of the major elemental forces of evil that the Asgardians feared. He was a mystical being whose existence predated that of Odin himself. Over 1,000 feet tall and wielding a huge fiery sword, he was once imprisoned by Odin at the Earth's core. Along with Ymir the Frost Giant and the Midgard Serpent, Surtur was the most powerful of Asgard's native enemies. Surtur has been freed from imprisonment a few times over the years. The first time the Asgardian god of mischief Loki set Surtur free to wreak havok on Earth. The second time Surtur was set free by Marduk of the Sons of Satannish, a cult of human demon-worshippers. Surtur was banished to some unnamed netherworld at the end of that encounter. He appeared, yet again, in what was to be one of the Asgardians greatest battles against Surtur. Surtur hatched a plan to lure Asgard's armies to Earth leaving the city vulnerable to attack. He crossed Bifrost with his newly forged Twilight blade believing Asgard to be defenseless; Odin, Thor and Loki were there to make a last stand to defeat Surtur. Their victory did not come easy though, as Odin fell along with Surtur into a dimensional rift. Surtur apparently died along with the Asgardians during Ragnarok." />
         </attvalues>
       </node>
       <node id="1009640" label="Switch">
@@ -8172,7 +8172,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/d/d0/5269657a74350.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/1009664/thor/featured?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="1000" />
-          <attvalue for="4" value="As the Norse God of thunder and lightning, Thor wields one of the greatest weapons ever made, the enchanted hammer Mjolnir. While others have described Thor as an over-muscled, oafish imbecile, he's quite smart and compassionate.  He's self-assured, and he would never, ever stop fighting for a worthwhile cause." />
+          <attvalue for="4" value="As the Norse God of thunder and lightning, Thor wields one of the greatest weapons ever made, the enchanted hammer Mjolnir. While others have described Thor as an over-muscled, oafish imbecile, he's quite smart and compassionate. He's self-assured, and he would never, ever stop fighting for a worthwhile cause." />
         </attvalues>
       </node>
       <node id="1017576" label="Thor (Goddess of Thunder)">
@@ -8253,7 +8253,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/b/a0/50fec50a26dc1.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1010360/thunderbolts?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="162" />
-          <attvalue for="4" value="After a battle with Onslaught left the world without the majority of the heroes that made it feel safe, Baron Zemo devised a plan like no other in order to rule the world. Zemo gathered Beetle, Fixer, Goliath, Moonstone, and Screaming Mimi, all former members of the Masters of Evil, together to disguise themselves as a new heroic team in order to take advantage of the missing heroes and gain the trust of the authorities and public in general. " />
+          <attvalue for="4" value="After a battle with Onslaught left the world without the majority of the heroes that made it feel safe, Baron Zemo devised a plan like no other in order to rule the world. Zemo gathered Beetle, Fixer, Goliath, Moonstone, and Screaming Mimi, all former members of the Masters of Evil, together to disguise themselves as a new heroic team in order to take advantage of the missing heroes and gain the trust of the authorities and public in general." />
         </attvalues>
       </node>
       <node id="1011304" label="Thundra">
@@ -9117,7 +9117,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/2/a0/50fec5ed6f3de.jpg" />
           <attvalue for="2" value="http://marvel.com/comics/characters/1009722/x-23?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="68" />
-          <attvalue for="4" value="A clone of the mutant Wolverine, X-23 was trained as a living weapon by a secretive government agency.  Now residing with the X-Men, she strives to recover her stolen youth and become a fully realized person." />
+          <attvalue for="4" value="A clone of the mutant Wolverine, X-23 was trained as a living weapon by a secretive government agency. Now residing with the X-Men, she strives to recover her stolen youth and become a fully realized person." />
         </attvalues>
       </node>
       <node id="1011418" label="X-Babies">
@@ -9306,7 +9306,7 @@
           <attvalue for="1" value="http://i.annihil.us/u/prod/marvel/i/mg/c/d0/4ced5ab9078c9.jpg" />
           <attvalue for="2" value="http://marvel.com/characters/2682/zzzax?utm_campaign=apiRef&amp;utm_source=c216c796291671a97f0486408c4d6d02" />
           <attvalue for="3" value="2" />
-          <attvalue for="4" value="A chain reaction in an atomic reactor, a result of a terrorist attack, accidentally created a force that absorbed the electrolytes of the nearby humans' brains, granting the explosion of energy a rudimentary sentience.  " />
+          <attvalue for="4" value="A chain reaction in an atomic reactor, a result of a terrorist attack, accidentally created a force that absorbed the electrolytes of the nearby humans' brains, granting the explosion of energy a rudimentary sentience." />
         </attvalues>
       </node>
     </nodes>
