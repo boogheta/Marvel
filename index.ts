@@ -605,7 +605,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
         ? { ...attrs,
             zIndex: 0,
             color: '#333',
-            size: 3
+            size: sigmaDim < 500 ? 1 : 3
           }
         : { ...attrs,
             zIndex: 0,
