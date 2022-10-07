@@ -1,5 +1,4 @@
 /* TODO:
-- lost reclick selectedcomic on click other node linked
 - sortable/filterable/playable/pausable list?
 - bug resize on smartphone
 - bind url with selected comic?
@@ -38,6 +37,7 @@ let entity = "",
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
+  hoveredComic = null,
   selectedComic = null;
 
 const conf = {},
@@ -389,7 +389,7 @@ function loadComics(comicsData) {
 
 //const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
 
-function displayComics(node) {
+function displayComics(node, autoReselect = false) {
   const comics = (node === null
     ? allComics
     : (entity === "characters"
@@ -434,13 +434,17 @@ function displayComics(node) {
       comicLi.onmouseenter = () => selectComic(c);
     });
     loaderList.style.display = "none";
-    selectComic(
-      (selectedComic && comics.filter(c => c.id === selectedComic.id).length
-        ? selectedComic
-        : null),
-      true
-    );
-    if (selectedComic) scrollComicsList();
+    if (autoReselect) {
+      selectComic(
+        (selectedComic && comics.filter(c => c.id === selectedComic.id).length
+          ? selectedComic
+          : null),
+        true,
+        autoReselect
+      );
+      if (selectedComic) scrollComicsList();
+      comicsCache.style.display = "none";
+    }
     resize();
   }, 250);
 }
@@ -460,7 +464,7 @@ function selectAndScroll(el) {
 comicsList.onmouseleave = () => {
   if (selectedComic)
     selectComic(selectedComic);
-  else clickNode(selectedNode, false);
+  else unselectComic();
 };
 
 viewAllComicsButton.onclick = () => displayComics(null);
@@ -517,29 +521,32 @@ document.onkeydown = function(e) {
 
 function unselectComic() {
   const graph = networks[entity][networkSize].graph;
+  hoveredComic = null;
   selectedComic = null;
   selectComic(null, true);
+  clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
-    clickNode(selectedNode, false);
     centerNode(selectedNode);
     comicsCache.style.display = "block";
-  } else clickNode(selectedNode, false);
+  }
 }
 
-function selectComic(comic = null, keep = false) {
+function selectComic(comic = null, keep = false, autoReselect = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
-  if (keep && comic && selectedComic && comic.id === selectedComic.id) {
-    comic = null;
-    unselectComic();
-  }
+  if (!autoReselect) {
+    if (keep && comic && selectedComic && comic.id === selectedComic.id) {
+      comic = null;
+      unselectComic();
+    }
 
-  if (!comic || !selectedComic || comic.id !== selectedComic.id) {
-    comicTitle.innerHTML = "";
-    comicImg.src = "";
-    comicDesc.innerHTML = "";
-    comicUrl.style.display = "none";
+    if (!comic || !hoveredComic || comic.id !== hoveredComic.id) {
+      comicTitle.innerHTML = "";
+      comicImg.src = "";
+      comicDesc.innerHTML = "";
+      comicUrl.style.display = "none";
+    }
   }
 
   if (keep) {
@@ -552,7 +559,7 @@ function selectComic(comic = null, keep = false) {
       comicLi.className = "selected";
       comicsCache.style.display = "block";
     }
-  }
+  } else hoveredComic = comic;
 
   if (comic && selectedNode && graph.hasNode(selectedNode))
     graph.setNodeAttribute(selectedNode, "highlighted", false)
@@ -561,7 +568,7 @@ function selectComic(comic = null, keep = false) {
     document.getElementById("comic-details").scrollTo(0, 0);
 
   if (!comic) {
-    if (!keep && selectedComic)
+    if (!keep && selectedComic && autoReselect)
       selectComic(selectedComic);
     return;
   }
@@ -864,6 +871,7 @@ function addViewComicsButton(node) {
 function clickNode(node, updateURL=true) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
+
   // Unselect previous node
   const sameNode = (node === selectedNode);
   if (selectedNode) {
@@ -895,7 +903,7 @@ function clickNode(node, updateURL=true) {
   }
 
   selectedNode = node;
-  if (updateURL)
+  if (updateURL && !sameNode)
     setPermalink(entity, networkSize, view, node);
 
   // Fill sidebar with selected node's details
@@ -931,7 +939,6 @@ function clickNode(node, updateURL=true) {
     addViewComicsButton(node);
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
-  data.graph.setNodeAttribute(node, "highlighted", true);
   function dataConnected(attrs) {
     const res = {
       ...attrs,
@@ -942,6 +949,8 @@ function clickNode(node, updateURL=true) {
       res.image = null;
     return res;
   }
+if (!comicsBarView || ! selectedComic) {
+  data.graph.setNodeAttribute(node, "highlighted", true);
   renderer.setSetting(
     "nodeReducer", (n, attrs) => {
       return n === node
@@ -978,13 +987,13 @@ function clickNode(node, updateURL=true) {
   renderer.setSetting(
     "labelColor", {attribute: "hlcolor", color: "#CCC"}
   );
-
-  if (comicsBarView)
-    displayComics(node);
+}
+  if (comicsBarView && !sameNode)
+    displayComics(node, true);
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
   if (!updateURL)
-    centerNode(node);
+    setTimeout(() => centerNode(node), 200);
 };
 
 // Click a random node button
