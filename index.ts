@@ -1,8 +1,8 @@
 /* TODO:
-- sortable/filterable/playable/pausable list?
 - bug resize on smartphone
+- sortable/filterable/playable/pausable list?
+- add link actions on creators/characters of comic
 - bind url with selected comic?
-- display creators/characters by comic (with link actions?)
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
 => scraper comics as counter-truth? :
@@ -38,11 +38,14 @@ let entity = "",
   comicsReady = null,
   comicsBarView = false,
   hoveredComic = null,
-  selectedComic = null;
+  selectedComic = null,
+  networksLoaded = 0;
 
 const conf = {},
   networks = {},
   allComics = [],
+  allCharacters = {},
+  allCreators = {"-1": "missing info"},
   charactersComics = {},
   creatorsComics = {},
   creatorsRoles = {
@@ -180,7 +183,7 @@ function fmtNumber(x) {
 function meanArray(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
 function formatMonth(dat) {
   const d = new Date(dat);
   return monthNames[new Date(dat).getMonth()] + " " + dat.slice(0, 4);
@@ -211,6 +214,9 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicUrl = document.getElementById("comic-url") as HTMLLinkElement,
   comicImg = document.getElementById("comic-img") as HTMLImageElement,
   comicDesc = document.getElementById("comic-desc") as HTMLLinkElement,
+  comicEntities = document.querySelectorAll(".comic-entities") as NodeListOf<HTMLElement>,
+  comicCreators = document.getElementById("comic-creators") as HTMLElement,
+  comicCharacters = document.getElementById("comic-characters") as HTMLElement,
   searchInput = document.getElementById("search-input") as HTMLInputElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
   selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement,
@@ -383,6 +389,7 @@ function loadComics(comicsData) {
       viewAllComicsButton.style.display = "block";
       if (selectedNode)
         addViewComicsButton(selectedNode);
+      preloadOtherNetworks();
     }
   });
 }
@@ -545,6 +552,9 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       comicTitle.innerHTML = "";
       comicImg.src = "";
       comicDesc.innerHTML = "";
+      comicEntities.forEach(el => el.style.display = "none");
+      comicCreators.innerHTML = "";
+      comicCharacters.innerHTML = "";
       comicUrl.style.display = "none";
     }
   }
@@ -576,12 +586,27 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicTitle.innerHTML = formatMonth(comic.date);
   comicImg.src = comic.image_url.replace(/^http:/, '');
   modalImg.src = comic.image_url.replace(/^http:/, '');
-  comicImg.onclick = () => {
-    modal.style.display = "block";
-  };
+  comicImg.onclick = () => modal.style.display = "block";
   comicDesc.innerHTML = comic.description;
   comicUrl.style.display = "inline";
   comicUrl.href = comic.url;
+
+  comicEntities.forEach(el => el.style.display = "block");
+  comicCreators.innerHTML = (comic.writers.length ? comic.writers : ["-1"])
+    .map(x => allCreators[x]
+      ? '<li id="creator-' + x + '" title="writer" style="color: ' + creatorsRoles["writer"] + '">' + allCreators[x] + "</li>"
+      : "")
+    .join("");
+  comicCreators.innerHTML += (comic.artists.length ? comic.artists : ["-1"])
+    .map(x => allCreators[x]
+      ? '<li id="creator-' + x + '" title="artist" style="color: ' + creatorsRoles["artist"] + '">' + allCreators[x] + "</li>"
+      : "")
+    .join("");
+  comicCharacters.innerHTML = comic.characters
+    .map(x => allCharacters[x]
+      ? '<li id="character-' + x + '">' + allCharacters[x] + "</li>"
+      : "")
+    .join("");
 
   renderer.setSetting(
     "nodeReducer", (n, attrs) => {
@@ -617,8 +642,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
 }
 
-function buildNetwork(networkData) {
-  const data = networks[entity][networkSize];
+function buildNetwork(networkData, ent, siz) {
+  const data = networks[ent][siz];
   // Parse pako zipped graphology serialized network JSON
   data.graph = Graph.from(JSON.parse(pako.inflate(networkData, {to: "string"})));
 
@@ -626,7 +651,7 @@ function buildNetwork(networkData) {
   data.graph.forEachNode((node, {x, y, label, community}) => {
     for (var cluster in data.clusters)
       if (data.clusters[cluster].match.indexOf(label) !== -1) {
-        if (entity === "creators") {
+        if (ent === "creators") {
           data.clusters[cluster].label = cluster;
           data.clusters[cluster].id = cluster.toLowerCase().replace(/ .*$/, "");
           if (!data.clusters[cluster].positions)
@@ -642,14 +667,14 @@ function buildNetwork(networkData) {
   });
 
   // Adjust nodes visual attributes for rendering (size, color, images)
-  data.graph.forEachNode((node, {x, y, stories, image, artist, writer, community}) => {
-    const artist_ratio = (entity === "creators" ? artist / (writer + artist) : undefined),
+  data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
+    const artist_ratio = (ent === "creators" ? artist / (writer + artist) : undefined),
       role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
-      color = (entity === "characters"
+      color = (ent === "characters"
         ? (data.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
         : creatorsRoles[role]
       ),
-      key = entity === "characters" ? community : role;
+      key = ent === "characters" ? community : role;
     if (!data.counts[key])
       data.counts[key] = 0;
     data.counts[key]++;
@@ -660,15 +685,21 @@ function buildNetwork(networkData) {
       color: color,
       hlcolor: color
     });
+    if (ent === "creators")
+      allCreators[node] = label;
+    else allCharacters[node] = label;
   });
 
-  if (entity === "creators") {
+  if (ent === "creators") {
     // Calculate positions of ages labels
     for (const cluster in data.clusters) {
       data.clusters[cluster].x = meanArray(data.clusters[cluster].positions.map(n => n.x));
       data.clusters[cluster].y = meanArray(data.clusters[cluster].positions.map(n => n.y));
     }
   }
+  networksLoaded += 1;
+  if (networksLoaded === 4)
+    loaderComics.style.display = "none";
 }
 
 function renderNetwork(firstLoad = false) {
@@ -1182,7 +1213,7 @@ function readUrl() {
         fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "small" ? "" : "_full") + ".json.gz")
           .then((res) => res.arrayBuffer())
           .then((content) => {
-            buildNetwork(content);
+            buildNetwork(content, entity, networkSize);
             renderNetwork(!networks[entity]["full"].graph);
           });
     }, 0);
@@ -1193,6 +1224,19 @@ function readUrl() {
     clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
 }
 window.onhashchange = readUrl;
+
+function preloadOtherNetworks() {
+  ["creators", "characters"].forEach(e =>
+    ["small", "full"].forEach(s => {
+      if (!networks[e][s].graph) {
+        loaderComics.style.display = "block";
+        fetch("./data/Marvel_" + e + "_by_stories" + (s === "small" ? "" : "_full") + ".json.gz")
+          .then(res => res.arrayBuffer())
+          .then(content => buildNetwork(content, e, s));
+      }
+    })
+  );
+}
 
 // Collect data's metadata to feed explanations
 fetch("./config.yml.example")

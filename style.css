@@ -181,6 +181,40 @@ h2 {
   max-width: 90%;
   padding-top: 5px;
 }
+#comic-url {
+  display: none;
+}
+.comic-entities {
+  display: none;
+  width: calc(50% - 4px);
+  padding: 0;
+  margin: 0;
+  float: left;
+}
+.comic-entities h4 {
+  margin: 10px 0 5px 0;
+}
+.comic-entities ul {
+  padding: 0;
+  margin: 0;
+}
+.comic-entities li {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+#comic-creators {
+  padding: 0 2px 0 0;
+}
+#comic-characters {
+  padding: 0 0 0 2px;
+}
+#comic-creators li:nth-child(even) {
+  background: #2F2F2F;
+}
+#comic-characters li:nth-child(odd) {
+  background: #2F2F2F;
+}
 #view-comics, #view-node, #view-all-comics {
   cursor: pointer;
   font-weight: bold;
@@ -272,8 +306,8 @@ h2 {
   position: relative;
   top: 35px;
   left: 0;
-  width: 25px;
-  height: 25px;
+  width: 35px;
+  height: 35px;
 }
 #modal {
   position: absolute;
