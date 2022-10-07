@@ -1,11 +1,12 @@
 /* TODO:
-- bug unzoom box smartphone
+- lost reclick selectedcomic on click other node linked
+- button Explore All comics
+- add loader when explore all
+- sortable/filterable/playable/pausable list?
 - bug resize on smartphone
 - bind url with selected comic?
 - display creators/characters by comic (with link actions?)
 - allow only comics full list searchable
-- button Explore All comics
-- sortable/filterable/playable/pausable list?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
 => scraper comics as counter-truth? :
@@ -307,10 +308,9 @@ function centerNode(node, neighbors = null, force = true) {
   sigmaDims.width -= shift;
   // Evaluate required zoom ratio
   let ratio = 1.5 / Math.min(
-    (sigmaDims.width - shift) / (rightCorner.x - leftCorner.x),
+    sigmaDims.width / (rightCorner.x - leftCorner.x),
     sigmaDims.height / (leftCorner.y - rightCorner.y)
   );
-  viewPortPosition.x += ratio * shift / 2 ;
 
   // Evaluate acceptable window
   const xMin = 15 * sigmaDims.width / 100,
@@ -320,16 +320,17 @@ function centerNode(node, neighbors = null, force = true) {
 
   // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close togethern, or if outside full window or nodes really close together
   if (force ||
-    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.35)) ||
-    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.2))
+    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.6)) ||
+    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.3))
   ) {
-    if (ratio < 0.35) ratio = 2 * ratio;
+    if (ratio < 0.3) ratio = 0.6;
+    viewPortPosition.x += ratio * shift / 2;
     camera.animate(
       {
         ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * Math.sqrt(ratio)
+        ratio: camera.ratio * ratio
       },
-      {duration: 300}
+      {duration: 250}
     );
   }
 }
@@ -438,8 +439,15 @@ function selectAndScroll(el) {
 }
 
 comicsList.onmouseleave = () => {
-  if (!selectedComic)
-    clickNode(selectedNode);
+  if (selectedComic)
+    selectComic(selectedComic);
+  else // if (selectedNode)
+    clickNode(selectedNode, false);
+};
+
+viewAllComicsButton.onclick = () => {
+  displayComics(null);
+  comicsCache.style.display = "none";
 };
 
 // Key Arrow handling on comics list
@@ -490,7 +498,7 @@ function unselectComic() {
   selectComic(null, true);
   if (selectedNode && graph.hasNode(selectedNode)) {
     clickNode(selectedNode, false);
-    centerNode(selectedNode);
+    setTimeout(() => centerNode(selectedNode), 100);
   }
 }
 
@@ -575,7 +583,7 @@ function selectComic(comic = null, keep = false) {
           }
   );
 
-  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
+  setTimeout(() => centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false), 100);
 }
 
 function buildNetwork(networkData) {
@@ -749,6 +757,7 @@ function renderNetwork(firstLoad = false) {
   selectSuggestions.onchange = () => {
     const idx = selectSuggestions.selectedIndex;
     clickNode(idx ? allSuggestions[idx - 1].node : null);
+    setTimeout(() => centerNode(selectedNode), 100);
   };
 
   // Setup nodes input search for web browsers
@@ -769,7 +778,7 @@ function renderNetwork(firstLoad = false) {
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
         // Move the camera to center it on the selected node and its neighbors:
-        centerNode(selectedNode);
+        setTimeout(() => centerNode(selectedNode), 100);
         suggestions = [];
       } else if (selectedNode) {
         clickNode(null);
@@ -957,7 +966,7 @@ function clickNode(node, updateURL=true) {
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
   if (!updateURL)
-    setTimeout(() => centerNode(node), 300);
+    setTimeout(() => centerNode(node), 200);
 };
 
 // Click a random node button
