@@ -16,6 +16,7 @@ html, body {
   width: 300px;
   height: 100%;
   margin: 0;
+  margin-right: 2px;
   overflow: hidden;
   font-family: monospace;
   font-size: 12px;
@@ -29,7 +30,6 @@ html, body {
   z-index: -1;
   position: absolute;
   bottom: 0;
-  right: 0;
   width: 298px;
   height: 100%;
   margin: 0;
@@ -104,7 +104,7 @@ html, body {
 #comics-list li:nth-child(even) {
   background: #2F2F2F;
 }
-@media(hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) {
   #comics-list li:hover {
     background: var(--marvel-red-dark);
     color: white;
@@ -250,6 +250,16 @@ h2 {
   border-top: 1px solid #444;
   margin: 0;
 }
+#title {
+  padding-bottom: 5px;
+  color: grey;
+}
+#credits, #title {
+  display: block;
+}
+#credits-small {
+  display: none;
+}
 #sigma-container {
   height: 100%;
   margin: 0;
@@ -333,6 +343,7 @@ h2 {
   vertical-align: middle;
 }
 #controls {
+  right: 1em;
   position: absolute;
   top: 1em;
   text-align: center;
@@ -474,7 +485,6 @@ label {
   width: 100%;
   height: 100%;
   z-index: 10;
-  display: none;
   background-color: rgba(0, 0, 0, 0.85);
   text-align: center;
 }
@@ -508,31 +518,25 @@ label {
   display: inline-block;
   line-height: 20px;
 }
+@media (orientation: landscape) {
+  #rotate-modal {
+    display: none;
+  }
+}
 @media (orientation: portrait) {
   #rotate-modal {
     display: block;
   }
-  #sidebar, #controls {
-    display: none;
+  #sidebar, #controls, #comics-bar {
+    display: none!important;
   }
 }
-#title {
-  display: block;
-  padding-bottom: 5px;
-  color: grey;
-}
-#credits, #title {
-  display: block;
-}
-#credits-small {
-  display: none;
-}
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
   #sidebar, .footer, #comics-bar {
     width: 198px;
   }
-  #comics-bar {
-    width: 198px;
+  #loader {
+    left: calc(50% + 65px);
   }
   h1 {
     font-size: 18px;
@@ -568,6 +572,19 @@ label {
     padding: 2px;
   }
 }
+@media (min-width: 700px) {
+  #comics-bar {
+    right: 0;
+  }
+}
+@media (max-width: 700px) {
+  #comics-bar {
+    left: 0;
+    height: calc(100% - 51px);
+    width: 200px;
+    border-radius: 0 6px 6px 0;
+  }
+}
 @media (max-height: 600px) {
   .network-choice {
     height: 20px;
@@ -595,36 +612,22 @@ label {
     padding: 2px;
   }
 }
+@media (max-height: 600px) and (max-width: 700px) {
+  #comics-bar {
+    height: calc(100% - 33px);
+  }
+}
 @media not (pointer: coarse) {
-  #sidebar {
-    margin-right: 2px;
-  }
-  #controls {
-    right: 1em;
-  }
   .desktop-details {
     display: inline;
   }
-  .phones-details {
+  .mobiles-details {
     display: none;
   }
 }
 @media (pointer: coarse) {
   input, textarea, button, select, a, label, div, p {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
-  }
-  #sidebar {
-    float: right;
-    margin-left: 2px;
-  }
-  #comics-bar {
-    height: calc(100% - 51px);
-  }
-  #controls {
-    left: 1em;
-  }
-  #loader {
-    left: calc(50% - 185px);
   }
   #search input {
     display: none;
@@ -638,14 +641,11 @@ label {
   .desktop-details {
     display: none;
   }
-  .phones-details {
+  .mobiles-details {
     display: inline;
   }
 }
 @media (pointer: coarse) and (max-height: 600px) {
-  #comics-bar {
-    height: calc(100% - 32px);
-  }
   #controls {
     width: 116px;
   }
@@ -655,13 +655,5 @@ label {
   }
   #suggestions-select {
     width: 112px;
-  }
-}
-@media (pointer: coarse) and (max-width: 700px) {
-  #comics-bar {
-    height: calc(100% - 32px);
-  }
-  #loader {
-    left: calc(50% - 135px);
   }
 }

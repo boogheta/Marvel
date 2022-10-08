@@ -1,5 +1,6 @@
 /* TODO:
 - bug resize on smartphone
+- bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
@@ -8,9 +9,9 @@
 => scraper comics as counter-truth? :
 - filter imprint marvel
 - rebuild creators network from cleaned comics instead
+- slide on modal to do next/previous + add modal buttons?
 IDEAS:
 - install app button?
-- reset regular sidebar position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -293,6 +294,8 @@ function centerNode(node, neighbors = null, force = true) {
   const graph = networks[entity][networkSize].graph;
   if (!neighbors)
     neighbors = graph.neighbors(node);
+  if (node)
+    neighbors.push(node);
 
   let x0, x1, y0, y1;
   neighbors.forEach(n => {
@@ -302,7 +305,7 @@ function centerNode(node, neighbors = null, force = true) {
       if (!y0 || y0 > attrs.y) y0 = attrs.y;
       if (!y1 || y1 < attrs.y) y1 = attrs.y;
     });
-  const shift = sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1"
+  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
     ? divWidth("comics-bar")
     : 0,
     leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
@@ -316,9 +319,15 @@ function centerNode(node, neighbors = null, force = true) {
   // Handle comicsbar hiding part of the graph
   sigmaDims.width -= shift;
   // Evaluate required zoom ratio
-  let ratio = 1.5 / Math.min(
-    sigmaDims.width / (rightCorner.x - leftCorner.x),
-    sigmaDims.height / (leftCorner.y - rightCorner.y)
+  let ratio = Math.min(
+    35 / camera.ratio,
+    Math.max(
+      0.21 / camera.ratio,
+      1.5 / Math.min(
+        sigmaDims.width / (rightCorner.x - leftCorner.x),
+        sigmaDims.height / (leftCorner.y - rightCorner.y)
+      )
+    )
   );
 
   // Evaluate acceptable window
@@ -329,10 +338,10 @@ function centerNode(node, neighbors = null, force = true) {
 
   // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close togethern, or if outside full window or nodes really close together
   if (force ||
-    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.6)) ||
-    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.3))
+    leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
+    (ratio !== 0 && (ratio < 0.35)) ||
+    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
   ) {
-    if (ratio < 0.3) ratio = 0.6;
     viewPortPosition.x += ratio * shift / 2;
     camera.animate(
       {
@@ -413,7 +422,7 @@ function displayComics(node, autoReselect = false) {
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
   comicsList.innerHTML = "";
-  if (comics.length > 500)
+  if (comics && comics.length > 500)
     loaderList.style.display = "block";
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
@@ -434,7 +443,7 @@ function displayComics(node, autoReselect = false) {
         .map(x => '<li id="comic-' + x.id + '"' + (node && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
         .join("")
       : "No comic-book found.";
-    comics.forEach(c => {
+    if (comics) comics.forEach(c => {
       const comicLi = document.getElementById("comic-" + c.id) as any;
       comicLi.comic = c;
       comicLi.onmouseup = () => selectComic(c, true);
@@ -533,7 +542,7 @@ function unselectComic() {
   selectComic(null, true);
   clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
-    centerNode(selectedNode);
+    setTimeout(() => centerNode(selectedNode), 5);
     comicsCache.style.display = "block";
   }
 }
@@ -639,7 +648,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           }
   );
 
-  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
+  setTimeout(() => centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false), 5);
 }
 
 function buildNetwork(networkData, ent, siz) {
@@ -819,7 +828,7 @@ function renderNetwork(firstLoad = false) {
   selectSuggestions.onchange = () => {
     const idx = selectSuggestions.selectedIndex;
     clickNode(idx ? allSuggestions[idx - 1].node : null);
-    centerNode(selectedNode);
+    setTimeout(() => centerNode(selectedNode), 5);
   };
 
   // Setup nodes input search for web browsers
@@ -840,7 +849,7 @@ function renderNetwork(firstLoad = false) {
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
         // Move the camera to center it on the selected node and its neighbors:
-        centerNode(selectedNode);
+        setTimeout(() => centerNode(selectedNode), 5);
         suggestions = [];
       } else if (selectedNode) {
         clickNode(null);
@@ -911,12 +920,14 @@ function clickNode(node, updateURL=true) {
     selectedNode = null;
   }
 
+  if (!node || !sameNode) {
+    nodeImg.src = "";
+    modalImg.src = "";
+  }
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
     selectedNodeLabel = null;
-    nodeImg.src = "";
-    modalImg.src = "";
     if (updateURL)
       setPermalink(entity, networkSize, view, node);
     selectSuggestions.selectedIndex = 0;
@@ -941,7 +952,7 @@ function clickNode(node, updateURL=true) {
   const attrs = data.graph.getNodeAttributes(node);
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
-  nodeDetails.scrollTo(0, 0);
+  if (!sameNode) nodeDetails.scrollTo(0, 0);
   nodeLabel.innerHTML = attrs.label;
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
