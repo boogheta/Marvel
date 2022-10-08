@@ -1,4 +1,5 @@
 /* TODO:
+- hide arrow buttons on last element
 - bug resize on smartphone
 - bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
@@ -9,7 +10,6 @@
 => scraper comics as counter-truth? :
 - filter imprint marvel
 - rebuild creators network from cleaned comics instead
-- slide on modal to do next/previous + add modal buttons?
 IDEAS:
 - install app button?
 - test bipartite network between authors and characters filtered by category of author
@@ -196,6 +196,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
+  modalNext = document.getElementById("modal-next") as HTMLElement,
+  modalPrev = document.getElementById("modal-previous") as HTMLElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
@@ -232,7 +234,6 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   smallDetailsSpans = document.querySelectorAll(".small-details") as NodeListOf<HTMLElement>,
   fullDetailsSpans = document.querySelectorAll(".full-details") as NodeListOf<HTMLElement>;
 
-modal.onclick = () => modal.style.display = "none";
 comicsCache.onwheel = () => comicsCache.style.display = "none";
 comicsCache.onmousedown = comicsCache.onwheel;
 comicsCache.onmouseout = comicsCache.onwheel;
@@ -275,6 +276,8 @@ function hideComicsBar() {
   comicsBarView = false;
   comicsBar.style.opacity = "0";
   comicsBar.style["z-index"] = "-1";
+  modalNext.style.display = "none";
+  modalPrev.style.display = "none";
   unselectComic();
   if (graph && entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
@@ -336,7 +339,7 @@ function centerNode(node, neighbors = null, force = true) {
     yMin = 15 * sigmaDims.height / 100,
     yMax = 85 * sigmaDims.height / 100;
 
-  // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close togethern, or if outside full window or nodes really close together
+  // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close together, or if outside full window or nodes really close together
   if (force ||
     leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
     (ratio !== 0 && (ratio < 0.35)) ||
@@ -427,6 +430,8 @@ function displayComics(node, autoReselect = false) {
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
   if (comics) {
+    modalNext.style.display = "block";
+    modalPrev.style.display = "block";
     comicsTitle.innerHTML = fmtNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
     if (node) comicsTitle.innerHTML += " listing<br/>"
       + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
@@ -476,6 +481,12 @@ function selectAndScroll(el) {
   selectComic(el.comic, true);
   scrollComicsList();
 }
+function selectAndScrollSibling(typ) {
+  if (!comicsBarView || !selectedComic) return;
+  const selected = document.querySelector("#comics-list li.selected") as any,
+    target = selected[typ + "ElementSibling"] as any;
+  selectAndScroll(target);
+}
 
 comicsList.onmouseleave = () => {
   if (selectedComic)
@@ -501,22 +512,19 @@ document.onkeydown = function(e) {
       hideComicsBar();
     else return;
   } else if (selectedComic) {
-    const selected = document.querySelector("#comics-list li.selected") as any,
-      prev = selected.previousElementSibling as any,
-      next = selected.nextElementSibling as any;
     switch(e.which) {
       case 37: // left
-        selectAndScroll(prev);
+        selectAndScrollSibling("previous");
         break;
       case 38: // up
-        selectAndScroll(prev);
+        selectAndScrollSibling("previous");
         break;
 
       case 39: // right
-        selectAndScroll(next);
+        selectAndScrollSibling("next");
         break;
       case 40: // down
-        selectAndScroll(next);
+        selectAndScrollSibling("next");
         break;
 
       case 27: // esc
@@ -534,6 +542,46 @@ document.onkeydown = function(e) {
   } else return;
   e.preventDefault(); // prevent the default action (scroll / move caret)
 };
+
+// Handle swipe on modal
+let touches = {x: [0, 0], y: [0, 0]};
+const SWIPE_THRESHOLD = 100;
+modal.ontouchstart = e => {
+  touches.x[0] = e.changedTouches[0].screenX;
+  touches.y[0] = e.changedTouches[0].screenY;
+};
+modal.ontouchend = e => {
+  touches.x[1] = e.changedTouches[0].screenX;
+  touches.y[1] = e.changedTouches[0].screenY;
+  const horizontalDifference = touches.x[1] - touches.x[0],
+    verticalDifference = touches.y[1] - touches.y[0];
+  // Horizontal difference dominates
+  if (Math.abs(horizontalDifference) > Math.abs(verticalDifference)) {
+    if (horizontalDifference >= SWIPE_THRESHOLD)
+      selectAndScrollSibling("next");
+    else if (horizontalDifference <= SWIPE_THRESHOLD)
+      selectAndScrollSibling("previous");
+  // Vertical or no difference dominates
+  } else if (verticalDifference >= SWIPE_THRESHOLD)
+    selectAndScrollSibling("next");
+  else if (verticalDifference <= -SWIPE_THRESHOLD)
+    selectAndScrollSibling("previous");
+};
+let preventClick = false;
+modalNext.onclick = (e) => {
+  selectAndScrollSibling("next");
+  preventClick = true;
+};
+modalPrev.onclick = () => {
+  selectAndScrollSibling("previous");
+  preventClick = true;
+};
+modal.onclick = () => {
+  if (preventClick) return preventClick = false;
+  preventClick = false;
+  modal.style.display = "none";
+};
+document.getElementById("close-modal").onclick = modal.onclick;
 
 function unselectComic() {
   const graph = networks[entity][networkSize].graph;
