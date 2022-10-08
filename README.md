@@ -44,7 +44,7 @@ Here are links to the API's detailed [documentation](https://developer.marvel.co
 
 Entirely built with Free Libre Open Source Software and released as such under the [AGPL v3.0 license](./LICENSE).
 
-Icons used or adapted from SVG creations under CC Zero Public Domain by [agomjo](https://openclipart.org/detail/191399/smartphone), CC Attribution License by [boxicons](https://www.svgrepo.com/svg/334208/reset) and MIT license from [IconPark](https://www.svgrepo.com/svg/336742/full-screen) and [artcoholic](https://www.svgrepo.com/svg/378586/cross).
+Icons used or adapted from SVG creations under CC Zero Public Domain by [agomjo](https://openclipart.org/detail/191399/smartphone), CC Attribution License by [boxicons](https://www.svgrepo.com/svg/334208/reset) and [Mike](https://www.svgrepo.com/svg/410381/right)[ Hunter](https://www.svgrepo.com/svg/410372/left) and MIT license from [IconPark](https://www.svgrepo.com/svg/336742/full-screen) and [artcoholic](https://www.svgrepo.com/svg/378586/cross).
 
 Data collection and preparation in Python 3 using [requests](https://requests.readthedocs.io/) and [NetworkX](https://networkx.org/).
 
