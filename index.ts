@@ -1,5 +1,4 @@
 /* TODO:
-- fix phones first click on node details
 - bug resize on smartphone
 - bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
@@ -423,7 +422,7 @@ function displayComics(node, autoReselect = false) {
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
   comicsList.innerHTML = "";
-  if (comics.length > 500)
+  if (comics && comics.length > 500)
     loaderList.style.display = "block";
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
@@ -444,7 +443,7 @@ function displayComics(node, autoReselect = false) {
         .map(x => '<li id="comic-' + x.id + '"' + (node && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
         .join("")
       : "No comic-book found.";
-    comics.forEach(c => {
+    if (comics) comics.forEach(c => {
       const comicLi = document.getElementById("comic-" + c.id) as any;
       comicLi.comic = c;
       comicLi.onmouseup = () => selectComic(c, true);
@@ -921,12 +920,14 @@ function clickNode(node, updateURL=true) {
     selectedNode = null;
   }
 
+  if (!node || !sameNode) {
+    nodeImg.src = "";
+    modalImg.src = "";
+  }
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
     selectedNodeLabel = null;
-    nodeImg.src = "";
-    modalImg.src = "";
     if (updateURL)
       setPermalink(entity, networkSize, view, node);
     selectSuggestions.selectedIndex = 0;
@@ -951,7 +952,7 @@ function clickNode(node, updateURL=true) {
   const attrs = data.graph.getNodeAttributes(node);
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
-  nodeDetails.scrollTo(0, 0);
+  if (!sameNode) nodeDetails.scrollTo(0, 0);
   nodeLabel.innerHTML = attrs.label;
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
