@@ -428,7 +428,7 @@ function displayComics(node, autoReselect = false) {
   if (comics && comics.length > 500)
     loaderList.style.display = "block";
   comicsSubtitleList.innerHTML = "";
-  comicsSubtitleExtra.style.display = (entity === "creators" ? "inline" : "none");
+  comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   if (comics) {
     modalNext.style.display = "block";
     modalPrev.style.display = "block";
