@@ -71,9 +71,11 @@ html, body {
   border: 1px solid dimgrey;
   cursor: pointer;
   padding: 0;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 .action-button img {
-  width: 20px;
+  width: 18px;
   margin-top: 2px;
 }
 .close-button {
@@ -346,19 +348,25 @@ h2 {
 }
 #modal button {
   z-index: -1;
+  width: 33px;
+  height: 33px;
+}
+#modal button img {
+  z-index: -1;
+  width: 16px;
 }
 #modal-previous {
   top: calc(50% - 15px);
   left: 0;
+  padding-right: 2px;
 }
 #modal-next {
   top: calc(50% - 15px);
   right: 0;
 }
 #controls {
-  right: 1em;
   position: absolute;
-  top: 1em;
+  top: 10px;
   text-align: center;
   width: 150px;
 }
@@ -379,6 +387,8 @@ h2 {
   font-family: monospace;
   font-weight: bold;
   padding: 0;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 #sigma-buttons button img {
   width: 20px;
@@ -403,15 +413,22 @@ h2 {
 }
 #search input {
   width: 100%;
-  padding: 5px;
+  padding: 7px 5px 7px 0px;
   text-align: center;
   font-family: monospace;
   font-size: 14px;
   background: #eee;
+  display: block;
+  line-height: 16px;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 #suggestions-select {
   display: none;
   width: 146px;
+  height: 30px;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 /* -------- Switch Styles ------------*/
 .choices .network-choice:last-child {
@@ -544,9 +561,22 @@ label {
     display: none!important;
   }
 }
+@media (min-width: 700px) {
+  #controls {
+    left: 203px;
+  }
+}
+@media (min-width: 1000px) {
+  #controls {
+    left: 310px;
+  }
+}
 @media (max-width: 1000px) {
   #sidebar, .footer, #comics-bar {
     width: 198px;
+  }
+  #controls {
+    top: 5px;
   }
   #loader {
     left: calc(50% + 65px);
@@ -593,9 +623,22 @@ label {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
-    height: calc(100% - 51px);
+    height: calc(100% - 33px);
     width: 200px;
     border-radius: 0 6px 6px 0;
+  }
+  #close-bar {
+    margin: 0;
+    width: 24px;
+    height: 24px;
+  }
+  #close-bar img {
+    width: 16px;
+    margin-top: 2px;
+  }
+  #controls {
+    right: 5px;
+    top: 5px;
   }
 }
 @media (max-height: 600px) {
@@ -624,10 +667,15 @@ label {
   #comics-list li {
     padding: 2px;
   }
-}
-@media (max-height: 600px) and (max-width: 700px) {
-  #comics-bar {
-    height: calc(100% - 33px);
+  #controls {
+    width: 136px;
+  }
+  #sigma-buttons button {
+    width: 30px;
+    height: 30px;
+  }
+  #suggestions-select {
+    width: 132px;
   }
 }
 @media not (pointer: coarse) {
@@ -656,17 +704,5 @@ label {
   }
   .mobiles-details {
     display: inline;
-  }
-}
-@media (pointer: coarse) and (max-height: 600px) {
-  #controls {
-    width: 116px;
-  }
-  #sigma-buttons button {
-    width: 25px;
-    height: 25px;
-  }
-  #suggestions-select {
-    width: 112px;
   }
 }
