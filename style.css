@@ -644,7 +644,7 @@ label {
 }
 @media (pointer: coarse) and (max-height: 600px) {
   #comics-bar {
-    height: calc(100% - 32px);
+    height: calc(100% - 33px);
   }
   #controls {
     width: 116px;
@@ -659,7 +659,7 @@ label {
 }
 @media (pointer: coarse) and (max-width: 700px) {
   #comics-bar {
-    height: calc(100% - 32px);
+    height: calc(100% - 33px);
   }
   #loader {
     left: calc(50% - 135px);

@@ -1,5 +1,7 @@
 /* TODO:
+- fix phones first click on node details
 - bug resize on smartphone
+- bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
@@ -8,6 +10,7 @@
 => scraper comics as counter-truth? :
 - filter imprint marvel
 - rebuild creators network from cleaned comics instead
+- slide on modal to do next/previous + add modal buttons?
 IDEAS:
 - install app button?
 - reset regular sidebar position for smartphone and keep double bar except low width?
@@ -293,6 +296,8 @@ function centerNode(node, neighbors = null, force = true) {
   const graph = networks[entity][networkSize].graph;
   if (!neighbors)
     neighbors = graph.neighbors(node);
+  if (node)
+    neighbors.push(node);
 
   let x0, x1, y0, y1;
   neighbors.forEach(n => {
@@ -316,9 +321,15 @@ function centerNode(node, neighbors = null, force = true) {
   // Handle comicsbar hiding part of the graph
   sigmaDims.width -= shift;
   // Evaluate required zoom ratio
-  let ratio = 1.5 / Math.min(
-    sigmaDims.width / (rightCorner.x - leftCorner.x),
-    sigmaDims.height / (leftCorner.y - rightCorner.y)
+  let ratio = Math.min(
+    35 / camera.ratio,
+    Math.max(
+      0.21 / camera.ratio,
+      1.5 / Math.min(
+        sigmaDims.width / (rightCorner.x - leftCorner.x),
+        sigmaDims.height / (leftCorner.y - rightCorner.y)
+      )
+    )
   );
 
   // Evaluate acceptable window
@@ -329,10 +340,10 @@ function centerNode(node, neighbors = null, force = true) {
 
   // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close togethern, or if outside full window or nodes really close together
   if (force ||
-    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax || ratio < 0.6)) ||
-    (leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height || (ratio !== 0 && ratio < 0.3))
+    leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
+    (ratio !== 0 && (ratio < 0.35)) ||
+    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
   ) {
-    if (ratio < 0.3) ratio = 0.6;
     viewPortPosition.x += ratio * shift / 2;
     camera.animate(
       {
@@ -533,7 +544,7 @@ function unselectComic() {
   selectComic(null, true);
   clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
-    centerNode(selectedNode);
+    setTimeout(() => centerNode(selectedNode), 5);
     comicsCache.style.display = "block";
   }
 }
@@ -639,7 +650,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           }
   );
 
-  centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false);
+  setTimeout(() => centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false), 5);
 }
 
 function buildNetwork(networkData, ent, siz) {
@@ -819,7 +830,7 @@ function renderNetwork(firstLoad = false) {
   selectSuggestions.onchange = () => {
     const idx = selectSuggestions.selectedIndex;
     clickNode(idx ? allSuggestions[idx - 1].node : null);
-    centerNode(selectedNode);
+    setTimeout(() => centerNode(selectedNode), 5);
   };
 
   // Setup nodes input search for web browsers
@@ -840,7 +851,7 @@ function renderNetwork(firstLoad = false) {
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
         // Move the camera to center it on the selected node and its neighbors:
-        centerNode(selectedNode);
+        setTimeout(() => centerNode(selectedNode), 5);
         suggestions = [];
       } else if (selectedNode) {
         clickNode(null);
