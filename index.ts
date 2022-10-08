@@ -562,11 +562,15 @@ modal.ontouchend = e => {
     else if (horizontalDifference <= SWIPE_THRESHOLD)
       selectAndScrollSibling("previous");
   // Vertical or no difference dominates
-  } else if (verticalDifference >= SWIPE_THRESHOLD)
-    selectAndScrollSibling("next");
-  else if (verticalDifference <= -SWIPE_THRESHOLD)
-    selectAndScrollSibling("previous");
+  } else if ((e.target as HTMLElement).id === "modal") {
+    if (verticalDifference >= SWIPE_THRESHOLD)
+      selectAndScrollSibling("next");
+    else if (verticalDifference <= -SWIPE_THRESHOLD)
+      selectAndScrollSibling("previous");
+  }
 };
+comicImg.ontouchstart = modal.ontouchstart;
+comicImg.ontouchend = modal.ontouchend;
 let preventClick = false;
 modalNext.onclick = (e) => {
   selectAndScrollSibling("next");

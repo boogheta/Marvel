@@ -71,9 +71,11 @@ html, body {
   border: 1px solid dimgrey;
   cursor: pointer;
   padding: 0;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 .action-button img {
-  width: 20px;
+  width: 18px;
   margin-top: 2px;
 }
 .close-button {
@@ -346,10 +348,17 @@ h2 {
 }
 #modal button {
   z-index: -1;
+  width: 33px;
+  height: 33px;
+}
+#modal button img {
+  z-index: -1;
+  width: 16px;
 }
 #modal-previous {
   top: calc(50% - 15px);
   left: 0;
+  padding-right: 2px;
 }
 #modal-next {
   top: calc(50% - 15px);
@@ -378,6 +387,8 @@ h2 {
   font-family: monospace;
   font-weight: bold;
   padding: 0;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 #sigma-buttons button img {
   width: 20px;
@@ -409,11 +420,15 @@ h2 {
   background: #eee;
   display: block;
   line-height: 16px;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 #suggestions-select {
   display: none;
   width: 146px;
   height: 30px;
+  border: 2px solid #111;
+  border-radius: 5px;
 }
 /* -------- Switch Styles ------------*/
 .choices .network-choice:last-child {
@@ -611,6 +626,15 @@ label {
     height: calc(100% - 33px);
     width: 200px;
     border-radius: 0 6px 6px 0;
+  }
+  #close-bar {
+    margin: 0;
+    width: 24px;
+    height: 24px;
+  }
+  #close-bar img {
+    width: 16px;
+    margin-top: 2px;
   }
   #controls {
     right: 5px;
