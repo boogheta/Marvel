@@ -13,7 +13,6 @@
 - slide on modal to do next/previous + add modal buttons?
 IDEAS:
 - install app button?
-- reset regular sidebar position for smartphone and keep double bar except low width?
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -307,7 +306,7 @@ function centerNode(node, neighbors = null, force = true) {
       if (!y0 || y0 > attrs.y) y0 = attrs.y;
       if (!y1 || y1 < attrs.y) y1 = attrs.y;
     });
-  const shift = sideBar.getBoundingClientRect()["x"] === 0 && comicsBar.style.opacity === "1"
+  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
     ? divWidth("comics-bar")
     : 0,
     leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
