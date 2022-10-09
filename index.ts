@@ -1,5 +1,4 @@
 /* TODO:
-- fix credits bad on ipad 951 * 252
 - bug resize on smartphone
 - handle slow load on smartphones
 - bad zoom after phone rotate?

@@ -518,6 +518,9 @@ label {
   #controls {
     left: 203px;
   }
+  #comics-bar {
+    right: 0;
+  }
 }
 @media (min-width: 1000px) {
   #controls {
@@ -567,10 +570,11 @@ label {
   #comics-list li {
     padding: 2px;
   }
-}
-@media (min-width: 700px) {
-  #comics-bar {
-    right: 0;
+  #credits-small {
+    display: block;
+  }
+  #credits, .asterisk, #title {
+    display: none;
   }
 }
 @media (max-width: 700px) {
