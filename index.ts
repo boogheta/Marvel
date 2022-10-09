@@ -657,12 +657,12 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicEntities.forEach(el => el.style.display = "block");
   comicCreators.innerHTML = (comic.writers.length ? comic.writers : ["-1"])
     .map(x => allCreators[x]
-      ? '<li id="creator-' + x + '" title="writer" style="color: ' + creatorsRoles["writer"] + '">' + allCreators[x] + "</li>"
+      ? '<li id="creator-' + x + '" title="writer" style="color: ' + lighten(creatorsRoles["writer"], 50) + '">' + allCreators[x] + "</li>"
       : "")
     .join("");
   comicCreators.innerHTML += (comic.artists.length ? comic.artists : ["-1"])
     .map(x => allCreators[x]
-      ? '<li id="creator-' + x + '" title="artist" style="color: ' + creatorsRoles["artist"] + '">' + allCreators[x] + "</li>"
+      ? '<li id="creator-' + x + '" title="artist" style="color: ' + lighten(creatorsRoles["artist"], 50) + '">' + allCreators[x] + "</li>"
       : "")
     .join("");
   comicCharacters.innerHTML = comic.characters
@@ -746,7 +746,7 @@ function buildNetwork(networkData, ent, siz) {
       image: /available/i.test(image) ? "" : image,
       size: computeNodeSize(node, stories),
       color: color,
-      hlcolor: color
+      hlcolor: lighten(color, 35)
     });
     if (ent === "creators")
       allCreators[node] = label;
@@ -791,7 +791,7 @@ function renderNetwork(firstLoad = false) {
     defaultEdgeColor: '#2A2A2A',
     labelWeight: 'bold',
     labelFont: 'monospace',
-    labelColor: view === "pictures" ? {attribute: 'color'} : {color: '#999'},
+    labelColor: view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'},
     labelGridCellSize: 180,
     labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
     nodesSizeZoomAdjuster: ratio => Math.pow(ratio, 0.75),
@@ -995,7 +995,7 @@ function clickNode(node, updateURL=true) {
       "edgeReducer", (edge, attrs) => attrs
     );
     renderer.setSetting(
-      "labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'}
+      "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
     );
     return;
   }
@@ -1054,7 +1054,8 @@ if (!comicsBarView || ! selectedComic) {
       return n === node
         ? { ...attrs,
             zIndex: 2,
-            size: attrs.size * 1.75
+            size: attrs.size * 1.75,
+            hlcolor: "#ec1d24"
           }
         : data.graph.hasEdge(n, node)
           ? dataConnected(attrs)
@@ -1153,9 +1154,9 @@ function switchView() {
   const graph = networks[entity][networkSize].graph;
   if (!renderer) return;
   renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
-  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'color'} : {color: '#999'});
+  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (graph && selectedNode && graph.hasNode(selectedNode))
-    clickNode(selectedNode, false);
+    clickNode(selectedNode);
 };
 
 // Responsiveness
