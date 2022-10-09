@@ -1,6 +1,6 @@
 /* TODO:
-- hide arrow buttons on last element
 - bug resize on smartphone
+- handle slow load on smartphones
 - bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
@@ -629,6 +629,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
       comicsCache.style.display = "block";
+      modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "block";
+      modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "block";
     }
   } else hoveredComic = comic;
 
