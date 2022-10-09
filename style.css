@@ -141,10 +141,10 @@ h2 {
 }
 #explanations {
   clear: both;
+  display: none;
   margin-top: 5px;
   padding: 5px 3px 0px 3px;
   overflow-y: auto;
-  max-height: 60%;
   line-height: 13px;
 }
 #explanations p {
@@ -254,6 +254,9 @@ h2 {
   padding: 2px 0px 7px 0px;
   border-top: 1px solid #444;
   margin: 0;
+}
+.footer p.characters-details {
+  display: none;
 }
 #title {
   padding-bottom: 5px;
