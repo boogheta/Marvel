@@ -933,6 +933,7 @@ function renderNetwork(firstLoad = false) {
     switchView();
 
   // Zoom in graph on init network
+  doResize();
   camera.ratio = Math.pow(5, 3);
   const initLoop = setInterval(() => {
     loader.style.display = "none";
@@ -941,9 +942,10 @@ function renderNetwork(firstLoad = false) {
     if (camera.ratio <= 5) {
       if (entity === "creators")
         clustersLayer.style.display = "block";
-      camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
       renderer.setSetting("maxCameraRatio", 1.3);
-      clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      if (selectedNodeLabel)
+        clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      else camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
       selectedNodeLabel = null;
       if (comicsReady === null) {
         comicsReady = false;
@@ -1185,7 +1187,7 @@ function doResize(fast = false) {
 function resize() {
   if (resizing) return;
   resizing = true;
-  setTimeout(doResize, 25);
+  setTimeout(doResize, 0);
 };
 window.onresize = resize;
 
@@ -1244,6 +1246,7 @@ function readUrl() {
   setView(args[2]);
 
   doResize(true);
+
   if (reload) {
     loader.style.display = "block";
 
