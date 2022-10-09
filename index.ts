@@ -1,4 +1,5 @@
 /* TODO:
+- fix credits bad on ipad 951 * 252
 - bug resize on smartphone
 - handle slow load on smartphones
 - bad zoom after phone rotate?
@@ -266,7 +267,7 @@ function defaultSidebar() {
   nodeLabel.innerHTML = "";
   nodeImg.src = "";
   nodeExtra.innerHTML = "";
-  resize();
+  doResize(true);
 }
 
 function hideComicsBar() {
@@ -466,7 +467,7 @@ function displayComics(node, autoReselect = false) {
       if (selectedComic) scrollComicsList();
       comicsCache.style.display = "none";
     }
-    resize();
+    doResize(true);
   }, 250);
 }
 function scrollComicsList() {
@@ -932,6 +933,7 @@ function renderNetwork(firstLoad = false) {
     switchView();
 
   // Zoom in graph on init network
+  doResize();
   camera.ratio = Math.pow(5, 3);
   const initLoop = setInterval(() => {
     loader.style.display = "none";
@@ -940,9 +942,10 @@ function renderNetwork(firstLoad = false) {
     if (camera.ratio <= 5) {
       if (entity === "creators")
         clustersLayer.style.display = "block";
-      camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
       renderer.setSetting("maxCameraRatio", 1.3);
-      clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      if (selectedNodeLabel)
+        clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      else camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
       selectedNodeLabel = null;
       if (comicsReady === null) {
         comicsReady = false;
@@ -1158,9 +1161,9 @@ function switchView() {
 
 // Responsiveness
 let resizing = false;
-function doResize() {
-  resizing = true;
-  const graph = networks[entity][networkSize].graph,
+function doResize(fast = false) {
+  if (!fast) resizing = true;
+  const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small");
   explanations.style.height = (freeHeight - 15) + "px";
   explanations.style["min-height"] = (freeHeight - 15) + "px";
@@ -1172,19 +1175,19 @@ function doResize() {
     comicsCache.style[k] = comicsDims[k] + "px"
   );
   sigmaDim = Math.min(divHeight("sigma-container"), divWidth("sigma-container"));
-  if (renderer && graph && camera) {
+  if (!fast && renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim/1000);
     graph.forEachNode((node, {stories}) =>
       graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
     );
   }
-  resizing = false;
+  if (!fast) resizing = false;
 }
 function resize() {
   if (resizing) return;
   resizing = true;
-  setTimeout(doResize, 10);
+  setTimeout(doResize, 0);
 };
 window.onresize = resize;
 
@@ -1242,7 +1245,8 @@ function readUrl() {
     switchNodeView.checked = true;
   setView(args[2]);
 
-  doResize();
+  doResize(true);
+
   if (reload) {
     loader.style.display = "block";
 

@@ -141,10 +141,10 @@ h2 {
 }
 #explanations {
   clear: both;
+  display: none;
   margin-top: 5px;
   padding: 5px 3px 0px 3px;
   overflow-y: auto;
-  max-height: 60%;
   line-height: 13px;
 }
 #explanations p {
@@ -255,6 +255,9 @@ h2 {
   border-top: 1px solid #444;
   margin: 0;
 }
+.footer p.characters-details {
+  display: none;
+}
 #title {
   padding-bottom: 5px;
   color: grey;
@@ -311,8 +314,8 @@ h2 {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 15px;
-  height: 15px;
+  width: 25px;
+  height: 25px;
 }
 #loader-list {
   display: none;
@@ -509,59 +512,8 @@ label {
 [type="checkbox"]:checked + .network-switch-label .right {
   color: white;
 }
-#rotate-modal {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10;
-  background-color: rgba(0, 0, 0, 0.85);
-  text-align: center;
-}
-#rotate-modal h1 {
-  font-size: 30px;
-}
-#rotate-modal img {
-  position: relative;
-  top: 25%;
-  left: 0;
-  max-width: 45%;
-}
-#rotate-modal p {
-  display: block;
-  position: absolute;
-  bottom: 20%;
-  left: 25%;
-  width: 50%;
-  background-color: var(--marvel-red);
-  color: white;
-  font-size: 20px;
-  font-family: monospace;
-  text-transform: uppercase;
-  font-weight: bold;
-  padding: 10px 0px;
-}
-#rotate-modal p small {
-  font-size: 14px;
-  text-transform: lowercase;
-  padding: 15px 5px 5px 5px;
-  display: inline-block;
-  line-height: 20px;
-}
-@media (orientation: landscape) {
-  #rotate-modal {
-    display: none;
-  }
-}
-@media (orientation: portrait) {
-  #rotate-modal {
-    display: block;
-  }
-  #sidebar, #controls, #comics-bar {
-    display: none!important;
-  }
-}
+
+/* Responsiveness */
 @media (min-width: 700px) {
   #controls {
     left: 203px;
@@ -705,5 +657,81 @@ label {
   }
   .mobiles-details {
     display: inline;
+  }
+}
+
+#rotate-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background-color: rgba(0, 0, 0, 0.85);
+  text-align: center;
+}
+#rotate-modal h1 {
+  font-size: 30px;
+}
+#rotate-modal img {
+  position: relative;
+  top: 25%;
+  left: 0;
+  min-width: 25%;
+  max-width: 45%;
+}
+#rotate-modal p {
+  display: block;
+  position: relative;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  background-color: var(--marvel-red);
+  color: white;
+  font-size: 20px;
+  font-family: monospace;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 15px 0px;
+}
+#rotate-modal p small {
+  font-size: 14px;
+  text-transform: lowercase;
+  padding: 15px 5px 5px 5px;
+  display: inline-block;
+  line-height: 20px;
+}
+@media (orientation: landscape) {
+  #rotate-modal {
+    z-index: -1;
+    opacity: 0;
+    -webkit-transition: 0.5s linear;
+    -moz-transition: 0.5s linear;
+    -o-transition: 0.5s linear;
+    transition: 0.5s linear;
+  }
+}
+@media (orientation: portrait) {
+  #rotate-modal {
+    opacity: 1;
+    -webkit-transition: 0.1s linear;
+    -moz-transition: 0.1s linear;
+    -o-transition: 0.1s linear;
+    transition: 0.1s linear;
+  }
+  #sidebar, #controls, #comics-bar {
+    display: none!important;
+  }
+  #loader {
+    top: 20%;
+    left: calc(50% - 25px);
+  }
+}
+@media (orientation: portrait) and (min-height: 1000px) {
+  #rotate-modal p {
+    font-size: 24px;
+  }
+  #rotate-modal p small {
+    display: none;
   }
 }
