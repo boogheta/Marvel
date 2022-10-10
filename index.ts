@@ -1,7 +1,8 @@
 /* TODO:
 - fix empty select focuses nowhere
 - handle slow load on smartphones
-- sortable/filterable/playable/pausable list?
+- sortable/filterable list?
+- make play/pause/next/previous buttons a bar on modal view?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
 - one more check with takoyaki on authors/characters labels + readjust louvain after
@@ -40,7 +41,8 @@ let entity = "",
   comicsBarView = false,
   hoveredComic = null,
   selectedComic = null,
-  networksLoaded = 0;
+  networksLoaded = 0,
+  playing = null;
 
 const conf = {},
   networks = {},
@@ -198,6 +200,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   modalNext = document.getElementById("modal-next") as HTMLElement,
   modalPrev = document.getElementById("modal-previous") as HTMLElement,
+  modalPlay = document.getElementById("modal-play") as HTMLElement,
+  modalPause = document.getElementById("modal-pause") as HTMLElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
@@ -593,14 +597,29 @@ modal.ontouchend = e => {
 comicImg.ontouchstart = modal.ontouchstart;
 comicImg.ontouchend = modal.ontouchend;
 let preventClick = false;
-modalNext.onclick = (e) => {
-  selectAndScrollSibling("next");
+modalNext.onclick = () => {
   preventClick = true;
+  selectAndScrollSibling("next");
 };
 modalPrev.onclick = () => {
-  selectAndScrollSibling("previous");
   preventClick = true;
+  selectAndScrollSibling("previous");
 };
+modalPlay.onclick = () => {
+  preventClick = true;
+  modalPlay.style.display = "none";
+  modalPause.style.display = "block";
+  if (playing) clearInterval(playing);
+  selectAndScrollSibling("next");
+  playing = setInterval(() => selectAndScrollSibling("next"), 1500);
+}
+modalPause.onclick = () => {
+  preventClick = true;
+  modalPause.style.display = "none";
+  modalPlay.style.display = "block";
+  if (playing) clearInterval(playing);
+  playing = false;
+}
 modal.onclick = () => {
   if (preventClick) return preventClick = false;
   preventClick = false;
