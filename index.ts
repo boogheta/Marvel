@@ -338,7 +338,7 @@ function centerNode(node, neighbors = null, force = true) {
       35 / camera.ratio,
       Math.max(
         0.21 / camera.ratio,
-        1.5 / Math.min(
+        1.3 / Math.min(
           sigmaDims.width / (rightCorner.x - leftCorner.x),
           sigmaDims.height / (leftCorner.y - rightCorner.y)
         )
