@@ -1,6 +1,7 @@
 /* TODO:
 - fix empty select focuses nowhere
 - handle slow load on smartphones
+- better pics for close fullscreen + zoom + add play/pause/settings/alphasort/datesort icons
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
@@ -647,7 +648,10 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicTitle.innerHTML = formatMonth(comic.date);
   comicImg.src = comic.image_url.replace(/^http:/, '');
   modalImg.src = comic.image_url.replace(/^http:/, '');
-  comicImg.onclick = () => modal.style.display = "block";
+  comicImg.onclick = () => {
+    modalImg.src = comic.image_url.replace(/^http:/, '');
+    modal.style.display = "block";
+  }
   comicDesc.innerHTML = comic.description;
   comicUrl.style.display = "inline";
   comicUrl.href = comic.url;
@@ -1012,6 +1016,8 @@ function clickNode(node, updateURL=true) {
   nodeImg.onclick = () => {
     modalImg.src = attrs.image_url.replace(/^http:/, '');
     modal.style.display = "block";
+    modalPrev.style.display = "none";
+    modalNext.style.display = "none";
   };
 
   nodeExtra.innerHTML = "";
