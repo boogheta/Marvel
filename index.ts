@@ -10,6 +10,7 @@
 => scraper comics as counter-truth? :
 - filter imprint marvel
 - rebuild creators network from cleaned comics instead
+- add cover artist in comics list, not in links used
 IDEAS:
 - install app button?
 - test bipartite network between authors and characters filtered by category of author
@@ -429,43 +430,46 @@ function displayComics(node, autoReselect = false) {
     loaderList.style.display = "block";
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
-  if (comics) {
-    comicsTitle.innerHTML = fmtNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
-    if (node) comicsTitle.innerHTML += " listing<br/>"
-      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
-    if (node && entity === "creators")
-      comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-        .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
-        .join("&nbsp;")
-        .replace(/&nbsp;([^&]+)$/, " or $1");
-  }
   setTimeout(() => {
-    comicsList.innerHTML = comics
-      ? comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
+    const filteredList = comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
       //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
-        .map(x => '<li id="comic-' + x.id + '"' + (node && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
-        .join("")
-      : "No comic-book found.";
-    if (comics) comics.forEach(c => {
-      const comicLi = document.getElementById("comic-" + c.id) as any;
-      comicLi.comic = c;
-      comicLi.onmouseup = () => selectComic(c, true);
-      comicLi.onmouseenter = () => selectComic(c);
-    });
-    loaderList.style.display = "none";
-    if (autoReselect) {
-      selectComic(
-        (selectedComic && comics.filter(c => c.id === selectedComic.id).length
-          ? selectedComic
-          : null),
-        true,
-        autoReselect
-      );
-      if (selectedComic) scrollComicsList();
-      comicsCache.style.display = "none";
+        .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
+    if (filteredList.length) {
+      comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
+      if (node) comicsTitle.innerHTML += " listing<br/>"
+        + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+      if (node && entity === "creators")
+        comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
+          .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
+          .join("&nbsp;")
+          .replace(/&nbsp;([^&]+)$/, " or $1");
     }
-    doResize(true);
-  }, 250);
+    setTimeout(() => {
+      comicsList.innerHTML = filteredList
+        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (node && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+          .join("")
+        : "No comic-book found.";
+      if (filteredList.length) filteredList.forEach(c => {
+        const comicLi = document.getElementById("comic-" + c.id) as any;
+        comicLi.comic = c;
+        comicLi.onmouseup = () => selectComic(c, true);
+        comicLi.onmouseenter = () => selectComic(c);
+      });
+      loaderList.style.display = "none";
+      if (autoReselect) {
+        selectComic(
+          (selectedComic && comics.filter(c => c.id === selectedComic.id).length
+            ? selectedComic
+            : null),
+          true,
+          autoReselect
+        );
+        if (selectedComic) scrollComicsList();
+        comicsCache.style.display = "none";
+      }
+      doResize(true);
+    }, 50);
+  }, 150);
 }
 function scrollComicsList() {
   setTimeout(() => {
