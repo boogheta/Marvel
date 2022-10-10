@@ -438,6 +438,11 @@ function displayComics(node, autoReselect = false) {
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   comicsTitle.innerHTML = "";
+  if (comics) {
+    comicsTitle.innerHTML = "... comics";
+    if (node) comicsTitle.innerHTML += " listing<br/>"
+      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+  }
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
     loaderList.style.display = "block";
