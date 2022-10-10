@@ -1,5 +1,4 @@
 /* TODO:
-- bug on switch view with selectedComic
 - handle slow load on smartphones
 - sortable/filterable list?
 - make play/pause/next/previous buttons a bar on modal view?
@@ -1203,7 +1202,9 @@ function switchView() {
   if (!renderer) return;
   renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-  if (graph && selectedNode && graph.hasNode(selectedNode))
+  if (graph && comicsBarView && selectedComic)
+    selectComic(selectedComic, true, true);
+  else if (graph && selectedNode && graph.hasNode(selectedNode))
     clickNode(selectedNode);
 };
 
