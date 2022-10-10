@@ -1,8 +1,6 @@
 /* TODO:
 - fix empty select focuses nowhere
 - handle slow load on smartphones
-- broken zoomcenter on mobiles after tilted graph
-- better pics for close fullscreen + zoom + add play/pause/settings/alphasort/datesort icons
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
