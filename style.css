@@ -345,13 +345,12 @@ h2 {
   vertical-align: middle;
 }
 #modal-img {
-  max-width: 95%;
-  max-height: 95%;
+  max-width: calc(100% - 85px);
+  max-height: calc(100% - 85px);
   z-index: 20;
   vertical-align: middle;
 }
 #modal button {
-  z-index: -1;
   width: 33px;
   height: 33px;
 }
@@ -360,13 +359,21 @@ h2 {
   width: 24px;
 }
 #modal-previous {
-  top: calc(50% - 15px);
+  top: calc(50% - 17px);
   left: 0;
-  padding-right: 2px;
 }
 #modal-next {
-  top: calc(50% - 15px);
+  top: calc(50% - 17px);
   right: 0;
+}
+#modal-play {
+  bottom: 0;
+  left: calc(50% - 17px);
+}
+#modal-pause {
+  bottom: 0;
+  left: calc(50% - 17px);
+  display: none;
 }
 #controls {
   position: absolute;
