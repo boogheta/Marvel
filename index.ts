@@ -1,4 +1,5 @@
 /* TODO:
+- fix empty select focuses nowhere
 - handle slow load on smartphones
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
@@ -270,7 +271,7 @@ function defaultSidebar() {
 function hideComicsBar() {
   const graph = networks[entity][networkSize].graph,
     clustersLayer = document.getElementById("clusters-layer");
-  comicsCache.style.display = "block";
+  comicsCache.style.display = "none";
   comicsBarView = false;
   comicsBar.style.opacity = "0";
   comicsBar.style["z-index"] = "-1";
@@ -295,7 +296,7 @@ function centerNode(node, neighbors = null, force = true) {
   const graph = networks[entity][networkSize].graph;
   if (!neighbors)
     neighbors = graph.neighbors(node);
-  if (node)
+  if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
 
   let x0, x1, y0, y1;
@@ -428,8 +429,6 @@ function displayComics(node, autoReselect = false) {
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   if (comics) {
-    modalNext.style.display = "block";
-    modalPrev.style.display = "block";
     comicsTitle.innerHTML = fmtNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
     if (node) comicsTitle.innerHTML += " listing<br/>"
       + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
@@ -499,9 +498,10 @@ document.onkeydown = function(e) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return
 
-  if (modal.style.display === "block" && e.which === 27)
+  if (modal.style.display === "block" && e.which === 27) {
     modal.style.display = "none";
-  else if (comicsBarView && !selectedComic) {
+    comicsCache.style.display = "none";
+  } else if (comicsBarView && !selectedComic) {
     if (e.which === 37 || e.which === 38)
       selectAndScroll(document.querySelector("#comics-list li:last-child") as any);
     else if (e.which === 39 || e.which === 40)
@@ -582,6 +582,7 @@ modal.onclick = () => {
   if (preventClick) return preventClick = false;
   preventClick = false;
   modal.style.display = "none";
+  comicsCache.style.display = "none";
 };
 document.getElementById("close-modal").onclick = modal.onclick;
 
@@ -593,7 +594,6 @@ function unselectComic() {
   clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
     setTimeout(() => centerNode(selectedNode), 5);
-    comicsCache.style.display = "block";
   }
 }
 
@@ -700,7 +700,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           }
   );
 
-  setTimeout(() => centerNode(selectedNode, comic[entity].filter(n => graph.hasNode(n)), false), 5);
+  setTimeout(() => centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false), 5);
 }
 
 function buildNetwork(networkData, ent, siz) {
