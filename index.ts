@@ -1,7 +1,5 @@
 /* TODO:
-- bug resize on smartphone
 - handle slow load on smartphones
-- bad zoom after phone rotate?
 - sortable/filterable/playable/pausable list?
 - add link actions on creators/characters of comic
 - bind url with selected comic?
@@ -1160,7 +1158,7 @@ function switchView() {
 };
 
 // Responsiveness
-let resizing = false;
+let resizing = undefined;
 function doResize(fast = false) {
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
@@ -1185,9 +1183,9 @@ function doResize(fast = false) {
   if (!fast) resizing = false;
 }
 function resize() {
-  if (resizing) return;
-  resizing = true;
-  setTimeout(doResize, 0);
+  if (resizing === true) return;
+  if (resizing) clearTimeout(resizing);
+  resizing = setTimeout(doResize, 0);
 };
 window.onresize = resize;
 
