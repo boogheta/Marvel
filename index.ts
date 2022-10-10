@@ -1,16 +1,17 @@
 /* TODO:
-- fix empty select focuses nowhere
+- bug on switch view with selectedComic
 - handle slow load on smartphones
 - sortable/filterable list?
 - make play/pause/next/previous buttons a bar on modal view?
 - add link actions on creators/characters of comic
-- bind url with selected comic?
-- one more check with takoyaki on authors/characters labels + readjust louvain after
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
-=> scraper comics as counter-truth? :
-- filter imprint marvel
-- rebuild creators network from cleaned comics instead
-- add cover artist in comics list, not in links used
+ => scraper comics as counter-truth? :
+  - select good creators fields
+  - rebuild creators network from cleaned comics instead
+  - filter imprint marvel
+  - add cover artist in comics list, not in links used
+- one more check with takoyaki on authors/characters labels + readjust louvain after
+- bind url with selected comic?
 IDEAS:
 - install app button?
 - test bipartite network between authors and characters filtered by category of author
