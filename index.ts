@@ -510,6 +510,8 @@ function selectAndScrollSibling(typ) {
   const selected = document.querySelector("#comics-list li.selected") as any,
     target = selected[typ + "ElementSibling"] as any;
   selectAndScroll(target);
+  if (typ === "next" && playing && !target)
+    modalPause.onclick(null);
 }
 
 comicsList.onmouseleave = () => {
