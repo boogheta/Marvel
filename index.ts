@@ -351,7 +351,8 @@ function centerNode(node, neighbors = null, force = true) {
     camera.animate(
       {
         ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * ratio
+        ratio: camera.ratio * ratio,
+        angle: 0
       },
       {duration: 350}
     );
