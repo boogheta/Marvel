@@ -285,7 +285,7 @@ document.getElementById("close-bar").onclick = hideComicsBar;
 function computeNodeSize(node, stories) {
   return Math.pow(stories, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
-    * (networkSize === "small" ? 1.5 : 1.25)
+    * (networkSize === "small" ? 1.75 : 1.25)
     * sigmaDim / 1000
 };
 
