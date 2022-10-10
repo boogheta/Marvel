@@ -598,6 +598,13 @@ label {
     top: 5px;
   }
 }
+@media (max-height: 400px) {
+  #search {
+    position: fixed;
+    bottom: 5px;
+    margin-right: 5px;
+  }
+}
 @media (max-height: 600px) {
   .network-choice {
     height: 20px;
