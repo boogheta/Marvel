@@ -357,7 +357,7 @@ h2 {
 }
 #modal button img {
   z-index: -1;
-  width: 16px;
+  width: 24px;
 }
 #modal-previous {
   top: calc(50% - 15px);
