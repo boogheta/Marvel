@@ -293,6 +293,13 @@ function computeNodeSize(node, stories) {
     * sigmaDim / 1000
 };
 
+/*function rotatePosition(pos) {
+  return {
+    x: pos.x * Math.cos(-camera.angle) - pos.y * Math.sin(-camera.angle),
+    y: pos.y * Math.cos(-camera.angle) + pos.x * Math.sin(-camera.angle)
+  };
+}*/
+
 function centerNode(node, neighbors = null, force = true) {
   if (!camera || (!node && !neighbors)) return;
 
@@ -302,61 +309,67 @@ function centerNode(node, neighbors = null, force = true) {
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
 
-  let x0, x1, y0, y1;
-  neighbors.forEach(n => {
-      const attrs = renderer.getNodeDisplayData(n);
-      if (!x0 || x0 > attrs.x) x0 = attrs.x;
-      if (!x1 || x1 < attrs.x) x1 = attrs.x;
-      if (!y0 || y0 > attrs.y) y0 = attrs.y;
-      if (!y1 || y1 < attrs.y) y1 = attrs.y;
-    });
-  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
-    ? divWidth("comics-bar")
-    : 0,
-    leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
-    rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
-    viewPortPosition = renderer.framedGraphToViewport({
-      x: (x0 + x1) / 2 ,
-      y: (y0 + y1) / 2
-    }),
-    sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
-
-  // Handle comicsbar hiding part of the graph
-  sigmaDims.width -= shift;
-  // Evaluate required zoom ratio
-  let ratio = Math.min(
-    35 / camera.ratio,
-    Math.max(
-      0.21 / camera.ratio,
-      1.5 / Math.min(
-        sigmaDims.width / (rightCorner.x - leftCorner.x),
-        sigmaDims.height / (leftCorner.y - rightCorner.y)
-      )
-    )
-  );
-
-  // Evaluate acceptable window
-  const xMin = 15 * sigmaDims.width / 100,
-    xMax = 85 * sigmaDims.width / 100,
-    yMin = 15 * sigmaDims.height / 100,
-    yMax = 85 * sigmaDims.height / 100;
-
-  // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close together, or if outside full window or nodes really close together
-  if (force ||
-    leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
-    (ratio !== 0 && (ratio < 0.35)) ||
-    (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
-  ) {
-    viewPortPosition.x += ratio * shift / 2;
-    camera.animate(
-      {
-        ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * ratio,
-        angle: 0
+  const recenter = function(duration) {
+    let x0, x1, y0, y1;
+    neighbors.forEach(n => {
+        const attrs = renderer.getNodeDisplayData(n);
+        if (!x0 || x0 > attrs.x) x0 = attrs.x;
+        if (!x1 || x1 < attrs.x) x1 = attrs.x;
+        if (!y0 || y0 > attrs.y) y0 = attrs.y;
+        if (!y1 || y1 < attrs.y) y1 = attrs.y;
+      });
+    const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
+      ? divWidth("comics-bar")
+      : 0,
+      leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
+      rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
+      viewPortPosition = {
+        x: (leftCorner.x + rightCorner.x) / 2 ,
+        y: (leftCorner.y + rightCorner.y) / 2
       },
-      {duration: 350}
+      sigmaDims = document.getElementById("sigma-container").getBoundingClientRect();
+
+    // Handle comicsbar hiding part of the graph
+    sigmaDims.width -= shift;
+    // Evaluate required zoom ratio
+    let ratio = Math.min(
+      35 / camera.ratio,
+      Math.max(
+        0.21 / camera.ratio,
+        1.5 / Math.min(
+          sigmaDims.width / (rightCorner.x - leftCorner.x),
+          sigmaDims.height / (leftCorner.y - rightCorner.y)
+        )
+      )
     );
+
+    // Evaluate acceptable window
+    const xMin = 15 * sigmaDims.width / 100,
+      xMax = 85 * sigmaDims.width / 100,
+      yMin = 15 * sigmaDims.height / 100,
+      yMax = 85 * sigmaDims.height / 100;
+
+    // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close together, or if outside full window or nodes really close together
+    if (force ||
+      leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
+      (ratio !== 0 && (ratio < 0.35)) ||
+      (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
+    ) {
+      viewPortPosition.x += ratio * shift / 2;
+      camera.animate(
+        {
+          ...renderer.viewportToFramedGraph(viewPortPosition),
+          ratio: camera.ratio * ratio,
+          angle: 0
+        },
+        {duration: duration}
+      );
+    }
   }
+  if (camera.angle) {
+    camera.animate({angle: 0}, {duration: 75});
+    setTimeout(() => recenter(200), 150)
+  } else recenter(350);
 }
 
 function loadComics(comicsData) {
