@@ -1,7 +1,5 @@
 /* TODO:
 - comics actions
-  - hide/disable prev/next buttons
-  - plug sort buttons
   - add search button with list filter
   - make play/pause/next/previous buttons a bar on modal view?
 - handle slow load on smartphones
@@ -202,14 +200,16 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
-  modalNext = document.getElementById("modal-next") as HTMLElement,
-  modalPrev = document.getElementById("modal-previous") as HTMLElement,
-  modalPlay = document.getElementById("modal-play") as HTMLElement,
-  modalPause = document.getElementById("modal-pause") as HTMLElement,
-  comicsNext = document.getElementById("comics-next") as HTMLElement,
-  comicsPrev = document.getElementById("comics-prev") as HTMLElement,
-  comicsPlay = document.getElementById("comics-play") as HTMLElement,
-  comicsPause = document.getElementById("comics-pause") as HTMLElement,
+  modalNext = document.getElementById("modal-next") as HTMLButtonElement,
+  modalPrev = document.getElementById("modal-previous") as HTMLButtonElement,
+  modalPlay = document.getElementById("modal-play") as HTMLButtonElement,
+  modalPause = document.getElementById("modal-pause") as HTMLButtonElement,
+  comicsNext = document.getElementById("comics-next") as HTMLButtonElement,
+  comicsPrev = document.getElementById("comics-prev") as HTMLButtonElement,
+  comicsPlay = document.getElementById("comics-play") as HTMLButtonElement,
+  comicsPause = document.getElementById("comics-pause") as HTMLButtonElement,
+  sortAlpha = document.getElementById("comics-sort-alpha") as HTMLButtonElement,
+  sortDate = document.getElementById("comics-sort-date") as HTMLButtonElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
@@ -436,6 +436,18 @@ const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.rep
   //sortByTitle = (a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true })),
   sortByTitle = (a, b) => a.title.localeCompare(b.title, { numeric: true }),
   sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
+sortAlpha.onclick = () => {
+  sortAlpha.disabled = true;
+  sortDate.disabled = false;
+  sortComics = "alpha";
+  displayComics(selectedNode);
+};
+sortDate.onclick = () => {
+  sortDate.disabled = true;
+  sortAlpha.disabled = false;
+  sortComics = "date";
+  displayComics(selectedNode);
+};
 
 function displayComics(node, autoReselect = false) {
   const comics = (node === null
@@ -700,6 +712,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       comicsCache.style.display = "block";
       modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "block";
       modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "block";
+      comicsPrev.disabled = comicLi.previousElementSibling === null;
+      comicsNext.disabled = comicLi.nextElementSibling === null;
     }
   } else hoveredComic = comic;
 

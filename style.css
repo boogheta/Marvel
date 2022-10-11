@@ -152,10 +152,12 @@ html, body {
   height: 24px;
   margin-top: 3px;
 }
-#comics-play {
-}
 #comics-pause {
   display: none;
+}
+#comics-actions button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
 }
 h1 {
   font-size: 26px;
