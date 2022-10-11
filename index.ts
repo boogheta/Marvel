@@ -45,7 +45,8 @@ let entity = "",
   hoveredComic = null,
   selectedComic = null,
   networksLoaded = 0,
-  playing = null;
+  playing = null,
+  sortComics = "date";
 
 const conf = {},
   networks = {},
@@ -431,7 +432,10 @@ function loadComics(comicsData) {
   });
 }
 
-//const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
+const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0"),
+  //sortByTitle = (a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true })),
+  sortByTitle = (a, b) => a.title.localeCompare(b.title, { numeric: true }),
+  sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
 
 function displayComics(node, autoReselect = false) {
   const comics = (node === null
@@ -460,9 +464,8 @@ function displayComics(node, autoReselect = false) {
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   setTimeout(() => {
-    const filteredList = comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
-      //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
-        .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
+    const filteredList = comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
+      .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
       if (node) comicsTitle.innerHTML += " listing<br/>"
