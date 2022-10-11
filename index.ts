@@ -534,12 +534,14 @@ function selectAndScroll(el) {
   selectComic(el.comic, true);
   scrollComicsList();
 }
-function selectAndScrollSibling(typ) {
-  if (!comicsBarView || !selectedComic) return;
-  const selected = document.querySelector("#comics-list li.selected") as any,
-    target = selected[typ + "ElementSibling"] as any;
+function selectAndScrollSibling(typ, loop = false) {
+  if (!comicsBarView) return;
+  const selected = document.querySelector("#comics-list li.selected") as any;
+  let target = selected && selected[typ + "ElementSibling"] as any;
+  if (loop && !target)
+    target = document.querySelector("#comics-list li:" + (typ === "next" ? "first" : "last") + "-child") as any;
   selectAndScroll(target);
-  if (typ === "next" && playing && !target)
+  if (typ === "next" && playing && !target && !loop)
     modalPause.onclick(null);
 }
 
@@ -549,9 +551,7 @@ function playComics() {
   modalPlay.style.display = "none";
   modalPause.style.display = "inline-block";
   if (playing) clearInterval(playing);
-  if (!selectedComic)
-    selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
-  else selectAndScrollSibling("next");
+  selectAndScrollSibling("next", true);
   playing = setInterval(() => selectAndScrollSibling("next"), 1500);
 }
 function stopPlayComics() {
@@ -564,8 +564,8 @@ function stopPlayComics() {
 }
 comicsPlay.onclick = playComics;
 comicsPause.onclick = stopPlayComics;
-comicsPrev.onclick = () => selectAndScrollSibling("previous");
-comicsNext.onclick = () => selectAndScrollSibling("next");
+comicsPrev.onclick = () => selectAndScrollSibling("previous", true);
+comicsNext.onclick = () => selectAndScrollSibling("next", true);
 
 comicsList.onmouseleave = () => {
   if (selectedComic)
@@ -719,8 +719,6 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       comicsCache.style.display = "block";
       modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
       modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
-      comicsPrev.disabled = comicLi.previousElementSibling === null;
-      comicsNext.disabled = comicLi.nextElementSibling === null;
     }
   } else hoveredComic = comic;
 
