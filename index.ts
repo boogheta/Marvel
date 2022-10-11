@@ -1,7 +1,10 @@
 /* TODO:
+- comics actions
+  - hide/disable prev/next buttons
+  - plug sort buttons
+  - add search button with list filter
+  - make play/pause/next/previous buttons a bar on modal view?
 - handle slow load on smartphones
-- sortable/filterable list?
-- make play/pause/next/previous buttons a bar on modal view?
 - add link actions on creators/characters of comic
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
  => scraper comics as counter-truth? :
@@ -42,7 +45,8 @@ let entity = "",
   hoveredComic = null,
   selectedComic = null,
   networksLoaded = 0,
-  playing = null;
+  playing = null,
+  sortComics = "date";
 
 const conf = {},
   networks = {},
@@ -202,6 +206,10 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   modalPrev = document.getElementById("modal-previous") as HTMLElement,
   modalPlay = document.getElementById("modal-play") as HTMLElement,
   modalPause = document.getElementById("modal-pause") as HTMLElement,
+  comicsNext = document.getElementById("comics-next") as HTMLElement,
+  comicsPrev = document.getElementById("comics-prev") as HTMLElement,
+  comicsPlay = document.getElementById("comics-play") as HTMLElement,
+  comicsPause = document.getElementById("comics-pause") as HTMLElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
@@ -424,7 +432,10 @@ function loadComics(comicsData) {
   });
 }
 
-//const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0");
+const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0"),
+  //sortByTitle = (a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true })),
+  sortByTitle = (a, b) => a.title.localeCompare(b.title, { numeric: true }),
+  sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
 
 function displayComics(node, autoReselect = false) {
   const comics = (node === null
@@ -453,9 +464,8 @@ function displayComics(node, autoReselect = false) {
   comicsSubtitleList.innerHTML = "";
   comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   setTimeout(() => {
-    const filteredList = comics.sort((a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1))
-      //? comics.sort((a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true }))  # Sort by title
-        .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
+    const filteredList = comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
+      .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
       if (node) comicsTitle.innerHTML += " listing<br/>"
@@ -513,6 +523,30 @@ function selectAndScrollSibling(typ) {
   if (typ === "next" && playing && !target)
     modalPause.onclick(null);
 }
+
+function playComics() {
+  comicsPlay.style.display = "none";
+  comicsPause.style.display = "inline-block";
+  modalPlay.style.display = "none";
+  modalPause.style.display = "inline-block";
+  if (playing) clearInterval(playing);
+  if (!selectedComic)
+    selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
+  else selectAndScrollSibling("next");
+  playing = setInterval(() => selectAndScrollSibling("next"), 1500);
+}
+function stopPlayComics() {
+  comicsPause.style.display = "none";
+  comicsPlay.style.display = "inline-block";
+  modalPause.style.display = "none";
+  modalPlay.style.display = "inline-block";
+  if (playing) clearInterval(playing);
+  playing = false;
+}
+comicsPlay.onclick = playComics;
+comicsPause.onclick = stopPlayComics;
+comicsPrev.onclick = () => selectAndScrollSibling("previous");
+comicsNext.onclick = () => selectAndScrollSibling("next");
 
 comicsList.onmouseleave = () => {
   if (selectedComic)
@@ -609,18 +643,11 @@ modalPrev.onclick = () => {
 };
 modalPlay.onclick = () => {
   preventClick = true;
-  modalPlay.style.display = "none";
-  modalPause.style.display = "block";
-  if (playing) clearInterval(playing);
-  selectAndScrollSibling("next");
-  playing = setInterval(() => selectAndScrollSibling("next"), 1500);
+  playComics()
 }
 modalPause.onclick = () => {
   preventClick = true;
-  modalPause.style.display = "none";
-  modalPlay.style.display = "block";
-  if (playing) clearInterval(playing);
-  playing = false;
+  stopPlayComics();
 }
 modal.onclick = () => {
   if (preventClick) return preventClick = false;
