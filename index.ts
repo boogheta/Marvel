@@ -1,7 +1,9 @@
 /* TODO:
+- fix scrollcomics on phones outside centered view
 - comics actions
-  - on paysage phones move modal-actions to sides
-  - add search button with list filter
+  - improve actions buttons for desktops
+  - fix positions actions buttons on phones
+- add search button with list filter
 - handle slow load on smartphones
 - add link actions on creators/characters of comic
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -288,8 +290,8 @@ function hideComicsBar() {
   comicsBarView = false;
   comicsBar.style.opacity = "0";
   comicsBar.style["z-index"] = "-1";
-  modalNext.style.display = "none";
-  modalPrev.style.display = "none";
+  modalNext.style.opacity = "0";
+  modalPrev.style.opacity = "0";
   unselectComic();
   if (graph && entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
@@ -710,8 +712,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
       comicsCache.style.display = "block";
-      modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "inline-block";
-      modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "inline-block";
+      modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
+      modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
       comicsPrev.disabled = comicLi.previousElementSibling === null;
       comicsNext.disabled = comicLi.nextElementSibling === null;
     }
@@ -735,6 +737,11 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicImg.onclick = () => {
     modalImg.src = comic.image_url.replace(/^http:/, '');
     modal.style.display = "block";
+    modalPlay.style.display = playing ? "none" : "inline-block";
+    modalPause.style.display = playing ? "inline-block" : "none";
+    const comicLi = document.getElementById("comic-" + comic.id);
+    modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
+    modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
   }
   comicDesc.innerHTML = comic.description;
   comicUrl.style.display = "inline";
@@ -1099,9 +1106,12 @@ function clickNode(node, updateURL=true) {
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
     modalImg.src = attrs.image_url.replace(/^http:/, '');
+    stopPlayComics();
     modal.style.display = "block";
-    modalPrev.style.display = "none";
-    modalNext.style.display = "none";
+    modalPrev.style.opacity = "0";
+    modalNext.style.opacity = "0";
+    modalPlay.style.display = "none";
+    modalPause.style.display = "none";
   };
 
   nodeExtra.innerHTML = "";

@@ -392,6 +392,7 @@ h2 {
 }
 #modal-actions button {
   margin: 5px 10px;
+  display: inline-block;
 }
 #modal button {
   width: 35px;
@@ -756,6 +757,32 @@ label {
     -moz-transition: 0.5s linear;
     -o-transition: 0.5s linear;
     transition: 0.5s linear;
+  }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  #modal-img {
+    max-height: calc(100% - 15px);
+    max-width: calc(100% - 15px);
+    margin: 0;
+  }
+  #modal-actions {
+    height: 100%;
+  }
+  #modal .action-button {
+    position: absolute;
+    margin: 5px;
+  }
+  #modal-previous {
+    top: calc(50% - 17px);
+    left: 0;
+  }
+  #modal-next {
+    top: calc(50% - 17px);
+    right: 0;
+  }
+  #modal-play, #modal-pause {
+    bottom: calc(100% - 45px);
+    left: 0;
   }
 }
 @media (orientation: portrait) {
