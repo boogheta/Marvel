@@ -1,7 +1,7 @@
 /* TODO:
 - comics actions
+  - on paysage phones move modal-actions to sides
   - add search button with list filter
-  - make play/pause/next/previous buttons a bar on modal view?
 - handle slow load on smartphones
 - add link actions on creators/characters of comic
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -710,8 +710,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
       comicsCache.style.display = "block";
-      modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "block";
-      modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "block";
+      modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "inline-block";
+      modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "inline-block";
       comicsPrev.disabled = comicLi.previousElementSibling === null;
       comicsNext.disabled = comicLi.nextElementSibling === null;
     }
