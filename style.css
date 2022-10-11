@@ -1,5 +1,6 @@
 :root {
   --marvel-red: #ec1d24;
+  --marvel-red-light: #ff4f56;
   --marvel-red-dark: #ba0000;
 }
 
@@ -156,8 +157,12 @@ html, body {
   display: none;
 }
 #comics-actions button:disabled {
-  background: #aaa;
-  cursor: not-allowed;
+  opacity: 0.2;
+  cursor: default;
+}
+#comics-actions button.sort-button:disabled {
+  opacity: 1;
+  background: var(--marvel-red-light);
 }
 h1 {
   font-size: 26px;
