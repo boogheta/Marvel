@@ -1,5 +1,4 @@
 /* TODO:
-- handle slow load on smartphones => move comics loader in loader place
 - fix scrollcomics on phones outside centered view
 - fix comic remains selected after switching from small to all
 - allow swipe on toggles
