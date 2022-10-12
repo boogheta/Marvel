@@ -1,15 +1,17 @@
 /* TODO:
-- better sort icons
+- handle slow load on smartphones => move comics loader in loader place
 - fix scrollcomics on phones outside centered view
-- comics actions
-  - improve actions buttons for desktops
-  - fix positions actions buttons on phones
-- add search button with list filter
-- fix ordering by issue
 - fix comic remains selected after switching from small to all
+- allow swipe on toggles
+- fix unclick on slide still sometimes
+- comics actions
+  - better sort icons
+  - fix ordering by issue
+  - fix resort does not scroll to
+  - fix click twice on modal to close after play wtf
+  - add search button with list filter
 - filter nodes with authors really missing on small
 - allow to remove filter on all comics?
-- handle slow load on smartphones => move comics loader in loader place
 - add link actions on creators/characters of comic
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
  => scraper comics as counter-truth? :

@@ -70,7 +70,7 @@ html, body {
   outline: none;
   cursor: pointer;
   padding: 0;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
 }
 .action-button img {
@@ -131,21 +131,23 @@ html, body {
   width: 100%;
   height: 40px;
   text-align: center;
-  border-top: 1px solid #444;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 #comics-actions button {
   width: 35px;
   height: 35px;
-  margin: 1px 5px;
+  margin: 0 2px;
   background: #eee;
   outline: none;
-  border: 1px solid dimgrey;
   cursor: pointer;
   font-size: 15px;
   font-family: monospace;
   font-weight: bold;
   padding: 0;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
 }
 #comics-actions button img {
@@ -161,6 +163,7 @@ html, body {
 #comics-actions button:disabled {
   opacity: 0.2;
   cursor: default;
+  border: 2px solid #222;
 }
 #comics-actions button.sort-button:disabled {
   opacity: 1;
@@ -265,10 +268,11 @@ h2 {
 #view-comics, #view-node, #view-all-comics {
   cursor: pointer;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 20px!important;
   margin-bottom: 15px!important;
   text-transform: uppercase;
+  line-height: 20px;
 }
 #view-all-comics {
   display: none;
@@ -278,7 +282,7 @@ h2 {
   width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
   padding: 5px;
 }
@@ -419,7 +423,7 @@ h2 {
   position: absolute;
   top: 10px;
   text-align: center;
-  width: 150px;
+  width: 156px;
 }
 #sigma-buttons {
   display: flex;
@@ -427,18 +431,17 @@ h2 {
 }
 #sigma-buttons button {
   flex: auto;
-  width: 33px;
-  height: 33px;
+  width: 35px;
+  height: 35px;
   margin: 2px;
   background: #eee;
   outline: none;
-  border: 1px solid dimgrey;
   cursor: pointer;
   font-size: 15px;
   font-family: monospace;
   font-weight: bold;
   padding: 0;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
 }
 #sigma-buttons button img {
@@ -517,7 +520,7 @@ label {
   background-color: var(--marvel-red);
   transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   margin: -2px 0 0 -2px;
-  border: 2px solid #222;
+  border: 2px solid #555;
 }
 .names {
   font-size: 90%;
@@ -599,6 +602,10 @@ label {
   }
   .names > div {
     font-size: 12px;
+  }
+  #view-comics, #view-node, #view-all-comics {
+    font-size: 14px;
+    margin-bottom: 20px!important;
   }
   #comics-title {
     font-size: 14px;
