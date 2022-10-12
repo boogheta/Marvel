@@ -124,33 +124,38 @@
       <button id="close-bar" class="action-button close-button" title="Close the list of comics">
         <img src="./images/close.svg" alt="close-comics-list" />
       </button>
-      <h3 id="comics-title"></h3>
-      <h3 id="comics-subtitle"><span id="comics-subtitle-extra">as </span><span id="comics-subtitle-list"></span></h3>
+      <div id="comics-header">
+        <h3 id="comics-title"></h3>
+        <h3 id="comics-subtitle">
+          <span id="comics-subtitle-extra">as </span>
+          <span id="comics-subtitle-list"></span>
+        </h3>
+        <div id="comics-actions">
+          <button id="comics-sort-date" title="Sort comics by publication date" class="sort-button" disabled>
+            <img src="./images/sort-date.svg" alt="sort chronologically" />
+          </button>
+          <button id="comics-sort-alpha" title="Sort comics by title and issue number" class="sort-button">
+            <img src="./images/sort-alpha.svg" alt="sort alphabetically" />
+          </button>
+          <button id="comics-prev" title="Previous comic">
+            <img src="./images/left.svg" alt="previous-picture" />
+          </button>
+          <button id="comics-play" title="Start scrolling comics">
+            <img src="./images/play.svg" alt="play" />
+          </button>
+          <button id="comics-pause" title="Stop scrolling comics">
+            <img src="./images/pause.svg" alt="pause" />
+          </button>
+          <button id="comics-next" title="Next comic">
+            <img src="./images/right.svg" alt="previous-picture" />
+          </button>
+        </div>
+      </div>
       <div id="comics">
         <ul id="comics-list"></ul>
         <div id="loader-list" title="Loading list of comics..."><img src="./images/loader.gif"/></div>
       </div>
       <div id="comics-cache"></div>
-      <div id="comics-actions">
-        <button id="comics-sort-alpha" title="Sort comics by title and issue number" disabled >
-          <img src="./images/sort-alpha.svg" alt="sort alphabetically" />
-        </button>
-        <button id="comics-sort-date" title="Sort comics by publication date">
-          <img src="./images/sort-date.svg" alt="sort chronologically" />
-        </button>
-        <button id="comics-prev" title="Previous comic">
-          <img src="./images/left.svg" alt="previous-picture" />
-        </button>
-        <button id="comics-play" title="Start scrolling comics">
-          <img src="./images/play.svg" alt="play" />
-        </button>
-        <button id="comics-pause" title="Stop scrolling comics">
-          <img src="./images/pause.svg" alt="pause" />
-        </button>
-        <button id="comics-next" title="Next comic">
-          <img src="./images/right.svg" alt="previous-picture" />
-        </button>
-      </div>
       <div id="comic-details">
         <img id="comic-img"/>
         <h4 id="comic-title"></h2>
@@ -173,18 +178,20 @@
     <div id="modal">
       <span id="modal-helper"></span>
       <img id="modal-img"/>
-      <button id="modal-previous" class="action-button" title="Previous comic">
-        <img src="./images/left.svg" alt="previous-picture" />
-      </button>
-      <button id="modal-next" class="action-button" title="Next comic">
-        <img src="./images/right.svg" alt="previous-picture" />
-      </button>
-      <button id="modal-play" class="action-button" title="Start scrolling comics">
-        <img src="./images/play.svg" alt="play" />
-      </button>
-      <button id="modal-pause" class="action-button" title="Stop scrolling comics">
-        <img src="./images/pause.svg" alt="pause" />
-      </button>
+      <div id="modal-actions">
+        <button id="modal-previous" class="action-button" title="Previous comic">
+          <img src="./images/left.svg" alt="previous-picture" />
+        </button>
+        <button id="modal-play" class="action-button" title="Start scrolling comics">
+          <img src="./images/play.svg" alt="play" />
+        </button>
+        <button id="modal-pause" class="action-button" title="Stop scrolling comics">
+          <img src="./images/pause.svg" alt="pause" />
+        </button>
+        <button id="modal-next" class="action-button" title="Next comic">
+          <img src="./images/right.svg" alt="previous-picture" />
+        </button>
+      </div>
       <button id="close-modal" class="action-button close-button" title="Close the picture overlay">
         <img src="./images/close.svg" alt="close-picture-modal" />
       </button>

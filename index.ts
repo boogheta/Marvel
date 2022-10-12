@@ -1,8 +1,17 @@
 /* TODO:
+- handle slow load on smartphones => move comics loader in loader place
+- fix scrollcomics on phones outside centered view
+- fix comic remains selected after switching from small to all
+- allow swipe on toggles
+- fix unclick on slide still sometimes
 - comics actions
+  - better sort icons
+  - fix ordering by issue
+  - fix resort does not scroll to
+  - fix click twice on modal to close after play wtf
   - add search button with list filter
-  - make play/pause/next/previous buttons a bar on modal view?
-- handle slow load on smartphones
+- filter nodes with authors really missing on small
+- allow to remove filter on all comics?
 - add link actions on creators/characters of comic
 - check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
  => scraper comics as counter-truth? :
@@ -221,8 +230,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
+  comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
   comicsSubtitleList = document.getElementById("comics-subtitle-list") as HTMLElement,
-  comicsSubtitleExtra = document.getElementById("comics-subtitle-extra") as HTMLElement,
   comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
@@ -288,8 +297,8 @@ function hideComicsBar() {
   comicsBarView = false;
   comicsBar.style.opacity = "0";
   comicsBar.style["z-index"] = "-1";
-  modalNext.style.display = "none";
-  modalPrev.style.display = "none";
+  modalNext.style.opacity = "0";
+  modalPrev.style.opacity = "0";
   unselectComic();
   if (graph && entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
@@ -440,16 +449,16 @@ sortAlpha.onclick = () => {
   sortAlpha.disabled = true;
   sortDate.disabled = false;
   sortComics = "alpha";
-  displayComics(selectedNode);
+  displayComics(selectedNode, false, false);
 };
 sortDate.onclick = () => {
   sortDate.disabled = true;
   sortAlpha.disabled = false;
   sortComics = "date";
-  displayComics(selectedNode);
+  displayComics(selectedNode, false, false);
 };
 
-function displayComics(node, autoReselect = false) {
+function displayComics(node, autoReselect = false, resetTitle = true) {
   const comics = (node === null
     ? allComics
     : (entity === "characters"
@@ -459,28 +468,33 @@ function displayComics(node, autoReselect = false) {
   );
 
   comicsBarView = true;
-  comicsCache.style.display = "none";
   comicsBar.style.opacity = "1";
   comicsBar.style["z-index"] = "1";
+
+  comicsCache.style.display = "none";
+
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
-  comicsTitle.innerHTML = "";
-  if (comics) {
-    comicsTitle.innerHTML = "... comics";
-    if (node) comicsTitle.innerHTML += " listing<br/>"
-      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+  if (resetTitle) {
+    comicsTitle.innerHTML = "";
+    if (comics) {
+      comicsTitle.innerHTML = "... comics";
+      if (node) comicsTitle.innerHTML += " with<br/>"
+        + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+    }
+    comicsSubtitleList.innerHTML = "";
   }
+  comicsSubtitle.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
+
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
     loaderList.style.display = "block";
-  comicsSubtitleList.innerHTML = "";
-  comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   setTimeout(() => {
     const filteredList = comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
       .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (node) comicsTitle.innerHTML += " listing<br/>"
+      if (node) comicsTitle.innerHTML += " with<br/>"
         + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
       if (node && entity === "creators")
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
@@ -527,12 +541,14 @@ function selectAndScroll(el) {
   selectComic(el.comic, true);
   scrollComicsList();
 }
-function selectAndScrollSibling(typ) {
-  if (!comicsBarView || !selectedComic) return;
-  const selected = document.querySelector("#comics-list li.selected") as any,
-    target = selected[typ + "ElementSibling"] as any;
+function selectAndScrollSibling(typ, loop = false) {
+  if (!comicsBarView) return;
+  const selected = document.querySelector("#comics-list li.selected") as any;
+  let target = selected && selected[typ + "ElementSibling"] as any;
+  if (loop && !target)
+    target = document.querySelector("#comics-list li:" + (typ === "next" ? "first" : "last") + "-child") as any;
   selectAndScroll(target);
-  if (typ === "next" && playing && !target)
+  if (typ === "next" && playing && !target && !loop)
     modalPause.onclick(null);
 }
 
@@ -542,9 +558,7 @@ function playComics() {
   modalPlay.style.display = "none";
   modalPause.style.display = "inline-block";
   if (playing) clearInterval(playing);
-  if (!selectedComic)
-    selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
-  else selectAndScrollSibling("next");
+  selectAndScrollSibling("next", true);
   playing = setInterval(() => selectAndScrollSibling("next"), 1500);
 }
 function stopPlayComics() {
@@ -557,8 +571,8 @@ function stopPlayComics() {
 }
 comicsPlay.onclick = playComics;
 comicsPause.onclick = stopPlayComics;
-comicsPrev.onclick = () => selectAndScrollSibling("previous");
-comicsNext.onclick = () => selectAndScrollSibling("next");
+comicsPrev.onclick = () => selectAndScrollSibling("previous", true);
+comicsNext.onclick = () => selectAndScrollSibling("next", true);
 
 comicsList.onmouseleave = () => {
   if (selectedComic)
@@ -710,10 +724,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       const comicLi = document.getElementById("comic-" + comic.id);
       comicLi.className = "selected";
       comicsCache.style.display = "block";
-      modalPrev.style.display = comicLi.previousElementSibling === null ? "none" : "block";
-      modalNext.style.display = comicLi.nextElementSibling === null ? "none" : "block";
-      comicsPrev.disabled = comicLi.previousElementSibling === null;
-      comicsNext.disabled = comicLi.nextElementSibling === null;
+      modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
+      modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
     }
   } else hoveredComic = comic;
 
@@ -735,6 +747,11 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicImg.onclick = () => {
     modalImg.src = comic.image_url.replace(/^http:/, '');
     modal.style.display = "block";
+    modalPlay.style.display = playing ? "none" : "inline-block";
+    modalPause.style.display = playing ? "inline-block" : "none";
+    const comicLi = document.getElementById("comic-" + comic.id);
+    modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
+    modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
   }
   comicDesc.innerHTML = comic.description;
   comicUrl.style.display = "inline";
@@ -1050,7 +1067,7 @@ function addViewComicsButton(node) {
   document.getElementById('view-comics').onclick = () => displayComics(node);
 }
 
-function clickNode(node, updateURL=true) {
+function clickNode(node, updateURL = true, center = false) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
@@ -1099,9 +1116,12 @@ function clickNode(node, updateURL=true) {
   nodeImg.src = attrs.image_url.replace(/^http:/, '');
   nodeImg.onclick = () => {
     modalImg.src = attrs.image_url.replace(/^http:/, '');
+    stopPlayComics();
     modal.style.display = "block";
-    modalPrev.style.display = "none";
-    modalNext.style.display = "none";
+    modalPrev.style.opacity = "0";
+    modalNext.style.opacity = "0";
+    modalPlay.style.display = "none";
+    modalPause.style.display = "none";
   };
 
   nodeExtra.innerHTML = "";
@@ -1179,7 +1199,7 @@ if (!comicsBarView || ! selectedComic) {
     displayComics(node, true);
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
-  if (!updateURL)
+  if (!updateURL || center)
     setTimeout(() => centerNode(node), 200);
 };
 
@@ -1189,7 +1209,7 @@ document.getElementById("view-node").onclick = () => {
   if (!graph || !renderer)
     return;
   const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
-  clickNode(node);
+  clickNode(node, true, true);
 }
 
 // Fullscreen button
@@ -1259,7 +1279,7 @@ function doResize(fast = false) {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-title") - divHeight("comics-subtitle") - divHeight("comic-details") - 11 + "px";
+  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   const comicsDims = comicsDiv.getBoundingClientRect();
   ["width", "height", "top"].forEach(k =>
     comicsCache.style[k] = comicsDims[k] + "px"
