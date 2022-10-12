@@ -361,6 +361,8 @@ h2 {
   right: 0;
   width: 25px;
   height: 25px;
+  z-index: 10;
+  padding: 3px;
 }
 #loader-list {
   display: none;
@@ -671,8 +673,12 @@ label {
   #credits, .asterisk, #title {
     display: none;
   }
+  #comics {
+    line-height: 18px;
+  }
   #comics-list li {
     padding: 2px;
+    font-size: 14px;
   }
   #controls {
     width: 136px;
@@ -684,6 +690,9 @@ label {
   #suggestions-select {
     width: 132px;
     height: 28px;
+  }
+  #loader-list img {
+    top: 10px;
   }
 }
 @media not (pointer: coarse) {
@@ -713,8 +722,23 @@ label {
   .mobiles-details {
     display: inline;
   }
+  #loader-comics {
+    position: fixed;
+    right: 0;
+    display: none;
+  }
+  #loader-comics img {
+    padding: 10px;
+    width: 35px;
+    height: 35px;
+  }
 }
-
+@media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
+  #loader-comics {
+    left: 253px;
+    right: unset;
+  }
+}
 #rotate-modal {
   position: absolute;
   top: 0;

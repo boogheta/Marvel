@@ -1,15 +1,10 @@
 /* TODO:
-- handle slow load on smartphones => move comics loader in loader place
-- fix scrollcomics on phones outside centered view
-- fix comic remains selected after switching from small to all
-- allow swipe on toggles
-- fix unclick on slide still sometimes
+- fix comic remains selected after switching from small to all (or actually make it a feature)
+- fix slide still unclicks sometimes
 - comics actions
-  - better sort icons
   - fix ordering by issue
-  - fix resort does not scroll to
   - fix click twice on modal to close after play wtf
-  - add search button with list filter
+- add search button with list filter
 - filter nodes with authors really missing on small
 - allow to remove filter on all comics?
 - add link actions on creators/characters of comic
@@ -245,8 +240,11 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
   selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement,
   switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
+  switchTypeLabel = document.getElementById("switch-type") as HTMLInputElement,
   switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
+  switchFilterLabel = document.getElementById("switch-filter") as HTMLInputElement,
   switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
+  switchViewLabel = document.getElementById("switch-view") as HTMLInputElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
@@ -449,13 +447,13 @@ sortAlpha.onclick = () => {
   sortAlpha.disabled = true;
   sortDate.disabled = false;
   sortComics = "alpha";
-  displayComics(selectedNode, false, false);
+  displayComics(selectedNode, true, false);
 };
 sortDate.onclick = () => {
   sortDate.disabled = true;
   sortAlpha.disabled = false;
   sortComics = "date";
-  displayComics(selectedNode, false, false);
+  displayComics(selectedNode, true, false);
 };
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
@@ -533,7 +531,12 @@ function scrollComicsList() {
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
     if (!offset) return;
-    comicsDiv.scrollTo(0, offset.offsetTop - (divHeight("comics") / 2));
+    const offsetHeight = offset.getBoundingClientRect().height,
+      listHeight = divHeight("comics");
+    let diff = listHeight < 4 * offsetHeight
+      ? listHeight + offsetHeight
+      : listHeight / 2 + offsetHeight / 2;
+    comicsDiv.scrollTo(0, offset.offsetTop - diff);
   }, 10);
 }
 function selectAndScroll(el) {
@@ -630,34 +633,66 @@ document.onkeydown = function(e) {
   e.preventDefault(); // prevent the default action (scroll / move caret)
 };
 
-// Handle swipe on modal
+// Handle swipes
 let touches = {x: [0, 0], y: [0, 0]};
-const SWIPE_THRESHOLD = 100;
-modal.ontouchstart = e => {
+function touchStart(e) {
   touches.x[0] = e.changedTouches[0].screenX;
   touches.y[0] = e.changedTouches[0].screenY;
 };
-modal.ontouchend = e => {
+modal.ontouchstart = touchStart;
+comicImg.ontouchstart = modal.ontouchstart;
+switchTypeLabel.ontouchstart = modal.ontouchstart;
+switchViewLabel.ontouchstart = modal.ontouchstart;
+switchFilterLabel.ontouchstart = modal.ontouchstart;
+function touchEnd(e, threshold = 100) {
   touches.x[1] = e.changedTouches[0].screenX;
   touches.y[1] = e.changedTouches[0].screenY;
   const horizontalDifference = touches.x[1] - touches.x[0],
     verticalDifference = touches.y[1] - touches.y[0];
   // Horizontal difference dominates
   if (Math.abs(horizontalDifference) > Math.abs(verticalDifference)) {
-    if (horizontalDifference >= SWIPE_THRESHOLD)
-      selectAndScrollSibling("previous");
-    else if (horizontalDifference <= SWIPE_THRESHOLD)
-      selectAndScrollSibling("next");
+    if (horizontalDifference >= threshold)
+      return "left";
+    else if (horizontalDifference <= -threshold)
+      return "right";
   // Vertical or no difference dominates
-  } else if ((e.target as HTMLElement).id.indexOf("modal") === 0) {
-    if (verticalDifference >= SWIPE_THRESHOLD)
-      selectAndScrollSibling("previous");
-    else if (verticalDifference <= -SWIPE_THRESHOLD)
-      selectAndScrollSibling("next");
+  else if (verticalDifference >= threshold)
+    return "up";
+  else if (verticalDifference <= -threshold)
+    return "down";
   }
+  return "";
 };
-comicImg.ontouchstart = modal.ontouchstart;
-comicImg.ontouchend = modal.ontouchend;
+modal.ontouchend = e => {
+  const typ = touchEnd(e);
+  if (typ === "left" || typ === "up")
+    selectAndScrollSibling("previous");
+  else if (typ === "right" || typ === "down")
+    selectAndScrollSibling("next");
+};
+comicImg.ontouchend = e => {
+  const typ = touchEnd(e, 30);
+  if (typ === "left")
+    selectAndScrollSibling("previous");
+  else if (typ === "right")
+    selectAndScrollSibling("next");
+};
+switchTypeLabel.ontouchend = e => {
+  const typ = touchEnd(e, 20);
+  if (typ === "left" || typ === "right")
+    switchNodeType.checked = !switchNodeType.checked;
+};
+switchFilterLabel.ontouchend = e => {
+  const typ = touchEnd(e, 20);
+  if (typ === "left" || typ === "right")
+    switchNodeFilter.checked = !switchNodeFilter.checked;
+};
+switchViewLabel.ontouchend = e => {
+  const typ = touchEnd(e, 0);
+  if (typ === "left" || typ === "right")
+    switchNodeView.checked = !switchNodeView.checked;
+};
+
 let preventClick = false;
 modalNext.onclick = () => {
   preventClick = true;
