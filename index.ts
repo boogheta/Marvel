@@ -2,7 +2,6 @@
 - fix comic remains selected after switching from small to all (or actually make it a feature)
 - fix slide still unclicks sometimes
 - comics actions
-  - fix ordering by issue
   - fix click twice on modal to close after play wtf
 - add search button with list filter
 - filter nodes with authors really missing on small
@@ -439,9 +438,8 @@ function loadComics(comicsData) {
   });
 }
 
-const sortableTitle = s => s.replace(/^(.*) \((\d+)\).*$/, "$2 - $1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0"),
-  //sortByTitle = (a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title), { numeric: true })),
-  sortByTitle = (a, b) => a.title.localeCompare(b.title, { numeric: true }),
+const sortableTitle = s => s.replace(/^(.* \(\d+\)).*$/, "$1 / ") + s.replace(/^.*#(\d+.*)$/, "$1").padStart(8, "0"),
+  sortByTitle = (a, b) => sortableTitle(a.title).localeCompare(sortableTitle(b.title)),
   sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
 sortAlpha.onclick = () => {
   sortAlpha.disabled = true;
