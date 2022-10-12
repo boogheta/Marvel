@@ -63,8 +63,8 @@ html, body {
   border-top: 1px solid #444;
 }
 .action-button {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   margin: 5px;
   background: #eee;
   outline: none;
@@ -81,21 +81,19 @@ html, body {
   position: absolute;
   top: 0;
   right: 0;
+  margin: 4px 3px;
 }
 #comics-bar h3 {
   margin: 0;
+  font-size: 16px;
   padding: 0px 4px 4px 4px;
 }
 #comics-title {
-  font-size: 16px;
   color: var(--marvel-red);
   font-weight: bold;
-  width: calc(100% - 42px);
+  width: calc(100% - 50px);
   padding: 4px 4px 0px 4px!important;
-}
-#comics-subtitle {
-  font-size: 15px;
-  min-height: 12px;
+  min-height: 38px;
 }
 #comics-list {
   display: contents;
@@ -135,6 +133,7 @@ html, body {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: center;
+  margin: 2px 0 0 0;
 }
 #comics-actions button {
   width: 35px;
@@ -246,7 +245,7 @@ h2 {
 }
 .comic-entities ul {
   padding: 0;
-  margin: 0;
+  margin: 0px 0px 10px 0px;
 }
 .comic-entities li {
   list-style-type: none;
@@ -297,7 +296,7 @@ h2 {
 }
 .footer p {
   font-size: 11px;
-  padding: 2px 0px 7px 0px;
+  padding: 4px 0px;
   border-top: 1px solid #444;
   margin: 0;
 }
@@ -408,10 +407,6 @@ h2 {
   margin: 5px 10px;
   display: inline-block;
 }
-#modal button {
-  width: 35px;
-  height: 35px;
-}
 #modal button img {
   z-index: -1;
   width: 24px;
@@ -479,8 +474,8 @@ h2 {
 }
 #suggestions-select {
   display: none;
-  width: 146px;
-  height: 30px;
+  width: 152px;
+  height: 33px;
   border: 2px solid #111;
   border-radius: 5px;
 }
@@ -607,19 +602,14 @@ label {
     font-size: 14px;
     margin-bottom: 20px!important;
   }
-  #comics-title {
+  #comics-bar h3 {
     font-size: 14px;
-    width: calc(100% - 36px);
   }
-  #comics-subtitle {
-    font-size: 14px;
+  #comics-title {
+    padding: 8px 2px 0px 2px!important
   }
   #comics-subtitle-extra {
     display: none!important;
-  }
-  .action-button {
-    width: 26px;
-    height: 26px;
   }
   #comics-list li {
     padding: 2px;
@@ -637,6 +627,11 @@ label {
     height: calc(100% - 33px);
     width: 200px;
     border-radius: 0 6px 6px 0;
+  }
+  #comics-title {
+    width: calc(100% - 36px);
+    min-height: 32px;
+    padding: 4px 4px 0px 4px!important;
   }
   #close-bar {
     margin: 0;
@@ -663,9 +658,6 @@ label {
   .network-choice {
     height: 20px;
   }
-  .footer p {
-    padding: 4px 0px;
-  }
   h1 {
     font-size: 18px;
     padding: 5px;
@@ -679,9 +671,6 @@ label {
   #credits, .asterisk, #title {
     display: none;
   }
-  #comics-title {
-    font-size: 14px;
-  }
   #comics-list li {
     padding: 2px;
   }
@@ -694,6 +683,7 @@ label {
   }
   #suggestions-select {
     width: 132px;
+    height: 28px;
   }
 }
 @media not (pointer: coarse) {

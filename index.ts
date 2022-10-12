@@ -230,8 +230,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
+  comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
   comicsSubtitleList = document.getElementById("comics-subtitle-list") as HTMLElement,
-  comicsSubtitleExtra = document.getElementById("comics-subtitle-extra") as HTMLElement,
   comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
@@ -449,16 +449,16 @@ sortAlpha.onclick = () => {
   sortAlpha.disabled = true;
   sortDate.disabled = false;
   sortComics = "alpha";
-  displayComics(selectedNode);
+  displayComics(selectedNode, false, false);
 };
 sortDate.onclick = () => {
   sortDate.disabled = true;
   sortAlpha.disabled = false;
   sortComics = "date";
-  displayComics(selectedNode);
+  displayComics(selectedNode, false, false);
 };
 
-function displayComics(node, autoReselect = false) {
+function displayComics(node, autoReselect = false, resetTitle = true) {
   const comics = (node === null
     ? allComics
     : (entity === "characters"
@@ -468,28 +468,33 @@ function displayComics(node, autoReselect = false) {
   );
 
   comicsBarView = true;
-  comicsCache.style.display = "none";
   comicsBar.style.opacity = "1";
   comicsBar.style["z-index"] = "1";
+
+  comicsCache.style.display = "none";
+
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
-  comicsTitle.innerHTML = "";
-  if (comics) {
-    comicsTitle.innerHTML = "... comics";
-    if (node) comicsTitle.innerHTML += " listing<br/>"
-      + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+  if (resetTitle) {
+    comicsTitle.innerHTML = "";
+    if (comics) {
+      comicsTitle.innerHTML = "... comics";
+      if (node) comicsTitle.innerHTML += " with<br/>"
+        + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
+    }
+    comicsSubtitleList.innerHTML = "";
   }
+  comicsSubtitle.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
+
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
     loaderList.style.display = "block";
-  comicsSubtitleList.innerHTML = "";
-  comicsSubtitleExtra.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
   setTimeout(() => {
     const filteredList = comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
       .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (node) comicsTitle.innerHTML += " listing<br/>"
+      if (node) comicsTitle.innerHTML += " with<br/>"
         + networks[entity][networkSize].graph.getNodeAttribute(node, "label");
       if (node && entity === "creators")
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
@@ -1274,7 +1279,7 @@ function doResize(fast = false) {
   explanations.style["min-height"] = (freeHeight - 15) + "px";
   nodeDetails.style.height = (freeHeight - 20) + "px";
   nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
-  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-title") - divHeight("comics-subtitle") - divHeight("comic-details") - 11 + "px";
+  comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   const comicsDims = comicsDiv.getBoundingClientRect();
   ["width", "height", "top"].forEach(k =>
     comicsCache.style[k] = comicsDims[k] + "px"
