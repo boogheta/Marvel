@@ -1067,7 +1067,7 @@ function addViewComicsButton(node) {
   document.getElementById('view-comics').onclick = () => displayComics(node);
 }
 
-function clickNode(node, updateURL=true) {
+function clickNode(node, updateURL = true, center = false) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
@@ -1199,7 +1199,7 @@ if (!comicsBarView || ! selectedComic) {
     displayComics(node, true);
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
-  if (!updateURL)
+  if (!updateURL || center)
     setTimeout(() => centerNode(node), 200);
 };
 
@@ -1209,7 +1209,7 @@ document.getElementById("view-node").onclick = () => {
   if (!graph || !renderer)
     return;
   const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
-  clickNode(node);
+  clickNode(node, true, true);
 }
 
 // Fullscreen button
