@@ -153,8 +153,10 @@ html, body {
   height: 24px;
   margin-top: 3px;
 }
-#comics-pause {
-  display: none;
+#comics-actions button.sort-button img {
+  width: 26px;
+  height: 26px;
+  margin: 2px 0px 0px 1px;
 }
 #comics-actions button:disabled {
   opacity: 0.2;
@@ -163,6 +165,9 @@ html, body {
 #comics-actions button.sort-button:disabled {
   opacity: 1;
   background: var(--marvel-red-light);
+}
+#comics-pause {
+  display: none;
 }
 h1 {
   font-size: 26px;
