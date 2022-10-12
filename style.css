@@ -673,8 +673,12 @@ label {
   #credits, .asterisk, #title {
     display: none;
   }
+  #comics {
+    line-height: 18px;
+  }
   #comics-list li {
     padding: 2px;
+    font-size: 14px;
   }
   #controls {
     width: 136px;

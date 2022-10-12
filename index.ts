@@ -1,5 +1,4 @@
 /* TODO:
-- fix scrollcomics on phones outside centered view
 - fix comic remains selected after switching from small to all
 - allow swipe on toggles
 - fix unclick on slide still sometimes
@@ -532,7 +531,12 @@ function scrollComicsList() {
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
     if (!offset) return;
-    comicsDiv.scrollTo(0, offset.offsetTop - (divHeight("comics") / 2));
+    const offsetHeight = offset.getBoundingClientRect().height,
+      listHeight = divHeight("comics");
+    let diff = listHeight < 4 * offsetHeight
+      ? listHeight + offsetHeight
+      : listHeight / 2 + offsetHeight / 2;
+    comicsDiv.scrollTo(0, offset.offsetTop - diff);
   }, 10);
 }
 function selectAndScroll(el) {
