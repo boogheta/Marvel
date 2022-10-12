@@ -679,18 +679,24 @@ comicImg.ontouchend = e => {
 };
 switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
-  if (typ === "left" || typ === "right")
+  if (typ === "left" || typ === "right") {
     switchNodeType.checked = !switchNodeType.checked;
+    setPermalink(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNode);
+  }
 };
 switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
-  if (typ === "left" || typ === "right")
+  if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
+   setPermalink(entity, switchNodeFilter.checked ? "full" : "small", view, selectedNode);
+  }
 };
 switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
-  if (typ === "left" || typ === "right")
+  if (typ === "left" || typ === "right") {
     switchNodeView.checked = !switchNodeView.checked;
+    setPermalink(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNode);
+  }
 };
 
 let preventClick = false;
