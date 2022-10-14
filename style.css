@@ -346,6 +346,11 @@ h2 {
   left: calc(50% + 115px);
   z-index: 10;
   display: none;
+  opacity: 0;
+  -webkit-transition: 0.25s ease-in-out;
+  -moz-transition: 0.25s ease-in-out;
+  -o-transition: 0.25s ease-in-out;
+  transition: 0.25s ease-in-out;
 }
 #loader img {
   padding: 10px;
@@ -353,6 +358,7 @@ h2 {
   width: 50px;
 }
 #loader-comics {
+  z-index: 10;
   display: none;
 }
 #loader-comics img {
@@ -361,7 +367,6 @@ h2 {
   right: 0;
   width: 25px;
   height: 25px;
-  z-index: 10;
   padding: 3px;
 }
 #loader-list {
