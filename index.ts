@@ -1,6 +1,5 @@
 /* TODO:
 - check why Tiomothy Truman has no comic
-- better center loader when comicsbarView open
 - allow switch selected node other entity highlight corresponding
 - add search button with list filter
 - filter nodes with authors really missing on small
@@ -1472,6 +1471,7 @@ function readUrl() {
   doResize(true);
 
   if (reload) {
+    loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
     loader.style.opacity = "1";
     loader.style.display = "block";
 
