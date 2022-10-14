@@ -1,8 +1,9 @@
 /* TODO:
-- fix overflow images on mobiles on reload too many graphs
-- enable loader on switchview
+- check why Tiomothy Truman has no comic
+- better center loader when comicsbarView open
 - zoom on comic before loading comics list
 - on comic view, keep view color setting on selected node
+- fix overflow images on mobiles on reload too many graphs
 - allow switch selected node other entity highlight corresponding
 - add search button with list filter
 - filter nodes with authors really missing on small
@@ -487,8 +488,16 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
     loaderList.style.display = "block";
+  if (autoReselect)
+    selectComic(
+      (selectedComic && comics.filter(c => c.id === selectedComic.id).length
+        ? selectedComic
+        : null),
+      true,
+      autoReselect
+    );
   setTimeout(() => {
-    const filteredList = comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
+    const filteredList = (comics ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle) : [])
       .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
@@ -512,19 +521,12 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       });
       loaderList.style.display = "none";
       if (autoReselect) {
-        selectComic(
-          (selectedComic && comics.filter(c => c.id === selectedComic.id).length
-            ? selectedComic
-            : null),
-          true,
-          autoReselect
-        );
         if (selectedComic) scrollComicsList();
         comicsCache.style.display = "none";
       }
       doResize(true);
-    }, 50);
-  }, 150);
+    }, 200);
+  }, 200);
 }
 function scrollComicsList() {
   setTimeout(() => {
@@ -731,7 +733,7 @@ function unselectComic() {
   selectComic(null, true);
   clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
-    setTimeout(() => centerNode(selectedNode), 5);
+    setTimeout(() => centerNode(selectedNode), 50);
   }
 }
 
@@ -846,7 +848,11 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           }
   );
 
-  setTimeout(() => centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false), 5);
+  setTimeout(() => {
+    centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
+    loader.style.display = "none";
+    loader.style.opacity = "0";
+  }, 50);
 }
 
 function buildNetwork(networkData, ent, siz) {
@@ -1050,7 +1056,7 @@ function renderNetwork() {
   selectSuggestions.onchange = () => {
     const idx = selectSuggestions.selectedIndex;
     clickNode(idx ? allSuggestions[idx - 1].node : null);
-    setTimeout(() => centerNode(selectedNode), 5);
+    setTimeout(() => centerNode(selectedNode), 50);
   };
 
   function fillSuggestions() {
@@ -1079,7 +1085,7 @@ function renderNetwork() {
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
         // Move the camera to center it on the selected node and its neighbors:
-        setTimeout(() => centerNode(selectedNode), 5);
+        setTimeout(() => centerNode(selectedNode), 50);
         suggestions = [];
       } else if (selectedNode) {
         clickNode(null);
@@ -1118,13 +1124,11 @@ function renderNetwork() {
       renderer.setSetting("maxCameraRatio", 1.3);
       if (comicsBarView && selectedComic && camera.ratio <= 25) {
         displayComics(selectedNode, true, true);
-        loader.style.display = "none";
         return clearInterval(initLoop);
       }
       const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
       if (nodeInGraph) {
         clickNode(nodeInGraph, false);
-        loader.style.display = "none";
       } else {
         if (selectedNodeLabel)
           clickNode(null);
@@ -1288,7 +1292,15 @@ function clickNode(node, updateURL = true, center = false) {
   if (comicsBarView && !sameNode)
     displayComics(node, true);
   else if (!updateURL || center)
-    setTimeout(() => centerNode(node), 200);
+    setTimeout(() => {
+      centerNode(node);
+      loader.style.display = "none";
+      loader.style.opacity = "0";
+    }, 50);
+  else {
+    loader.style.display = "none";
+    loader.style.opacity = "0";
+  }
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
 };
@@ -1351,12 +1363,17 @@ function setView(val) {
 function switchView() {
   const graph = networks[entity][networkSize].graph;
   if (!renderer) return;
-  renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
-  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-  if (graph && comicsBarView && selectedComic)
-    selectComic(selectedComic, true, true);
-  else if (graph && selectedNode && graph.hasNode(selectedNode))
-    clickNode(selectedNode);
+  loader.style.display = "block";
+  loader.style.opacity = "0.5";
+
+  setTimeout(() => {
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
+    if (graph && comicsBarView && selectedComic)
+      selectComic(selectedComic, true, true);
+    else if (graph && selectedNode && graph.hasNode(selectedNode))
+      clickNode(selectedNode);
+  }, 10);
 };
 
 // Responsiveness
