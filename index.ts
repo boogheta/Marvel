@@ -1,5 +1,5 @@
 /* TODO:
-- favico network Marvel nodes
+- favico network with Marvel nodes
 - on comic view, keep view color setting on selected node
 - allow switch selected node other entity highlight corresponding
 - comics actions
