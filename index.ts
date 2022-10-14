@@ -1,9 +1,10 @@
 /* TODO:
+- fix overflow images on mobiles on reload too many graphs
+- enable loader on switchview
+- zoom on comic before loading comics list
 - favico network with Marvel nodes
 - on comic view, keep view color setting on selected node
 - allow switch selected node other entity highlight corresponding
-- comics actions
-  - fix click twice on modal to close after play wtf
 - add search button with list filter
 - filter nodes with authors really missing on small
 - allow to remove filter on all comics?
@@ -721,6 +722,7 @@ modal.onclick = () => {
   modal.style.display = "none";
   comicsCache.style.display = "none";
 };
+modalImg.onclick = modal.onclick;
 document.getElementById("close-modal").onclick = modal.onclick;
 
 function unselectComic() {
