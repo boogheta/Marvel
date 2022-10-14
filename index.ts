@@ -1,6 +1,6 @@
 /* TODO:
+- favico network Marvel nodes
 - fix comic remains selected after switching from small to all (or actually make it a feature)
-- fix slide still unclicks sometimes
 - comics actions
   - fix click twice on modal to close after play wtf
 - add search button with list filter
@@ -39,6 +39,7 @@ let entity = "",
   selectedNodeLabel = null,
   renderer = null,
   camera = null,
+  clustersLayer = null,
   sigmaDim = null,
   suggestions = [],
   comicsReady = null,
@@ -47,7 +48,8 @@ let entity = "",
   selectedComic = null,
   networksLoaded = 0,
   playing = null,
-  sortComics = "date";
+  sortComics = "date",
+  resizeClusterLabels = function() {};
 
 const conf = {},
   networks = {},
@@ -288,8 +290,7 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
-  const graph = networks[entity][networkSize].graph,
-    clustersLayer = document.getElementById("clusters-layer");
+  const graph = networks[entity][networkSize].graph;
   comicsCache.style.display = "none";
   comicsBarView = false;
   comicsBar.style.opacity = "0";
@@ -907,7 +908,7 @@ function buildNetwork(networkData, ent, siz) {
     loaderComics.style.display = "none";
 }
 
-function renderNetwork(firstLoad = false) {
+function renderNetwork() {
   const data = networks[entity][networkSize];
 
   // Feed communities size to explanations
@@ -941,14 +942,50 @@ function renderNetwork(firstLoad = false) {
       thumbnail: getNodeProgramImage()
     }
   };
-  renderer = new Sigma(data.graph as any, container, sigmaSettings);
+  if (!renderer) {
+    renderer = new Sigma(data.graph as any, container, sigmaSettings);
 
-  // Render clusters labels layer on top of sigma for creators
-  let clustersLayer = null;
-  if (entity === "creators") {
+    // insert the clusters layer underneath the hovers layer
     clustersLayer = document.createElement("div");
     clustersLayer.id = "clusters-layer";
     clustersLayer.style.display = "none";
+    container.insertBefore(clustersLayer, document.getElementsByClassName("sigma-hovers")[0]);
+
+    // Clusters labels position needs to be updated on each render
+    renderer.on("afterRender", () => {
+      if (entity === "characters") return;
+      resizeClusterLabels();
+    });
+
+    // Add pointer on hovering nodes
+    renderer.on("enterNode", () => container.style.cursor = "pointer");
+    renderer.on("leaveNode", () => container.style.cursor = "default");
+
+    // Handle clicks on nodes
+    renderer.on("clickNode", (event) => clickNode(event.node));
+    renderer.on("clickStage", () => {
+      if (comicsBarView)
+        hideComicsBar();
+      else setSearchQuery();
+    });
+  } else {
+    renderer.setSetting("maxCameraRatio", 100);
+    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
+    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
+
+    renderer.setSetting(
+      "edgeReducer", (edge, attrs) => attrs
+    );
+    renderer.setSetting(
+      "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
+    );
+
+    renderer.setGraph(data.graph);
+  }
+  renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
+
+  // Render clusters labels layer on top of sigma for creators
+  if (entity === "creators") {
     let clusterLabelsDoms = "";
     for (const cluster in data.clusters) {
       const c = data.clusters[cluster];
@@ -957,16 +994,16 @@ function renderNetwork(firstLoad = false) {
       clusterLabelsDoms += '<div id="community-' + c.id + '" class="clusterLabel" style="top: ' + viewportPos.y + 'px; left: ' + viewportPos.x + 'px; color: ' + c.color + '">' + c.label + '</div>';
     }
     clustersLayer.innerHTML = clusterLabelsDoms;
-    // insert the layer underneath the hovers layer
-    container.insertBefore(clustersLayer, document.getElementsByClassName("sigma-hovers")[0]);
 
-    // Clusters labels position needs to be updated on each render
-    renderer.on("afterRender", () => {
+    resizeClusterLabels = () => {
       const sigmaWidth = divWidth("sigma-container");
       clustersLayer.style.width = sigmaWidth + "px";
-      for (const cluster in data.clusters) {
-        const c = data.clusters[cluster];
+
+      const clusters = networks[entity][networkSize].clusters;
+      for (const cluster in clusters) {
+        const c = clusters[cluster];
         const clusterLabel = document.getElementById("community-" + c.id);
+        if (!clusterLabel) return;
         // update position from the viewport
         const viewportPos = renderer.graphToViewport(c as Coordinates);
         if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaWidth - 5 * cluster.length)
@@ -978,7 +1015,7 @@ function renderNetwork(firstLoad = false) {
           clusterLabel.style.left = viewportPos.x + 'px';
         }
       }
-    });
+    };
   }
 
   // Bind zoom manipulation buttons
@@ -992,18 +1029,6 @@ function renderNetwork(firstLoad = false) {
   document.getElementById("zoom-reset").onclick = () => {
     camera.animatedReset({ duration: 600 });
   };
-
-  // Add pointer on hovering nodes
-  renderer.on("enterNode", () => container.style.cursor = "pointer");
-  renderer.on("leaveNode", () => container.style.cursor = "default");
-
-  // Handle clicks on nodes
-  renderer.on("clickNode", (event) => clickNode(event.node));
-  renderer.on("clickStage", () => {
-    if (comicsBarView)
-      hideComicsBar();
-    else setSearchQuery()
-  });
 
   // Prepare list of nodes for search/select suggestions
   const allSuggestions = data.graph.nodes()
@@ -1075,30 +1100,41 @@ function renderNetwork(firstLoad = false) {
 
   // Zoom in graph on init network
   doResize();
+  camera.x = 0.5;
+  camera.y = 0.5;
   camera.ratio = Math.pow(5, 3);
+  camera.angle = 0;
   const initLoop = setInterval(() => {
     loader.style.display = "none";
     document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
     if (!camera) return clearInterval(initLoop);
-    if (camera.ratio <= 5) {
+    if (camera.ratio <= 25) {
       if (entity === "creators")
         clustersLayer.style.display = "block";
       renderer.setSetting("maxCameraRatio", 1.3);
-      if (selectedNodeLabel)
-        clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
-      else camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
+      const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
+      if (nodeInGraph)
+        clickNode(nodeInGraph, false);
+      else {
+        camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
+        setTimeout(() => renderer.setSetting(
+          "nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null })
+        ), 110);
+      }
       selectedNodeLabel = null;
       if (comicsReady === null) {
         comicsReady = false;
-        loaderComics.style.display = "block";
-        fetch("./data/Marvel_comics.csv.gz")
-          .then((res) => res.arrayBuffer())
-          .then((content) => loadComics(content))
+        setTimeout(() => {
+          loaderComics.style.display = "block";
+          fetch("./data/Marvel_comics.csv.gz")
+            .then((res) => res.arrayBuffer())
+            .then((content) => loadComics(content))
+        }, 250);
       }
       return clearInterval(initLoop);
     }
     camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
-  }, firstLoad ? 250 : 0);
+  }, 200);
 }
 
 function addViewComicsButton(node) {
@@ -1194,46 +1230,46 @@ function clickNode(node, updateURL = true, center = false) {
       res.image = null;
     return res;
   }
-if (!comicsBarView || ! selectedComic) {
-  data.graph.setNodeAttribute(node, "highlighted", true);
-  renderer.setSetting(
-    "nodeReducer", (n, attrs) => {
-      return n === node
-        ? { ...attrs,
-            zIndex: 2,
-            size: attrs.size * 1.75,
-            hlcolor: "#ec1d24"
-          }
-        : data.graph.hasEdge(n, node)
-          ? dataConnected(attrs)
+  if (!comicsBarView || ! selectedComic) {
+    data.graph.setNodeAttribute(node, "highlighted", true);
+    renderer.setSetting(
+      "nodeReducer", (n, attrs) => {
+        return n === node
+          ? { ...attrs,
+              zIndex: 2,
+              size: attrs.size * 1.75,
+              hlcolor: "#ec1d24"
+            }
+          : data.graph.hasEdge(n, node)
+            ? dataConnected(attrs)
+            : { ...attrs,
+                zIndex: 0,
+                color: "#2A2A2A",
+                image: null,
+                size: sigmaDim / 350,
+                label: null
+              };
+      }
+    );
+    // Hide unrelated links and highlight, weight and color as the target the node's links
+    renderer.setSetting(
+      "edgeReducer", (edge, attrs) =>
+        data.graph.hasExtremity(edge, node)
+          ? { ...attrs,
+              zIndex: 0,
+              color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
+              size: Math.max(0.5, Math.log(data.graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 300000))
+            }
           : { ...attrs,
               zIndex: 0,
-              color: "#2A2A2A",
-              image: null,
-              size: sigmaDim / 350,
-              label: null
-            };
-    }
-  );
-  // Hide unrelated links and highlight, weight and color as the target the node's links
-  renderer.setSetting(
-    "edgeReducer", (edge, attrs) =>
-      data.graph.hasExtremity(edge, node)
-        ? { ...attrs,
-            zIndex: 0,
-            color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-            size: Math.max(0.5, Math.log(data.graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 300000))
-          }
-        : { ...attrs,
-            zIndex: 0,
-            color: "#FFF",
-            hidden: true
-          }
-  );
-  renderer.setSetting(
-    "labelColor", {attribute: "hlcolor", color: "#CCC"}
-  );
-}
+              color: "#FFF",
+              hidden: true
+            }
+    );
+    renderer.setSetting(
+      "labelColor", {attribute: "hlcolor", color: "#CCC"}
+    );
+  }
   if (comicsBarView && !sameNode)
     displayComics(node, true);
   if (!sameNode)
@@ -1399,12 +1435,11 @@ function readUrl() {
   if (reload) {
     loader.style.display = "block";
 
-    // Kill pre existing network
-    if (renderer) renderer.kill();
-    renderer = null;
-    camera = null;
-    container.innerHTML = '';
     orderSpan.innerHTML = '...';
+    if (clustersLayer) {
+      clustersLayer.innerHTML = "";
+      clustersLayer.style.display = "none";
+    }
 
     // Setup Sidebar default content
     const title = "ap of " + (networkSize === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
@@ -1425,18 +1460,17 @@ function readUrl() {
     setTimeout(() => {
       // If graph already loaded, just render it
       if (networks[entity][networkSize].graph)
-        setTimeout(() => renderNetwork(false), 0);
+        renderNetwork();
     // Otherwise load network file
       else
         fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "small" ? "" : "_full") + ".json.gz")
           .then((res) => res.arrayBuffer())
           .then((content) => {
             buildNetwork(content, entity, networkSize);
-            renderNetwork(!networks[entity]["full"].graph);
+            renderNetwork();
           });
     }, 0);
-  }
-  else if (switchv)
+  } else if (switchv)
     switchView();
   else if (clickn)
     clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
