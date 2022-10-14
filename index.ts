@@ -1,9 +1,5 @@
 /* TODO:
 - check why Tiomothy Truman has no comic
-- better center loader when comicsbarView open
-- zoom on comic before loading comics list
-- on comic view, keep view color setting on selected node
-- fix overflow images on mobiles on reload too many graphs
 - allow switch selected node other entity highlight corresponding
 - add search button with list filter
 - filter nodes with authors really missing on small
@@ -822,7 +818,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       return comic[entity].indexOf(n) !== -1
         ? { ...attrs,
             zIndex: 2,
-            size: attrs.size * 1.75
+            size: attrs.size * 1.75,
+            image: view === "pictures" ? attrs.image : null
           }
         : { ...attrs,
             zIndex: 0,
@@ -988,6 +985,9 @@ function renderNetwork() {
     );
 
     renderer.setGraph(data.graph);
+    renderer.setSetting("nodeProgramClasses", {
+      thumbnail: getNodeProgramImage()
+    });
   }
   renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
 
@@ -1373,6 +1373,10 @@ function switchView() {
       selectComic(selectedComic, true, true);
     else if (graph && selectedNode && graph.hasNode(selectedNode))
       clickNode(selectedNode);
+    else {
+      loader.style.display = "none";
+      loader.style.opacity = "0";
+    }
   }, 10);
 };
 
@@ -1467,6 +1471,7 @@ function readUrl() {
   doResize(true);
 
   if (reload) {
+    loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
     loader.style.opacity = "1";
     loader.style.display = "block";
 
