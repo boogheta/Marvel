@@ -2,7 +2,6 @@
 - fix overflow images on mobiles on reload too many graphs
 - enable loader on switchview
 - zoom on comic before loading comics list
-- favico network with Marvel nodes
 - on comic view, keep view color setting on selected node
 - allow switch selected node other entity highlight corresponding
 - add search button with list filter
