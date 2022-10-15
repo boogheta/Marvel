@@ -1,4 +1,6 @@
 /* TODO:
+- fix problem recenter on click explore all after moved graph
+- fix problem with fullscreen on phones
 - buy domain name ?
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
@@ -962,8 +964,9 @@ function renderNetwork() {
       data.container.insertBefore(data.clustersLayer, document.querySelectorAll("#" + containerId + " .sigma-hovers")[0]);
 
       // Clusters labels position needs to be updated on each render
-      data.renderer.on("afterRender", () => {
-        data.clustersLayer.style.width = document.getElementById(containerId).getBoundingClientRect().width + "px";
+      data.resizeClustersLayer = () => {
+        const sigmaDims = document.getElementById(containerId).getBoundingClientRect();
+        data.clustersLayer.style.width = sigmaDims.width + "px";
 
         for (const cluster in data.clusters) {
           const c = data.clusters[cluster];
@@ -971,7 +974,7 @@ function renderNetwork() {
           if (!clusterLabel) return;
           // update position from the viewport
           const viewportPos = data.renderer.graphToViewport(c as Coordinates);
-          if (viewportPos.x < 5 * cluster.length || viewportPos.x > sigmaDims.width - 5 * cluster.length)
+          if (viewportPos.x < 5 * cluster.length + 7 || viewportPos.x > sigmaDims.width - 5 * cluster.length - 7 || viewportPos.y > sigmaDims.height - 15)
             clusterLabel.style.display = "none";
           else {
             clusterLabel.style.display = "block";
@@ -980,7 +983,8 @@ function renderNetwork() {
             clusterLabel.style.left = viewportPos.x + 'px';
           }
         }
-      });
+      };
+      data.renderer.on("afterRender", data.resizeClustersLayer);
     }
 
     // Add pointer on hovering nodes
@@ -1017,7 +1021,7 @@ function renderNetwork() {
       const c = data.clusters[cluster];
       // adapt the position to viewport coordinates
       const viewportPos = data.renderer.graphToViewport(c as Coordinates);
-      clusterLabelsDoms += '<div id="community-' + networkSize + "-" + c.id + '" class="clusterLabel" style="top: ' + viewportPos.y + 'px; left: ' + viewportPos.x + 'px; color: ' + c.color + '">' + c.label + '</div>';
+      clusterLabelsDoms += '<div id="community-' + networkSize + "-" + c.id + '" class="cluster-label" style="top: ' + viewportPos.y + 'px; left: ' + viewportPos.x + 'px; color: ' + c.color + '">' + c.label + '</div>';
       data.clustersLayer.innerHTML = clusterLabelsDoms;
     }
 
@@ -1400,6 +1404,8 @@ function doResize(fast = false) {
     data.graph.forEachNode((node, {stories}) =>
       data.graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
     );
+    if (data.resizeClustersLayer)
+      data.resizeClustersLayer();
   }
   if (!fast) resizing = false;
 }
