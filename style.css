@@ -171,6 +171,11 @@ html, body {
 #comics-pause {
   display: none;
 }
+.logo {
+  float: left;
+  padding: 3px 5px;
+  height: 44px;
+}
 h1 {
   font-size: 26px;
   background-color: var(--marvel-red);
@@ -592,9 +597,12 @@ label {
   #loader {
     left: calc(50% + 65px);
   }
+  .logo {
+    display: none;
+  }
   h1 {
     font-size: 18px;
-    padding: 5px;
+    padding: 5px 0;
   }
   .choices {
     margin: 5px 0 10px 0;
@@ -668,9 +676,12 @@ label {
   .network-choice {
     height: 20px;
   }
+  .logo {
+    display: none;
+  }
   h1 {
     font-size: 18px;
-    padding: 5px;
+    padding: 5px 0;
   }
   .choices {
     margin: 5px 0 10px 0;
@@ -759,8 +770,9 @@ label {
 }
 #rotate-modal h1 {
   font-size: 30px;
+  padding: 10px;
 }
-#rotate-modal img {
+#rotate-modal-img {
   position: relative;
   top: 25%;
   left: 0;
@@ -831,6 +843,11 @@ label {
     -moz-transition: 0.1s linear;
     -o-transition: 0.1s linear;
     transition: 0.1s linear;
+  }
+  .logo {
+    display: block;
+    padding: 5px;
+    height: 44px;
   }
   #sidebar, #controls, #comics-bar {
     display: none!important;
