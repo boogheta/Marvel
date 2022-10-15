@@ -1,6 +1,6 @@
 /* TODO:
 - fix problem recenter on click explore all after moved graph
-- fix problem with fullscreen on phones
+- FIXED? fix problem with fullscreen on phones
 - buy domain name ?
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
@@ -1317,7 +1317,8 @@ document.getElementById("view-node").onclick = () => {
 
 // Fullscreen button
 const win = document.documentElement as any,
-  fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement;
+  fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement,
+  regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
 fullScreenBtn.onclick = () => {
   if (win.requestFullscreen) {
     win.requestFullscreen();
@@ -1326,10 +1327,11 @@ fullScreenBtn.onclick = () => {
   } else if (win.msRequestFullscreen) { /* IE11 */
     win.msRequestFullscreen();
   }
+  fullScreenBtn.style.display = "none";
+  regScreenBtn.style.display = "block";
 };
 
 // Exit Fullscreen button
-const regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
 regScreenBtn.onclick = () => {
   if ((document as any).exitFullscreen) {
     (document as any).exitFullscreen();
@@ -1338,6 +1340,8 @@ regScreenBtn.onclick = () => {
   } else if ((document as any).msExitFullscreen) { /* IE11 */
     (document as any).msExitFullscreen();
   }
+  regScreenBtn.style.display = "none";
+  fullScreenBtn.style.display = "block";
 };
 
 // Network switch buttons
