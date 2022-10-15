@@ -32,7 +32,7 @@ html, body {
   position: absolute;
   bottom: 0;
   width: 298px;
-  height: 100%;
+  height: calc(100% - 2px);
   margin: 0;
   overflow: hidden;
   font-family: monospace;
@@ -313,14 +313,14 @@ h2 {
 #credits-small {
   display: none;
 }
-#sigma-container {
+.sigma-container {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
   background-color: black;
 }
-#sigma-container canvas {
+.sigma-container > canvas {
   display: none;
 }
 #clusters-layer {
