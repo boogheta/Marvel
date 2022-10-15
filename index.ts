@@ -1,6 +1,5 @@
 /* TODO:
 - buy domain name ?
-- FIXED? fix smartphone height too big scrollable
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
 - allow switch selected node other entity highlight corresponding
