@@ -809,6 +809,9 @@ label {
     -o-transition: 0.5s linear;
     transition: 0.5s linear;
   }
+  #rotate-modal p, #rotate-modal-img {
+    height: 0;
+  }
 }
 @media (orientation: landscape) and (max-height: 600px) {
   #modal-img {
