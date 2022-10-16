@@ -173,14 +173,14 @@ html, body {
 }
 .logo {
   float: left;
-  padding: 3px 0 0 3px;
-  height: 44px;
+  padding: 3px 0 0 4px;
+  height: 46px;
 }
 h1 {
-  font-size: 24px;
+  font-size: 28px;
   background-color: var(--marvel-red);
   color: white;
-  padding: 11px 0px;
+  padding: 10px 0px;
   margin: 0px 0px 10px 0px;
 }
 h2 {
@@ -191,13 +191,21 @@ h2 {
 #explanations {
   clear: both;
   display: none;
-  margin-top: 5px;
-  padding: 5px 3px 0px 3px;
+  padding: 0;
+  margin-top: 10px;
   overflow-y: auto;
   line-height: 13px;
+  opacity: 0;
+  -webkit-transition: 0.25s ease-in-out;
+  -moz-transition: 0.25s ease-in-out;
+  -o-transition: 0.25s ease-in-out;
+  transition: 0.25s ease-in-out;
 }
 #explanations p {
-  margin: 7px;
+  margin: 7px 10px;
+}
+#explanations p:first-of-type {
+  margin-top: 0;
 }
 #order {
   min-width: 20px;
@@ -207,21 +215,23 @@ h2 {
   white-space: nowrap;
 }
 #explanations p.characters-details {
-  margin: 0;
+  margin: -5px 10px;
+}
+ #explanations p.creators-details {
+  margin: 0 10px;
 }
 #node-details {
   clear: both;
-  margin-top: 4px;
-  padding: 5px;
+  padding: 0;
+  margin-top: 10px;
   text-align: center;
   overflow-y: auto;
   max-height: 60%;
   border-top: 1px solid #444;
   line-height: 13px;
 }
-#node-label {
-  margin: 7px 0px;
-  width: 100%;
+#node-label, #node-extra {
+  margin: 7px 10px;
 }
 #node-img, #comic-img {
   max-width: 75%;
@@ -273,8 +283,7 @@ h2 {
   cursor: pointer;
   font-weight: bold;
   font-size: 16px;
-  margin-top: 20px!important;
-  margin-bottom: 15px!important;
+  margin: 20px 0 20px 0!important;
   text-transform: uppercase;
   line-height: 20px;
 }
@@ -309,7 +318,7 @@ h2 {
   display: none;
 }
 #title {
-  padding-bottom: 5px;
+  margin-top: 12px;
   color: grey;
 }
 #credits, #title {
@@ -502,7 +511,7 @@ h2 {
   margin-top: 0;
 }
 .choices {
-  margin: 15px 0 10px 0;
+  margin: 15px 0 0px 0;
 }
 .network-choice {
   display: flex;
@@ -582,7 +591,7 @@ label {
     right: 0;
   }
 }
-@media (min-width: 1000px) {
+@media (min-width: 1001px) {
   #controls {
     left: 310px;
   }
@@ -602,10 +611,10 @@ label {
   }
   h1 {
     font-size: 18px;
-    padding: 5px 0;
+    padding: 10px 0;
   }
   .choices {
-    margin: 5px 0 10px 0;
+    margin: 5px 0 0px 0;
   }
   label {
     width: 180px;
@@ -618,7 +627,6 @@ label {
   }
   #view-comics, #view-node, #view-all-comics {
     font-size: 14px;
-    margin-bottom: 20px!important;
   }
   #comics-bar h3 {
     font-size: 14px;
@@ -681,10 +689,10 @@ label {
   }
   h1 {
     font-size: 18px;
-    padding: 5px 0;
+    padding: 10px 0;
   }
   .choices {
-    margin: 5px 0 10px 0;
+    margin: 5px 0 0px 0;
   }
   #credits-small {
     display: block;
