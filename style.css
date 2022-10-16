@@ -173,14 +173,14 @@ html, body {
 }
 .logo {
   float: left;
-  padding: 3px 5px;
+  padding: 3px 0 0 3px;
   height: 44px;
 }
 h1 {
-  font-size: 26px;
+  font-size: 24px;
   background-color: var(--marvel-red);
   color: white;
-  padding: 10px 0px;
+  padding: 11px 0px;
   margin: 0px 0px 10px 0px;
 }
 h2 {

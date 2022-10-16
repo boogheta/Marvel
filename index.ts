@@ -1,6 +1,7 @@
 /* TODO:
+- add test webgl and disclaimer if missing
+- style comics loader weird on phone?
 - tap screen does not work on chrome tablet?
-- buy domain name ?
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
 - allow switch selected node other entity highlight corresponding
@@ -1497,7 +1498,7 @@ function readUrl() {
 
     // Setup Sidebar default content
     const title = "ap of " + (networkSize === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
-    document.querySelector("title").innerHTML = "MARVEL networks &mdash; M" + title;
+    document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title;
     document.getElementById("title").innerHTML = "This is a m" + title;
 
     if (entity === "creators")
