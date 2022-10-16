@@ -909,6 +909,8 @@ function buildNetwork(networkData, ent, siz) {
   networksLoaded += 1;
   if (networksLoaded === 4)
     loaderComics.style.display = "none";
+  else if (comicsReady)
+    preloadOtherNetworks();
 }
 
 function renderNetwork() {
@@ -1512,13 +1514,15 @@ function readUrl() {
       if (networks[entity][networkSize].graph)
         renderNetwork();
     // Otherwise load network file
-      else
+      else {
+        networks[entity][networkSize].loading = true;
         fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "small" ? "" : "_full") + ".json.gz")
           .then((res) => res.arrayBuffer())
           .then((content) => {
             buildNetwork(content, entity, networkSize);
             setTimeout(renderNetwork, 10);
           });
+      }
     }, 10);
   } else if (switchv)
     switchView();
@@ -1530,9 +1534,10 @@ window.onhashchange = readUrl;
 function preloadOtherNetworks() {
   ["creators", "characters"].forEach(e =>
     ["small", "full"].forEach(s => {
-      if (!networks[e][s].graph) {
+      if (!networks[e][s].loading) {
+        networks[e][s].loading = true;
         loaderComics.style.display = "block";
-        fetch("./data/Marvel_" + e + "_by_stories" + (s === "small" ? "" : "_full") + ".json.gz")
+        return fetch("./data/Marvel_" + e + "_by_stories" + (s === "small" ? "" : "_full") + ".json.gz")
           .then(res => res.arrayBuffer())
           .then(content => buildNetwork(content, e, s));
       }
