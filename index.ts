@@ -1,6 +1,5 @@
 /* TODO:
-- fix problem recenter on click explore all after moved graph
-- FIXED? fix problem with fullscreen on phones
+- try to go back to previous code to check phones ram overflow with images
 - buy domain name ?
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
@@ -451,7 +450,7 @@ sortDate.onclick = () => {
 };
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
-  const graph = networks[entity][networkSize].graph;
+  const data = networks[entity][networkSize];
   const comics = (node === null
     ? allComics
     : (entity === "characters"
@@ -459,6 +458,8 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       : creatorsComics
     )[node]
   );
+  if (!node)
+    data.camera.animatedReset({ duration: 0 });
 
   comicsBarView = true;
   comicsBar.style.opacity = "1";
@@ -466,7 +467,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
   comicsCache.style.display = "none";
 
-  const labelNode = (node && graph.hasNode(node) ? graph.getNodeAttribute(node, "label") : "");
+  const labelNode = (node && data.graph.hasNode(node) ? data.graph.getNodeAttribute(node, "label") : "");
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   if (resetTitle) {
@@ -1035,7 +1036,7 @@ function renderNetwork() {
     data.camera.animatedUnzoom({ duration: 600 });
   };
   document.getElementById("zoom-reset").onclick = () => {
-    data.camera.animatedReset({ duration: 600 });
+    data.camera.animatedReset({ duration: 50 });
   };
 
   // Prepare list of nodes for search/select suggestions
@@ -1320,6 +1321,8 @@ const win = document.documentElement as any,
   fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement,
   regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
 fullScreenBtn.onclick = () => {
+  const data = networks[entity][networkSize];
+  const cameraState = {...data.camera};
   if (win.requestFullscreen) {
     win.requestFullscreen();
   } else if (win.webkitRequestFullscreen) { /* Safari */
@@ -1327,6 +1330,7 @@ fullScreenBtn.onclick = () => {
   } else if (win.msRequestFullscreen) { /* IE11 */
     win.msRequestFullscreen();
   }
+  data.camera.animate(cameraState, {duration: 100});
   fullScreenBtn.style.display = "none";
   regScreenBtn.style.display = "block";
 };
