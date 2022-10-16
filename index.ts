@@ -1,5 +1,5 @@
 /* TODO:
-- try to go back to previous code to check phones ram overflow with images
+- tap screen does not work on chrome tablet?
 - buy domain name ?
 - check why Tiomothy Truman has no comic
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
