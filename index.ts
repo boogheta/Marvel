@@ -1,4 +1,5 @@
 /* TODO:
+- update screenshots
 - add test webgl and disclaimer if missing
 - style comics loader weird on phone?
 - tap screen does not work on chrome tablet?
@@ -6,6 +7,7 @@
 - check why zoom on Spiderman 1602 only zooms on regular spiderman
 - allow switch selected node other entity highlight corresponding
 - add search button with list filter
+- plot time evolution of node?
 - filter nodes with authors really missing on small
 - allow to remove filter on all comics?
 - add link actions on creators/characters of comic
@@ -281,7 +283,6 @@ function defaultSidebar() {
   nodeDetails.scrollTo(0, 0);
   modal.style.display = "none";
   modalImg.src = "";
-  doResize(true);
 }
 
 function hideComicsBar() {
@@ -1356,7 +1357,7 @@ function setEntity(val) {
   entity = val;
   entitySpans.forEach(span => span.innerHTML = val);
   charactersDetailsSpans.forEach(span => span.style.display = (val === "characters" ? "inline-block" : "none"));
-  creatorsDetailsSpans.forEach(span => span.style.display = (val === "creators" ? "inline" : "none"));
+  creatorsDetailsSpans.forEach(span => span.style.display = (val === "creators" ? "inline-block" : "none"));
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + val];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
 }
@@ -1395,13 +1396,15 @@ function switchView() {
 // Responsiveness
 let resizing = undefined;
 function doResize(fast = false) {
+console.log("now");
   if (!fast) resizing = true;
   const data = entity ? networks[entity][networkSize] : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small");
-  explanations.style.height = (freeHeight - 15) + "px";
-  explanations.style["min-height"] = (freeHeight - 15) + "px";
-  nodeDetails.style.height = (freeHeight - 20) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 20) + "px";
+    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small") - 10;
+  explanations.style.opacity = "1"
+  explanations.style.height = freeHeight + "px";
+  explanations.style["min-height"] = freeHeight + "px";
+  nodeDetails.style.height = freeHeight + "px";
+  nodeDetails.style["min-height"] = freeHeight + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   const comicsDims = comicsDiv.getBoundingClientRect();
   ["width", "height", "top"].forEach(k =>
@@ -1429,10 +1432,12 @@ window.onresize = resize;
 
 switchNodeType.onchange = (event) => {
   const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
   setPermalink(target.checked ? "creators" : "characters", networkSize, view, selectedNode);
 };
 switchNodeFilter.onchange = (event) => {
   const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
   setPermalink(entity, target.checked ? "full" : "small", view, selectedNode);
 };
 switchNodeView.onchange = (event) => {
@@ -1483,8 +1488,6 @@ function readUrl() {
     switchNodeView.checked = true;
   setView(args[2]);
 
-  doResize(true);
-
   if (reload) {
     loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
     loader.style.opacity = "1";
@@ -1497,9 +1500,9 @@ function readUrl() {
     }
 
     // Setup Sidebar default content
-    const title = "ap of " + (networkSize === "small" ? "the main" : "most") + " Marvel " + entity + " featured together within same stories";
+    const title = "ap of Marvel's " + (networkSize === "small" ? "main" : "most") + " " + entity + " featured together within same stories";
     document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title;
-    document.getElementById("title").innerHTML = "This is a m" + title;
+    document.getElementById("title").innerHTML = "Here is a m" + title;
 
     if (entity === "creators")
       Object.keys(creatorsRoles).forEach(k => {
