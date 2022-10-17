@@ -1,11 +1,13 @@
-## MARVEL networks
+## MARVEL graphs
 
 An app that displays maps of Marvel characters or creators where each one is positionned close to those he/she is most linked with from within [Marvel's API](https://developer.marvel.com/).
 
-Visit it here: [https://boogheta.github.io/Marvel/](https://boogheta.github.io/Marvel/)
+Visit it here: [https://marvel-graphs.net/](https://www.marvel-graphs.net/)
 
-<img src="https://boogheta.github.io/Marvel/images/screenshot.png" alt="screenshot">
-<img src="https://boogheta.github.io/Marvel/images/appshot2.png" alt="appshot">
+<p align="center">
+  <img src="https://github.com/boogheta/Marvel/blob/main/images/screenshot.png" alt="screenshot">
+  <img src="https://github.com/boogheta/Marvel/blob/main/images/appshot2.png" alt="appshot">
+</p>
 
 ### Installation
 
