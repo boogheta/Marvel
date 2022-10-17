@@ -2,6 +2,7 @@
 - mobiles bugs
   - style comics loader weird on phone
   - tap screen does not work on chrome tablet
+  - test centernode after rotate with no framedgraph
 - allow to switch from selected node to other entity and highlight corresponding
 - add link actions on creators/characters of comic
 - add search button with list filter
@@ -11,6 +12,7 @@
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
   - check why zoom on Spiderman 1602 only zooms on regular spiderman
+  - test new spatialization graphology
  => scraper comics as counter-truth? :
   - select good creators fields
   - rebuild creators network from cleaned comics instead
