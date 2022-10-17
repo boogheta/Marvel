@@ -22,7 +22,6 @@
     <meta name="twitter:image" content="https://www.marvel-graphs.net/images/screenshot.png">
   </head>
   <body>
-    <noscript><strong>The MARVEL-graphs app requires JavaScript. Please enable it to continue.</strong></noscript>
     <div id="rotate-modal">
       <img class="logo" src="./images/logo.png"/>
       <h1>MARVEL graphs</h1>
@@ -77,7 +76,7 @@
         <p>The size of each node reflects how often the <span class="entity"></span> have been accounted as participating to stories within Marvel API's data.</p>
         <p class="characters-details">Colors indicate which <i>family</i><sup class="asterisk">*</sup> each character belongs to (<span id="clusters-legend"></span>, etc.).</p>
         <p class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</p>
-        <p>Marvel API's data is not always perfect and some stories miss information, although it is quite rich and results look good enough!</p>
+        <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
         <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p>
         <p id="view-node"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
         <p id="view-all-comics"><span>Explore all comics</span></p>
@@ -96,6 +95,10 @@
         <p>data from <a href="https://developer.marvel.com/" target="_blank">MARVEL's API</a> ©2022</p>
         <p>by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a></p>
       </div>
+    </div>
+    <noscript id="noscript"><p>This app runs with JavaScript.<br/>Please enable it to continue.</p></noscript>
+    <div id="webgl-disclaimer" class="sigma-container">
+      <p>Sorry, this app only works on modern browsers with WebGL capacities :(</p>
     </div>
     <div id="sigma-characters-small" class="sigma-container"></div>
     <div id="sigma-characters-full" class="sigma-container"></div>
