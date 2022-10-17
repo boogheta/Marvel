@@ -1,6 +1,5 @@
 /* TODO:
 - mobiles bugs
-  - style comics loader weird on phone
   - tap screen does not work on chrome tablet
   - test centernode after rotate with no framedgraph
 - allow to switch from selected node to other entity and highlight corresponding
@@ -1161,8 +1160,8 @@ function renderNetwork() {
       selectedNodeLabel = null;
       if (comicsReady === null) {
         comicsReady = false;
+        loaderComics.style.display = "block";
         setTimeout(() => {
-          loaderComics.style.display = "block";
           fetch("./data/Marvel_comics.csv.gz")
             .then((res) => res.arrayBuffer())
             .then((content) => loadComics(content))
