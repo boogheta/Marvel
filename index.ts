@@ -1,26 +1,27 @@
 /* TODO:
-- smooth rotate arrows
-- update screenshots
-- auto data updates
-- style comics loader weird on phone?
-- tap screen does not work on chrome tablet?
-- check why Tiomothy Truman has no comic
-- check why zoom on Spiderman 1602 only zooms on regular spiderman
-- allow switch selected node other entity highlight corresponding
-- add search button with list filter
-- plot time evolution of node?
-- filter nodes with authors really missing on small
-- allow to remove filter on all comics?
+- mobiles bugs
+  - style comics loader weird on phone
+  - tap screen does not work on chrome tablet
+- allow to switch from selected node to other entity and highlight corresponding
 - add link actions on creators/characters of comic
-- check bad data marvel http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
+- add search button with list filter
+  - allow to remove filter on all comics?
+- filter nodes with authors really missing on small?
+- check bad data marvel :
+  - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
+  - check why Tiomothy Truman has no comic
+  - check why zoom on Spiderman 1602 only zooms on regular spiderman
  => scraper comics as counter-truth? :
   - select good creators fields
   - rebuild creators network from cleaned comics instead
   - filter imprint marvel
   - add cover artist in comics list, not in links used
-- one more check with takoyaki on authors/characters labels + readjust louvain after
+ => one more check with takoyaki on authors/characters labels + readjust louvain after
+- update screenshots
 - bind url with selected comic?
+- auto data updates
 IDEAS:
+- plot time evolution of node?
 - install app button?
 - test bipartite network between authors and characters filtered by category of author
 */
