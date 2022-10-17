@@ -370,34 +370,28 @@ h2 {
   border-radius: 14px;
   text-align: center;
 }
-#loader {
+.loader {
   position: absolute;
-  top: calc(50% - 35px);
-  left: calc(50% + 115px);
   z-index: 10;
   display: none;
-  opacity: 0;
+  opacity: 0.85;
   -webkit-transition: 0.25s ease-in-out;
   -moz-transition: 0.25s ease-in-out;
   -o-transition: 0.25s ease-in-out;
   transition: 0.25s ease-in-out;
 }
-#loader img {
-  padding: 10px;
-  opacity: 0.85;
-  width: 50px;
+.loader img {
+  width: 45px;
+}
+#loader {
+  top: calc(50% - 25px);
+  left: calc(50% + 125px);
+  opacity: 0;
 }
 #loader-comics {
-  z-index: 10;
-  display: none;
-}
-#loader-comics img {
-  position: absolute;
   bottom: 0;
   right: 0;
-  width: 25px;
-  height: 25px;
-  padding: 3px;
+  padding: 0 5px;
 }
 #loader-list {
   display: none;
@@ -533,7 +527,7 @@ h2 {
   display: flex;
   justify-content: center;
   position:relative;
-  width: 100%; 
+  width: 100%;
   margin-bottom: 10px;
   height: 28px;
 }
@@ -620,7 +614,7 @@ label {
     top: 5px;
   }
   #loader {
-    left: calc(50% + 65px);
+    left: calc(50% + 75px);
   }
   .logo {
     display: none;
@@ -745,6 +739,9 @@ label {
   .mobiles-details {
     display: none;
   }
+  #loader-comics img {
+    width: 25px;
+  }
 }
 @media (pointer: coarse) {
   input, textarea, button, select, a, label, div, p {
@@ -765,21 +762,12 @@ label {
   .mobiles-details {
     display: inline;
   }
-  #loader-comics {
-    position: fixed;
-    right: 0;
-    display: none;
-  }
-  #loader-comics img {
-    padding: 10px;
-    width: 35px;
-    height: 35px;
-  }
 }
-@media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
+@media (pointer: coarse) and (max-height: 400px) and (max-width: 700px) {
   #loader-comics {
-    left: 253px;
+    left: 203px;
     right: unset;
+    padding: 0;
   }
 }
 #rotate-modal {
@@ -878,6 +866,9 @@ label {
   }
   #sidebar, #controls, #comics-bar {
     display: none!important;
+  }
+  #explanations, #node-details {
+    opacity: 0!important;
   }
   #loader {
     top: 20%;
