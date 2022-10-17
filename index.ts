@@ -1,6 +1,7 @@
 /* TODO:
+- smooth rotate arrows
 - update screenshots
-- add test webgl and disclaimer if missing
+- auto data updates
 - style comics loader weird on phone?
 - tap screen does not work on chrome tablet?
 - check why Tiomothy Truman has no comic
@@ -197,6 +198,16 @@ function formatMonth(dat) {
   const d = new Date(dat);
   return monthNames[new Date(dat).getMonth()] + " " + dat.slice(0, 4);
 }
+
+function webGLSupport() {
+  try {
+   var canvas = document.createElement('canvas');
+   return !!window.WebGLRenderingContext &&
+     (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+  } catch(e) {
+    return false;
+  }
+};
 
 const loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
@@ -936,7 +947,7 @@ function renderNetwork() {
 
   // Instantiate sigma:
   let sigmaSettings = {
-    minCameraRatio: 0.07,
+    minCameraRatio: (entity === "creators" && networkSize === "full" ? 0.035 : 0.07),
     maxCameraRatio: 100,
     defaultEdgeColor: '#2A2A2A',
     labelWeight: 'bold',
@@ -1487,6 +1498,11 @@ function readUrl() {
   if (args[2] === "colors")
     switchNodeView.checked = true;
   setView(args[2]);
+
+  if (!webGLSupport()) {
+    document.getElementById("webgl-disclaimer").style.display = "block";
+    return;
+  }
 
   if (reload) {
     loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
