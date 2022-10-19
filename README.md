@@ -5,8 +5,8 @@ An app that displays maps of Marvel characters or creators where each one is pos
 Visit it here: [https://marvel-graphs.net/](https://www.marvel-graphs.net/)
 
 <p align="center">
-  <img src="https://github.com/boogheta/Marvel/blob/main/images/screenshot.png" alt="screenshot">
-  <img src="https://github.com/boogheta/Marvel/blob/main/images/appshot2.png" alt="appshot">
+  <img src="https://github.com/boogheta/Marvel/raw/master/images/screenshot.png" alt="screenshot">
+  <img src="https://github.com/boogheta/Marvel/raw/master/images/appshot2.png" alt="appshot">
 </p>
 
 ### Installation

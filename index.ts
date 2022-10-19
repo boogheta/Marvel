@@ -1,7 +1,10 @@
 /* TODO:
+- try to set type=circle instead of image=null ?
+- try edges.fast ?
 - mobiles bugs
-  - tap screen does not work on chrome tablet
+  - comicslist min height
   - test centernode after rotate with no framedgraph
+  - auto fullscreen?
 - allow to switch from selected node to other entity and highlight corresponding
 - add link actions on creators/characters of comic
 - add search button with list filter
@@ -465,7 +468,7 @@ sortDate.onclick = () => {
 };
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
-  const data = networks[entity][networkSize];
+  const graph = networks[entity][networkSize].graph;
   const comics = (node === null
     ? allComics
     : (entity === "characters"
@@ -473,8 +476,6 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       : creatorsComics
     )[node]
   );
-  if (!node)
-    data.camera.animatedReset({ duration: 0 });
 
   comicsBarView = true;
   comicsBar.style.opacity = "1";
@@ -482,7 +483,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
   comicsCache.style.display = "none";
 
-  const labelNode = (node && data.graph.hasNode(node) ? data.graph.getNodeAttribute(node, "label") : "");
+  const labelNode = (node && graph.hasNode(node) ? graph.getNodeAttribute(node, "label") : "");
   if (entity === "creators")
     document.getElementById("clusters-layer").style.display = "none";
   if (resetTitle) {
@@ -1338,8 +1339,6 @@ const win = document.documentElement as any,
   fullScreenBtn = document.getElementById("fullscreen") as HTMLButtonElement,
   regScreenBtn = document.getElementById("regscreen") as HTMLButtonElement;
 fullScreenBtn.onclick = () => {
-  const data = networks[entity][networkSize];
-  const cameraState = {...data.camera};
   if (win.requestFullscreen) {
     win.requestFullscreen();
   } else if (win.webkitRequestFullscreen) { /* Safari */
@@ -1347,7 +1346,6 @@ fullScreenBtn.onclick = () => {
   } else if (win.msRequestFullscreen) { /* IE11 */
     win.msRequestFullscreen();
   }
-  data.camera.animate(cameraState, {duration: 100});
   fullScreenBtn.style.display = "none";
   regScreenBtn.style.display = "block";
 };
