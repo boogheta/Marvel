@@ -1009,9 +1009,6 @@ function renderNetwork() {
     );
 
     renderer.setGraph(data.graph);
-   /* renderer.setSetting("nodeProgramClasses", {
-      thumbnail: getNodeProgramImage()
-    });*/
   }
   renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
 
@@ -1058,7 +1055,7 @@ function renderNetwork() {
     camera.animatedUnzoom({ duration: 600 });
   };
   document.getElementById("zoom-reset").onclick = () => {
-    camera.animatedReset({ duration: 50 });
+    camera.animatedReset({ duration: 250 });
   };
 
   // Prepare list of nodes for search/select suggestions
@@ -1163,11 +1160,11 @@ function renderNetwork() {
       else {
         if (selectedNodeLabel)
           clickNode(null);
-        camera.animatedReset({ duration: 50 });
+        camera.animatedReset({ duration: 100 });
         setTimeout(() => {
           renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
           loader.style.display = "none";
-        }, 50);
+        }, 100);
       }
       data.rendered = true;
       selectedNodeLabel = null;
