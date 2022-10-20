@@ -1,6 +1,6 @@
 /* TODO:
 - try to set type=circle instead of image=null ?
-- try edges.fast ?
+- if no node on comic remove reducers
 - mobiles bugs
   - comicslist min height
   - test centernode after rotate with no framedgraph
@@ -48,6 +48,10 @@ let entity = "",
   selectedNode = null,
   selectedNodeLabel = null,
   sigmaDim = null,
+  renderer = null,
+  camera = null,
+  clustersLayer = null,
+  resizeClusterLabels = function() {},
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
@@ -214,7 +218,8 @@ function webGLSupport() {
   }
 };
 
-const loader = document.getElementById("loader") as HTMLElement,
+const container = document.getElementById("sigma-container") as HTMLElement,
+  loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
@@ -282,8 +287,9 @@ function divHeight(divId) {
 function setPermalink(ent, siz, vie, sel) {
   const graph = networks[entity][networkSize].graph,
     selection = ent === entity && sel && graph && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
-  if ((ent !== entity || siz !== networkSize) && graph && selectedNode) {
-    graph.setNodeAttribute(selectedNode, "highlighted", false);
+  if ((ent !== entity || siz !== networkSize) && selectedNode) {
+    if (graph && graph.hasNode(selectedNode))
+      graph.setNodeAttribute(selectedNode, "highlighted", false);
     if (ent !== entity) {
       selectedNode = null;
       selectedNodeLabel = null;
@@ -302,7 +308,6 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
-  const clustersLayer = networks[entity][networkSize].clustersLayer;
   comicsCache.style.display = "none";
   comicsBarView = false;
   comicsBar.style.opacity = "0";
@@ -310,7 +315,7 @@ function hideComicsBar() {
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
   unselectComic();
-  if (clustersLayer)
+  if (entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
 }
 document.getElementById("close-bar").onclick = hideComicsBar;
@@ -324,15 +329,15 @@ function computeNodeSize(node, stories) {
 
 /*function rotatePosition(pos) {
   return {
-    x: pos.x * Math.cos(-data.camera.angle) - pos.y * Math.sin(-data.camera.angle),
-    y: pos.y * Math.cos(-data.camera.angle) + pos.x * Math.sin(-data.camera.angle)
+    x: pos.x * Math.cos(-camera.angle) - pos.y * Math.sin(-camera.angle),
+    y: pos.y * Math.cos(-camera.angle) + pos.x * Math.sin(-camera.angle)
   };
 }*/
 
 function centerNode(node, neighbors = null, force = true) {
   const data = networks[entity][networkSize];
 
-  if (!data.camera || (!node && !neighbors)) return;
+  if (!camera || (!node && !neighbors)) return;
   if (!neighbors)
     neighbors = data.graph.neighbors(node);
   if (node && neighbors.indexOf(node) === -1)
@@ -341,7 +346,7 @@ function centerNode(node, neighbors = null, force = true) {
   const recenter = function(duration) {
     let x0, x1, y0, y1;
     neighbors.forEach(n => {
-        const attrs = data.renderer.getNodeDisplayData(n);
+        const attrs = renderer.getNodeDisplayData(n);
         if (!x0 || x0 > attrs.x) x0 = attrs.x;
         if (!x1 || x1 < attrs.x) x1 = attrs.x;
         if (!y0 || y0 > attrs.y) y0 = attrs.y;
@@ -350,21 +355,21 @@ function centerNode(node, neighbors = null, force = true) {
     const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
       ? divWidth("comics-bar")
       : 0,
-      leftCorner = data.renderer.framedGraphToViewport({x: x0, y: y0}),
-      rightCorner = data.renderer.framedGraphToViewport({x: x1, y: y1}),
+      leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
+      rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
       viewPortPosition = {
         x: (leftCorner.x + rightCorner.x) / 2 ,
         y: (leftCorner.y + rightCorner.y) / 2
       },
-      sigmaDims = data.container.getBoundingClientRect();
+      sigmaDims = container.getBoundingClientRect();
 
     // Handle comicsbar hiding part of the graph
     sigmaDims.width -= shift;
     // Evaluate required zoom ratio
     let ratio = Math.min(
-      35 / data.camera.ratio,
+      35 / camera.ratio,
       Math.max(
-        0.21 / data.camera.ratio,
+        0.21 / camera.ratio,
         1.3 / Math.min(
           sigmaDims.width / (rightCorner.x - leftCorner.x),
           sigmaDims.height / (leftCorner.y - rightCorner.y)
@@ -385,18 +390,18 @@ function centerNode(node, neighbors = null, force = true) {
       (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
     ) {
       viewPortPosition.x += ratio * shift / 2;
-      data.camera.animate(
+      camera.animate(
         {
-          ...data.renderer.viewportToFramedGraph(viewPortPosition),
-          ratio: data.camera.ratio * ratio,
+          ...renderer.viewportToFramedGraph(viewPortPosition),
+          ratio: camera.ratio * ratio,
           angle: 0
         },
         {duration: duration}
       );
     }
   }
-  if (data.camera.angle) {
-    data.camera.animate({angle: 0}, {duration: 75});
+  if (camera.angle) {
+    camera.animate({angle: 0}, {duration: 75});
     setTimeout(() => recenter(200), 150)
   } else recenter(350);
 }
@@ -599,8 +604,8 @@ viewAllComicsButton.onclick = () => displayComics(null);
 
 // Esc & Arrow keys handling on comics list
 document.onkeydown = function(e) {
-  const data = networks[entity][networkSize];
-  if (!data.graph || !data.renderer) return
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer) return
 
   if (modal.style.display === "block" && e.which === 27) {
     modal.style.display = "none";
@@ -749,8 +754,8 @@ function unselectComic() {
 }
 
 function selectComic(comic = null, keep = false, autoReselect = false) {
-  const data = networks[entity][networkSize];
-  if (!data.graph || !data.renderer) return;
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer) return;
 
   if (!autoReselect) {
     if (keep && comic && selectedComic && comic.id === selectedComic.id) {
@@ -783,8 +788,8 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
     }
   } else hoveredComic = comic;
 
-  if (comic && selectedNode && data.graph.hasNode(selectedNode))
-    data.graph.setNodeAttribute(selectedNode, "highlighted", false)
+  if (comic && selectedNode && graph.hasNode(selectedNode))
+    graph.setNodeAttribute(selectedNode, "highlighted", false)
 
   if (!comic || !selectedComic || comic.id !== selectedComic.id)
     document.getElementById("comic-details").scrollTo(0, 0);
@@ -828,7 +833,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       : "")
     .join("");
 
-  data.renderer.setSetting(
+  renderer.setSetting(
     "nodeReducer", (n, attrs) => {
       return comic[entity].indexOf(n) !== -1
         ? { ...attrs,
@@ -845,9 +850,9 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           };
     }
   );
-  data.renderer.setSetting(
+  renderer.setSetting(
     "edgeReducer", (edge, attrs) =>
-      comic[entity].indexOf(data.graph.source(edge)) !== -1 && comic[entity].indexOf(data.graph.target(edge)) !== -1
+      comic[entity].indexOf(graph.source(edge)) !== -1 && comic[entity].indexOf(graph.target(edge)) !== -1
         ? { ...attrs,
             zIndex: 0,
             color: '#333',
@@ -861,7 +866,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   );
 
   setTimeout(() => {
-    centerNode(null, comic[entity].filter(n => data.graph.hasNode(n)), false);
+    centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
     loader.style.display = "none";
     loader.style.opacity = "0";
   }, 50);
@@ -961,100 +966,99 @@ function renderNetwork() {
     nodesSizeZoomAdjuster: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       thumbnail: getNodeProgramImage()
-    },
-    allowInvalidContainer: true
+    }
   };
 
-  (document.querySelectorAll(".sigma-container") as NodeListOf<HTMLElement>).forEach(el => el.style.display = "none");
-  const containerId = "sigma-" + entity + "-" + networkSize;
-  data.container = document.getElementById(containerId) as HTMLElement;
-  data.container.style.display = "block";
-  const sigmaDims = data.container.getBoundingClientRect();
+  container.style.display = "block";
+  const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
-
-  if (!data.renderer) {
-    data.renderer = new Sigma(data.graph as any, data.container, sigmaSettings);
+  if (!renderer) {
+    renderer = new Sigma(data.graph as any, container, sigmaSettings);
 
     // insert the clusters layer underneath the hovers layer
-    if (entity === "creators") {
-      data.clustersLayer = document.createElement("div");
-      data.clustersLayer.id = "clusters-layer";
-      data.clustersLayer.style.display = "none";
-      data.container.insertBefore(data.clustersLayer, document.querySelectorAll("#" + containerId + " .sigma-hovers")[0]);
+    clustersLayer = document.createElement("div");
+    clustersLayer.id = "clusters-layer";
+    clustersLayer.style.display = "none";
+    container.insertBefore(clustersLayer, document.getElementsByClassName("sigma-hovers")[0]);
 
-      // Clusters labels position needs to be updated on each render
-      data.resizeClustersLayer = () => {
-        const sigmaDims = document.getElementById(containerId).getBoundingClientRect();
-        data.clustersLayer.style.width = sigmaDims.width + "px";
-
-        for (const cluster in data.clusters) {
-          const c = data.clusters[cluster];
-          const clusterLabel = document.getElementById("community-" + networkSize + "-" + c.id);
-          if (!clusterLabel) return;
-          // update position from the viewport
-          const viewportPos = data.renderer.graphToViewport(c as Coordinates);
-          if (viewportPos.x < 5 * cluster.length + 7 || viewportPos.x > sigmaDims.width - 5 * cluster.length - 7 || viewportPos.y > sigmaDims.height - 15)
-            clusterLabel.style.display = "none";
-          else {
-            clusterLabel.style.display = "block";
-            clusterLabel.style["min-width"] = (10 * cluster.length) + "px";
-            clusterLabel.style.top = viewportPos.y + 'px';
-            clusterLabel.style.left = viewportPos.x + 'px';
-          }
-        }
-      };
-      data.renderer.on("afterRender", data.resizeClustersLayer);
-    }
+    // Clusters labels position needs to be updated on each render
+    renderer.on("afterRender", () => {
+      if (entity === "characters") return;
+      resizeClusterLabels();
+    });
 
     // Add pointer on hovering nodes
-    data.renderer.on("enterNode", () => data.container.style.cursor = "pointer");
-    data.renderer.on("leaveNode", () => data.container.style.cursor = "default");
+    renderer.on("enterNode", () => container.style.cursor = "pointer");
+    renderer.on("leaveNode", () => container.style.cursor = "default");
 
     // Handle clicks on nodes
-    data.renderer.on("clickNode", (event) => clickNode(event.node));
-    data.renderer.on("clickStage", () => {
+    renderer.on("clickNode", (event) => clickNode(event.node));
+    renderer.on("clickStage", () => {
       if (comicsBarView)
         hideComicsBar();
       else setSearchQuery();
     });
-
-    data.camera = data.renderer.getCamera();
   } else {
-    data.renderer.setSetting("maxCameraRatio", 100);
-    data.renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-    data.renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
+    renderer.setSetting("maxCameraRatio", 100);
+    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
+    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
 
-    data.renderer.setSetting(
-      "edgeReducer", (edge, attrs) => attrs
-    );
-    data.renderer.setSetting(
+    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+    renderer.setSetting(
       "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
     );
+
+    renderer.setGraph(data.graph);
+   /* renderer.setSetting("nodeProgramClasses", {
+      thumbnail: getNodeProgramImage()
+    });*/
   }
-  data.renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
+  renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
 
   // Render clusters labels layer on top of sigma for creators
-  if (data.clustersLayer) {
+  if (entity === "creators") {
     let clusterLabelsDoms = "";
     for (const cluster in data.clusters) {
       const c = data.clusters[cluster];
       // adapt the position to viewport coordinates
-      const viewportPos = data.renderer.graphToViewport(c as Coordinates);
+      const viewportPos = renderer.graphToViewport(c as Coordinates);
       clusterLabelsDoms += '<div id="community-' + networkSize + "-" + c.id + '" class="cluster-label" style="top: ' + viewportPos.y + 'px; left: ' + viewportPos.x + 'px; color: ' + c.color + '">' + c.label + '</div>';
-      data.clustersLayer.innerHTML = clusterLabelsDoms;
     }
+    clustersLayer.innerHTML = clusterLabelsDoms;
 
+    resizeClusterLabels = () => {
+      const sigmaDims = container.getBoundingClientRect();
+      clustersLayer.style.width = sigmaDims.width + "px";
+
+      for (const cluster in data.clusters) {
+        const c = data.clusters[cluster];
+        const clusterLabel = document.getElementById("community-" + networkSize + "-" + c.id);
+        if (!clusterLabel) return;
+        // update position from the viewport
+        const viewportPos = renderer.graphToViewport(c as Coordinates);
+        if (viewportPos.x < 5 * cluster.length + 7 || viewportPos.x > sigmaDims.width - 5 * cluster.length - 7 || viewportPos.y > sigmaDims.height - 15)
+          clusterLabel.style.display = "none";
+        else {
+          clusterLabel.style.display = "block";
+          clusterLabel.style["min-width"] = (10 * cluster.length) + "px";
+          clusterLabel.style.top = viewportPos.y + 'px';
+          clusterLabel.style.left = viewportPos.x + 'px';
+        }
+      }
+    };
   }
 
   // Bind zoom manipulation buttons
+  camera = renderer.getCamera();
+(window as any).camera = data.camera;
   document.getElementById("zoom-in").onclick = () => {
-    data.camera.animatedZoom({ duration: 600 });
+    camera.animatedZoom({ duration: 600 });
   };
   document.getElementById("zoom-out").onclick = () => {
-    data.camera.animatedUnzoom({ duration: 600 });
+    camera.animatedUnzoom({ duration: 600 });
   };
   document.getElementById("zoom-reset").onclick = () => {
-    data.camera.animatedReset({ duration: 50 });
+    camera.animatedReset({ duration: 50 });
   };
 
   // Prepare list of nodes for search/select suggestions
@@ -1128,37 +1132,47 @@ function renderNetwork() {
   if (view === "colors")
     switchView();
 
-  // Zoom in graph on init network
   doResize();
-  data.camera.x = 0.5;
-  data.camera.y = 0.5;
-  data.camera.ratio = Math.pow(5, 3);
-  data.camera.angle = 0;
+  // Zoom in graph on first init network
+  if (!data.rendered) {
+    camera.x = 0.5;
+    camera.y = 0.5;
+    camera.ratio = Math.pow(5, 3);
+    camera.angle = 0;
+  }
+  loader.style.opacity = "0.5";
+  document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
   const initLoop = setInterval(() => {
-    loader.style.opacity = "0.5";
-    document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
-    if (!data.camera) return clearInterval(initLoop);
-    if (data.camera.ratio <= 5) {
-      if (data.clustersLayer)
-        data.clustersLayer.style.display = "block";
-      data.renderer.setSetting("maxCameraRatio", 1.3);
-      if (comicsBarView && selectedComic && data.camera.ratio <= 25) {
+    if (!camera) return clearInterval(initLoop);
+    if (data.rendered || camera.ratio <= 5) {
+      if (entity === "creators")
+        clustersLayer.style.display = "block";
+      renderer.setSetting("maxCameraRatio", 1.3);
+
+      // If a comic is selected we reload the list with it within it
+      if (comicsBarView && selectedComic && camera.ratio <= 25) {
+        data.rendered = true;
         displayComics(selectedNode, true, true);
         return clearInterval(initLoop);
       }
+
+      // If a node is selected we refocus it
       const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
-      if (nodeInGraph) {
+      if (nodeInGraph)
         clickNode(nodeInGraph, false);
-      } else {
+      else {
         if (selectedNodeLabel)
           clickNode(null);
-        data.camera.animate({ratio: 1}, {duration: 100, easing: "linear"});
+        camera.animatedReset({ duration: 50 });
         setTimeout(() => {
-          data.renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+          renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
           loader.style.display = "none";
-        }, 100);
+        }, 50);
       }
+      data.rendered = true;
       selectedNodeLabel = null;
+
+      // Load comics data after first network rendered
       if (comicsReady === null) {
         comicsReady = false;
         loaderComics.style.display = "block";
@@ -1166,11 +1180,11 @@ function renderNetwork() {
           fetch("./data/Marvel_comics.csv.gz")
             .then((res) => res.arrayBuffer())
             .then((content) => loadComics(content))
-        }, 1000);
+        }, 2500);
       }
       return clearInterval(initLoop);
     }
-    data.camera.animate({ratio: data.camera.ratio / 5}, {duration: 100, easing: "linear"});
+    camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
   }, 150);
 }
 
@@ -1181,7 +1195,7 @@ function addViewComicsButton(node) {
 
 function clickNode(node, updateURL = true, center = false) {
   const data = networks[entity][networkSize];
-  if (!data.graph || !data.renderer) return;
+  if (!data.graph || !renderer) return;
 
   // Unselect previous node
   const sameNode = (node === selectedNode);
@@ -1203,13 +1217,13 @@ function clickNode(node, updateURL = true, center = false) {
       setPermalink(entity, networkSize, view, node);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
-    data.renderer.setSetting(
+    renderer.setSetting(
       "nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null })
     );
-    data.renderer.setSetting(
+    renderer.setSetting(
       "edgeReducer", (edge, attrs) => attrs
     );
-    data.renderer.setSetting(
+    renderer.setSetting(
       "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
     );
     return;
@@ -1271,7 +1285,7 @@ function clickNode(node, updateURL = true, center = false) {
   }
   if (!comicsBarView || ! selectedComic) {
     data.graph.setNodeAttribute(node, "highlighted", true);
-    data.renderer.setSetting(
+    renderer.setSetting(
       "nodeReducer", (n, attrs) => {
         return n === node
           ? { ...attrs,
@@ -1291,7 +1305,7 @@ function clickNode(node, updateURL = true, center = false) {
       }
     );
     // Hide unrelated links and highlight, weight and color as the target the node's links
-    data.renderer.setSetting(
+    renderer.setSetting(
       "edgeReducer", (edge, attrs) =>
         data.graph.hasExtremity(edge, node)
           ? { ...attrs,
@@ -1305,7 +1319,7 @@ function clickNode(node, updateURL = true, center = false) {
               hidden: true
             }
     );
-    data.renderer.setSetting(
+    renderer.setSetting(
       "labelColor", {attribute: "hlcolor", color: "#CCC"}
     );
   }
@@ -1327,10 +1341,10 @@ function clickNode(node, updateURL = true, center = false) {
 
 // Click a random node button
 document.getElementById("view-node").onclick = () => {
-  const data = networks[entity][networkSize];
-  if (!data.graph || !data.renderer)
+  const graph = networks[entity][networkSize].graph;
+  if (!graph || !renderer)
     return;
-  const node = data.graph.nodes()[Math.floor(Math.random() * data.graph.order)];
+  const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
   clickNode(node, true, true);
 }
 
@@ -1385,17 +1399,17 @@ function setView(val) {
   picturesDetailsSpans.forEach(span => span.style.display = (val === "pictures" ? "inline" : "none"));
 };
 function switchView() {
-  const data = networks[entity][networkSize];
-  if (!data.renderer) return;
+  const graph = networks[entity][networkSize].graph;
+  if (!renderer) return;
   loader.style.display = "block";
   loader.style.opacity = "0.5";
 
   setTimeout(() => {
-    data.renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
-    data.renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-    if (data.graph && comicsBarView && selectedComic)
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
+    if (graph && comicsBarView && selectedComic)
       selectComic(selectedComic, true, true);
-    else if (data.graph && selectedNode && data.graph.hasNode(selectedNode))
+    else if (graph && selectedNode && graph.hasNode(selectedNode))
       clickNode(selectedNode);
     else {
       loader.style.display = "none";
@@ -1409,7 +1423,7 @@ let resizing = undefined;
 function doResize(fast = false) {
 console.log("now");
   if (!fast) resizing = true;
-  const data = entity ? networks[entity][networkSize] : null,
+  const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small") - 10;
   explanations.style.opacity = "1"
   explanations.style.height = freeHeight + "px";
@@ -1421,16 +1435,14 @@ console.log("now");
   ["width", "height", "top"].forEach(k =>
     comicsCache.style[k] = comicsDims[k] + "px"
   );
-  const sigmaDims = (data && data.container ? data.container : document.querySelector(".sigma-container")).getBoundingClientRect();
+  const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
-  if (!fast && data && data.renderer && data.graph && data.camera) {
-    const ratio = Math.pow(1.1, Math.log(data.camera.ratio) / Math.log(1.5));
-    data.renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
-    data.graph.forEachNode((node, {stories}) =>
-      data.graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
+  if (!fast && renderer && graph && camera) {
+    const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
+    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
+    graph.forEachNode((node, {stories}) =>
+      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
     );
-    if (data.resizeClustersLayer)
-      data.resizeClustersLayer();
   }
   if (!fast) resizing = false;
 }
@@ -1477,9 +1489,9 @@ function readUrl() {
     selectedNodeLabel = decodeURIComponent(args[3].replace(/\+/g, " "));
     searchInput.value = selectedNodeLabel;
   } else selectedNodeLabel = null;
-  const data = networks[args[0]][args[1]];
-  if (data.graph && args[0] === entity && (
-    (selectedNodeLabel && (!selectedNode || (data.graph.hasNode(selectedNode) && selectedNodeLabel !== data.graph.getNodeAttribute(selectedNode, "label"))))
+  const graph = networks[args[0]][args[1]].graph;
+  if (graph && args[0] === entity && (
+    (selectedNodeLabel && (!selectedNode || (graph.hasNode(selectedNode) && selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label"))))
     || (!selectedNodeLabel && selectedNode)
   ))
     clickn = true;
@@ -1510,9 +1522,9 @@ function readUrl() {
     loader.style.display = "block";
 
     orderSpan.innerHTML = '...';
-    if (data.clustersLayer) {
-      data.clustersLayer.innerHTML = "";
-      data.clustersLayer.style.display = "none";
+    if (clustersLayer) {
+      clustersLayer.innerHTML = "";
+      clustersLayer.style.display = "none";
     }
 
     // Setup Sidebar default content
@@ -1547,7 +1559,7 @@ function readUrl() {
   } else if (switchv)
     switchView();
   else if (clickn)
-    clickNode(data.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+    clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
 }
 window.onhashchange = readUrl;
 
