@@ -350,9 +350,6 @@ h2 {
   overflow: hidden;
   background-color: black;
 }
-.sigma-container > canvas {
-  display: none;
-}
 #clusters-layer {
   width: 100%;
   height: 100%;

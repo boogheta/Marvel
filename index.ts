@@ -1,4 +1,5 @@
 /* TODO:
+- recenter node on change entity uses comicsbar shift always?
 - try to set type=circle instead of image=null ?
 - if no node on comic remove reducers
 - mobiles bugs
@@ -287,15 +288,29 @@ function divHeight(divId) {
 function setPermalink(ent, siz, vie, sel) {
   const graph = networks[entity][networkSize].graph,
     selection = ent === entity && sel && graph && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
-  if ((ent !== entity || siz !== networkSize) && selectedNode) {
-    if (graph && graph.hasNode(selectedNode))
-      graph.setNodeAttribute(selectedNode, "highlighted", false);
-    if (ent !== entity) {
-      selectedNode = null;
-      selectedNodeLabel = null;
+  if ((ent !== entity || siz !== networkSize)) {
+    hideCanvases();
+    if (selectedNode) {
+      if (graph && graph.hasNode(selectedNode))
+        graph.setNodeAttribute(selectedNode, "highlighted", false);
+      if (ent !== entity) {
+        selectedNode = null;
+        selectedNodeLabel = null;
+      }
     }
   }
   window.location.hash = ent + "/" + siz + "/" + vie + selection;
+}
+
+function hideCanvases() {
+  (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "none");
+  if (clustersLayer)
+    clustersLayer.style.display = "none";
+}
+function showCanvases(showClustersLayer = true) {
+  (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
+  if (showClustersLayer && clustersLayer && entity === "creators")
+    clustersLayer.style.display = "block";
 }
 
 function defaultSidebar() {
@@ -401,8 +416,8 @@ function centerNode(node, neighbors = null, force = true) {
     }
   }
   if (camera.angle) {
-    camera.animate({angle: 0}, {duration: 75});
-    setTimeout(() => recenter(200), 150)
+    camera.animate({angle: 0}, {duration: 100});
+    setTimeout(() => recenter(250), 100)
   } else recenter(350);
 }
 
@@ -542,7 +557,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       }
       doResize(true);
     }, 200);
-  }, 200);
+  }, 0);
 }
 function scrollComicsList() {
   setTimeout(() => {
@@ -1129,60 +1144,64 @@ function renderNetwork() {
   if (view === "colors")
     switchView();
 
+  function initGraph(data, loop = null) {
+    renderer.setSetting("maxCameraRatio", 1.3);
+
+    // If a comic is selected we reload the list with it within it
+    if (comicsBarView && selectedComic && camera.ratio <= 2.25) {
+      showCanvases();
+      data.rendered = true;
+      displayComics(selectedNode, true, true);
+      return loop ? clearInterval(loop) : null;
+    }
+
+    // If a node is selected we refocus it
+    const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
+    if (nodeInGraph) {
+      showCanvases();
+      clickNode(nodeInGraph, false);
+    } else {
+      if (selectedNodeLabel)
+        clickNode(null);
+      camera.animatedReset({ duration: 0 });
+      setTimeout(() => {
+        showCanvases();
+        renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+        loader.style.display = "none";
+      }, 50);
+    }
+    data.rendered = true;
+    selectedNodeLabel = null;
+
+    // Load comics data after first network rendered
+    if (loop && comicsReady === null) {
+      comicsReady = false;
+      loaderComics.style.display = "block";
+      setTimeout(() => {
+        fetch("./data/Marvel_comics.csv.gz")
+          .then((res) => res.arrayBuffer())
+          .then((content) => loadComics(content))
+      }, 2000);
+    }
+    return loop ? clearInterval(loop) : null;
+  }
+
+  loader.style.opacity = "0.5";
   doResize();
   // Zoom in graph on first init network
   if (!data.rendered) {
     camera.x = 0.5;
     camera.y = 0.5;
-    camera.ratio = Math.pow(5, 3);
+    camera.ratio = Math.pow(1.5, 10);
     camera.angle = 0;
-  }
-  loader.style.opacity = "0.5";
-  document.querySelectorAll("canvas").forEach(canvas => canvas.style.display = "block");
-  const initLoop = setInterval(() => {
-    if (!camera) return clearInterval(initLoop);
-    if (data.rendered || camera.ratio <= 5) {
-      if (entity === "creators")
-        clustersLayer.style.display = "block";
-      renderer.setSetting("maxCameraRatio", 1.3);
-
-      // If a comic is selected we reload the list with it within it
-      if (comicsBarView && selectedComic && camera.ratio <= 25) {
-        data.rendered = true;
-        displayComics(selectedNode, true, true);
-        return clearInterval(initLoop);
-      }
-
-      // If a node is selected we refocus it
-      const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
-      if (nodeInGraph)
-        clickNode(nodeInGraph, false);
-      else {
-        if (selectedNodeLabel)
-          clickNode(null);
-        camera.animatedReset({ duration: 100 });
-        setTimeout(() => {
-          renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
-          loader.style.display = "none";
-        }, 100);
-      }
-      data.rendered = true;
-      selectedNodeLabel = null;
-
-      // Load comics data after first network rendered
-      if (comicsReady === null) {
-        comicsReady = false;
-        loaderComics.style.display = "block";
-        setTimeout(() => {
-          fetch("./data/Marvel_comics.csv.gz")
-            .then((res) => res.arrayBuffer())
-            .then((content) => loadComics(content))
-        }, 2500);
-      }
-      return clearInterval(initLoop);
-    }
-    camera.animate({ratio: camera.ratio / 5}, {duration: 100, easing: "linear"});
-  }, 150);
+    showCanvases(false);
+    const initLoop = setInterval(() => {
+      if (!camera) return clearInterval(initLoop);
+      if (camera.ratio <= 1.5)
+        return initGraph(data, initLoop)
+      camera.animate({ratio: camera.ratio / 1.5}, {duration: 50, easing: "linear"});
+    }, 50);
+  } else initGraph(data);
 }
 
 function addViewComicsButton(node) {
@@ -1549,10 +1568,10 @@ function readUrl() {
           .then((res) => res.arrayBuffer())
           .then((content) => {
             buildNetwork(content, entity, networkSize);
-            setTimeout(renderNetwork, 10);
+            setTimeout(renderNetwork, 0);
           });
       }
-    }, 10);
+    }, 0);
   } else if (switchv)
     switchView();
   else if (clickn)
