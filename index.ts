@@ -6,7 +6,6 @@
   - test centernode after rotate with no framedgraph
   - auto fullscreen?
 - allow to switch from selected node to other entity and highlight corresponding
-- add link actions on creators/characters of comic
 - add search button with list filter
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -282,9 +281,13 @@ function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
 
-function setPermalink(ent, siz, vie, sel) {
+function setPermalink(ent, siz, vie, sel, keepSelected = false) {
   const graph = networks[entity][networkSize].graph,
-    selection = ent === entity && sel && graph && graph.hasNode(sel) ? "/" + graph.getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
+    newGraph = networks[ent][siz].graph,
+    selection = sel && (
+      (ent === entity && graph && graph.hasNode(sel)) ||
+      (keepSelected && newGraph && newGraph.hasNode(sel))
+    ) ? "/" + (keepSelected ? newGraph : graph).getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
   if ((ent !== entity || siz !== networkSize)) {
     hideCanvases();
     if (selectedNode) {
@@ -296,6 +299,8 @@ function setPermalink(ent, siz, vie, sel) {
       }
     }
   }
+  switchNodeType.checked = ent === "creators";
+  switchNodeFilter.checked = siz === "full";
   window.location.hash = ent + "/" + siz + "/" + vie + selection;
 }
 
@@ -509,7 +514,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
     comicsTitle.innerHTML = "";
     if (comics) {
       comicsTitle.innerHTML = "... comics";
-      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + <br/>" + labelNode;
+      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
     }
     comicsSubtitleList.innerHTML = "";
   }
@@ -527,7 +532,9 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       autoReselect
     );
   setTimeout(() => {
-    const filteredList = (comics ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle) : []);
+    const filteredList = comics
+      ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
+      : [];
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
@@ -539,11 +546,11 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
           .replace(/&nbsp;([^&]+)$/, " or $1");
     }
     setTimeout(() => {
-      comicsList.innerHTML = filteredList
+      comicsList.innerHTML = filteredList.length
         ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (labelNode && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
-      if (filteredList.length) filteredList.forEach(c => {
+      filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
         comicLi.comic = c;
         comicLi.onmouseup = () => selectComic(c, true);
@@ -719,7 +726,7 @@ switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-   setPermalink(entity, switchNodeFilter.checked ? "full" : "small", view, selectedNode);
+    setPermalink(entity, switchNodeFilter.checked ? "full" : "small", view, selectedNode);
   }
 };
 switchViewLabel.ontouchend = e => {
@@ -833,19 +840,40 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comicEntities.forEach(el => el.style.display = "block");
   comicCreators.innerHTML = (comic.writers.length ? comic.writers : ["-1"])
     .map(x => allCreators[x]
-      ? '<li id="creator-' + x + '" title="writer" style="color: ' + lighten(creatorsRoles["writer"], 50) + '">' + allCreators[x] + "</li>"
-      : "")
-    .join("");
+      ? '<li id="creator-' + x + '" ' +
+        (x !== "-1" ? 'class="entity-link" ' : '') +
+        'title="writer" ' +
+        'style="color: ' + lighten(creatorsRoles["writer"], 50) + '">' +
+        allCreators[x] + "</li>"
+      : ""
+    ).join("");
   comicCreators.innerHTML += (comic.artists.length ? comic.artists : ["-1"])
     .map(x => allCreators[x]
-      ? '<li id="creator-' + x + '" title="artist" style="color: ' + lighten(creatorsRoles["artist"], 50) + '">' + allCreators[x] + "</li>"
-      : "")
-    .join("");
+      ? '<li id="creator-' + x + '" ' +
+        (x !== "-1" ? 'class="entity-link" ' : '') +
+        'title="artist" ' +
+        'style="color: ' + lighten(creatorsRoles["artist"], 50) + '">' +
+        allCreators[x] + "</li>"
+      : ""
+    ).join("");
   comicCharacters.innerHTML = (comic.characters.length ? comic.characters : ["-1"])
     .map(x => allCharacters[x]
-      ? '<li id="character-' + x + '">' + allCharacters[x] + "</li>"
-      : "")
-    .join("");
+      ? '<li id="character-' + x + '" ' +
+        (x !== "-1" ? 'class="entity-link" ' : '') + '>' +
+        allCharacters[x] + "</li>"
+      : ""
+    ).join("");
+
+  comic.creators.forEach(c => {
+    if (!allCreators[c]) return;
+    const entityLi = document.getElementById("creator-" + c) as HTMLElement;
+    entityLi.onclick = () => setPermalink("creators", networkSize, view, c, true);
+  });
+  comic.characters.forEach(c => {
+    if (!allCharacters[c]) return;
+    const entityLi = document.getElementById("character-" + c) as HTMLElement;
+    entityLi.onclick = () => setPermalink("characters", networkSize, view, c, true);
+  });
 
   renderer.setSetting(
     "nodeReducer", (n, attrs) => comic[entity].indexOf(n) !== -1
@@ -1505,7 +1533,7 @@ function readUrl() {
     searchInput.value = selectedNodeLabel;
   } else selectedNodeLabel = null;
   const graph = networks[args[0]][args[1]].graph;
-  if (graph && args[0] === entity && (
+  if (graph && (
     (selectedNodeLabel && (!selectedNode || (graph.hasNode(selectedNode) && selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label"))))
     || (!selectedNodeLabel && selectedNode)
   ))
@@ -1573,7 +1601,7 @@ function readUrl() {
     }, 0);
   } else if (switchv)
     switchView();
-  else if (clickn)
+  if (clickn)
     clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
 }
 window.onhashchange = readUrl;
