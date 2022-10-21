@@ -267,6 +267,9 @@ h2 {
   padding: 0;
   margin: 0;
 }
+.comic-entities li.entity-link {
+  cursor: pointer;
+}
 #comic-creators {
   padding: 0 2px 0 0;
 }
@@ -349,9 +352,6 @@ h2 {
   padding: 0;
   overflow: hidden;
   background-color: black;
-}
-.sigma-container > canvas {
-  display: none;
 }
 #clusters-layer {
   width: 100%;
