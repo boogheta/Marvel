@@ -1,5 +1,5 @@
 /* TODO:
-- recenter node on change entity uses comicsbar shift always?
+- test new sigma size ratio from jacomyal
 - try to set type=circle instead of image=null ?
 - if no node on comic remove reducers
 - mobiles bugs
@@ -557,7 +557,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       }
       doResize(true);
     }, 200);
-  }, 0);
+  }, 200);
 }
 function scrollComicsList() {
   setTimeout(() => {
