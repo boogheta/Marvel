@@ -1,5 +1,4 @@
 /* TODO:
-- do not reload full ist of comics when switching from comics/characters
 - test new sigma size ratio from jacomyal
 - try to set type=circle instead of image=null ?
 - mobiles bugs
@@ -1149,7 +1148,9 @@ function renderNetwork() {
     if (comicsBarView && selectedComic && camera.ratio <= 2.25) {
       showCanvases();
       data.rendered = true;
-      displayComics(selectedNode, true, true);
+      if (selectedNode)
+        displayComics(selectedNode, true, true);
+      else selectComic(selectedComic, true, true)
       return loop ? clearInterval(loop) : null;
     }
 
