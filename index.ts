@@ -1,4 +1,5 @@
 /* TODO:
+- do not reload full ist of comics when switching from comics/characters
 - test new sigma size ratio from jacomyal
 - try to set type=circle instead of image=null ?
 - mobiles bugs
@@ -509,7 +510,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
     comicsTitle.innerHTML = "";
     if (comics) {
       comicsTitle.innerHTML = "... comics";
-      if (labelNode) comicsTitle.innerHTML += " with<br/>" + labelNode;
+      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + <br/>" + labelNode;
     }
     comicsSubtitleList.innerHTML = "";
   }
@@ -531,7 +532,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (labelNode) comicsTitle.innerHTML += " with<br/>" + labelNode;
+      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
       if (labelNode && entity === "creators")
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
           .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
