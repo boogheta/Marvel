@@ -1,7 +1,6 @@
 /* TODO:
 - test new sigma size ratio from jacomyal
 - try to set type=circle instead of image=null ?
-- if no node on comic remove reducers
 - mobiles bugs
   - comicslist min height
   - test centernode after rotate with no framedgraph
@@ -9,8 +8,6 @@
 - allow to switch from selected node to other entity and highlight corresponding
 - add link actions on creators/characters of comic
 - add search button with list filter
-  - allow to remove filter on all comics?
-- filter nodes with authors really missing on small?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -65,7 +62,7 @@ let entity = "",
 const conf = {},
   networks = {},
   allComics = [],
-  allCharacters = {},
+  allCharacters = {"-1": "missing info"},
   allCreators = {"-1": "missing info"},
   charactersComics = {},
   creatorsComics = {},
@@ -355,6 +352,8 @@ function centerNode(node, neighbors = null, force = true) {
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors)
     neighbors = data.graph.neighbors(node);
+  else if (!neighbors.length)
+    neighbors = data.graph.nodes();
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
 
@@ -528,8 +527,8 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       autoReselect
     );
   setTimeout(() => {
-    const filteredList = (comics ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle) : [])
-      .filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
+    const filteredList = (comics ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle) : []);
+      //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
       if (labelNode) comicsTitle.innerHTML += " with<br/>" + labelNode;
@@ -842,42 +841,40 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       ? '<li id="creator-' + x + '" title="artist" style="color: ' + lighten(creatorsRoles["artist"], 50) + '">' + allCreators[x] + "</li>"
       : "")
     .join("");
-  comicCharacters.innerHTML = comic.characters
+  comicCharacters.innerHTML = (comic.characters.length ? comic.characters : ["-1"])
     .map(x => allCharacters[x]
       ? '<li id="character-' + x + '">' + allCharacters[x] + "</li>"
       : "")
     .join("");
 
   renderer.setSetting(
-    "nodeReducer", (n, attrs) => {
-      return comic[entity].indexOf(n) !== -1
-        ? { ...attrs,
-            zIndex: 2,
-            size: attrs.size * 1.75,
-            image: view === "pictures" ? attrs.image : null
-          }
-        : { ...attrs,
-            zIndex: 0,
-            color: "#2A2A2A",
-            image: null,
-            size: sigmaDim / 350,
-            label: null
-          };
-    }
+    "nodeReducer", (n, attrs) => comic[entity].indexOf(n) !== -1
+      ? { ...attrs,
+          zIndex: 2,
+          size: attrs.size * 1.75,
+          image: view === "pictures" ? attrs.image : null
+        }
+      : { ...attrs,
+          zIndex: 0,
+          color: "#2A2A2A",
+          image: null,
+          size: sigmaDim / 350,
+          label: null
+        }
   );
   renderer.setSetting(
     "edgeReducer", (edge, attrs) =>
       comic[entity].indexOf(graph.source(edge)) !== -1 && comic[entity].indexOf(graph.target(edge)) !== -1
-        ? { ...attrs,
-            zIndex: 0,
-            color: '#333',
-            size: sigmaDim < 500 ? 1 : 3
-          }
-        : { ...attrs,
-            zIndex: 0,
-            color: "#FFF",
-            hidden: true
-          }
+      ? { ...attrs,
+          zIndex: 0,
+          color: '#333',
+          size: sigmaDim < 500 ? 1 : 3
+        }
+      : { ...attrs,
+          zIndex: 0,
+          color: "#FFF",
+          hidden: true
+        }
   );
 
   setTimeout(() => {
