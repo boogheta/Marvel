@@ -22,6 +22,7 @@
 - bind url with selected comic?
 - auto data updates
 IDEAS:
+- if low debit, load comics only on explore comics click?
 - plot time evolution of node?
 - install app button?
 - test bipartite network between authors and characters filtered by category of author
@@ -1169,13 +1170,12 @@ function renderNetwork() {
   if (view === "colors")
     switchView();
 
-  function initGraph(data, loop = null) {
+  function adjustGraph(data, loop = null) {
     renderer.setSetting("maxCameraRatio", 1.3);
 
     // If a comic is selected we reload the list with it within it
     if (comicsBarView && selectedComic && camera.ratio <= 2.25) {
       showCanvases();
-      data.rendered = true;
       if (selectedNode)
         displayComics(selectedNode, true, true);
       else selectComic(selectedComic, true, true)
@@ -1197,7 +1197,6 @@ function renderNetwork() {
         loader.style.display = "none";
       }, 50);
     }
-    data.rendered = true;
     selectedNodeLabel = null;
 
     // Load comics data after first network rendered
@@ -1225,10 +1224,11 @@ function renderNetwork() {
     const initLoop = setInterval(() => {
       if (!camera) return clearInterval(initLoop);
       if (camera.ratio <= 1.5)
-        return initGraph(data, initLoop)
+        return adjustGraph(data, initLoop)
       camera.animate({ratio: camera.ratio / 1.5}, {duration: 50, easing: "linear"});
     }, 50);
-  } else initGraph(data);
+    data.rendered = true;
+  } else adjustGraph(data);
 }
 
 function addViewComicsButton(node) {
