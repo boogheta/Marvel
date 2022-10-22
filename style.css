@@ -697,6 +697,9 @@ label {
     bottom: 5px;
     margin-right: 5px;
   }
+  #comic-details {
+    height: calc(100% / 3);
+  }
 }
 @media (max-height: 600px) {
   .network-choice {

@@ -1,9 +1,6 @@
 /* TODO:
-- fix too many labels + display all when comic view
 - mobiles bugs
-  - comicslist min height
   - test centernode after rotate with no framedgraph
-  - auto fullscreen?
 - allow to switch from selected node to other entity and highlight corresponding
 - add search button with list filter
 - check bad data marvel :
@@ -24,6 +21,7 @@ IDEAS:
 - if low debit, load comics only on explore comics click?
 - plot time evolution of node?
 - install app button?
+- cleanup and modularize code
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -768,6 +766,7 @@ function unselectComic() {
   hoveredComic = null;
   selectedComic = null;
   selectComic(null, true);
+  renderer.setSetting("labelGridCellSize", 200);
   clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
     setTimeout(() => centerNode(selectedNode), 50);
@@ -904,7 +903,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           hidden: true
         }
   );
-// TODO: setlabelthreshold so that all visible nodes have one
+  renderer.setSetting("labelGridCellSize", 10);
 
   setTimeout(() => {
     centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
@@ -1000,11 +999,11 @@ function renderNetwork() {
     minCameraRatio: (entity === "creators" && networkSize === "full" ? 0.035 : 0.07),
     maxCameraRatio: 100,
     defaultEdgeColor: '#2A2A2A',
-    labelWeight: 'bold',
     labelFont: 'monospace',
+    labelWeight: 'bold',
     labelColor: view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'},
-    labelGridCellSize: 180,
-    labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
+    labelGridCellSize: 200,
+    labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       image: getNodeProgramImage()
@@ -1044,6 +1043,7 @@ function renderNetwork() {
     renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
     renderer.setSetting("labelColor", sigmaSettings.labelColor);
+    renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings.labelRenderedSizeThreshold);
     renderer.setSetting("maxCameraRatio", sigmaSettings.maxCameraRatio);
 
@@ -1473,7 +1473,7 @@ function doResize(fast = false) {
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   if (!fast && renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
-    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
+    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
     graph.forEachNode((node, {stories}) =>
       graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
     );
