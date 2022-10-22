@@ -1,7 +1,5 @@
 /* TODO:
-- hide buttons comics when comicsbarview
 - fix too many labels + display all when comic view
-- test new sigma size ratio from jacomyal
 - mobiles bugs
   - comicslist min height
   - test centernode after rotate with no framedgraph
@@ -319,9 +317,7 @@ function showCanvases(showClustersLayer = true) {
 
 function defaultSidebar() {
   explanations.style.display = "block";
-  explanations.scrollTo(0, 0);
   nodeDetails.style.display = "none";
-  nodeDetails.scrollTo(0, 0);
   modal.style.display = "none";
   modalImg.src = "";
 }
@@ -333,6 +329,7 @@ function hideComicsBar() {
   comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
+  showViewComicsButton();
   unselectComic();
   if (entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
@@ -506,6 +503,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
   comicsBarView = true;
   comicsBar.style.opacity = "1";
   comicsBar.style["z-index"] = "1";
+  hideViewComicsButton();
 
   comicsCache.style.display = "none";
 
@@ -970,6 +968,7 @@ function buildNetwork(networkData, ent, siz) {
       data.clusters[cluster].y = meanArray(data.clusters[cluster].positions.map(n => n.y));
     }
   }
+
   networksLoaded += 1;
   if (networksLoaded === 4)
     loaderComics.style.display = "none";
@@ -1006,7 +1005,7 @@ function renderNetwork() {
     labelColor: view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'},
     labelGridCellSize: 180,
     labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
-    nodesSizeZoomAdjuster: ratio => Math.pow(ratio, 0.75),
+    zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       image: getNodeProgramImage()
     }
@@ -1230,6 +1229,16 @@ function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
 }
+function showViewComicsButton() {
+  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
+    el => el.className = ""
+  );
+}
+function hideViewComicsButton() {
+  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
+    el => el.className = "view-comics-selected"
+  );
+}
 
 function clickNode(node, updateURL = true, center = false) {
   const data = networks[entity][networkSize];
@@ -1336,7 +1345,7 @@ function clickNode(node, updateURL = true, center = false) {
           ? { ...attrs,
               zIndex: 0,
               color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-              size: Math.max(0.5, Math.log(data.graph.getEdgeAttribute(edge, 'weight') * sigmaDim / 300000))
+              size: Math.max(1, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
             }
           : { ...attrs,
               zIndex: 0,
@@ -1447,7 +1456,6 @@ function switchView() {
 // Responsiveness
 let resizing = undefined;
 function doResize(fast = false) {
-console.log("now");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-small") - 10;
