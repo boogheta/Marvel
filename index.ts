@@ -1,9 +1,7 @@
 /* TODO:
 - fix too many labels + display all when comic view
 - mobiles bugs
-  - comicslist min height
   - test centernode after rotate with no framedgraph
-  - auto fullscreen?
 - allow to switch from selected node to other entity and highlight corresponding
 - add search button with list filter
 - check bad data marvel :
@@ -24,6 +22,7 @@ IDEAS:
 - if low debit, load comics only on explore comics click?
 - plot time evolution of node?
 - install app button?
+- cleanup and modularize code
 - test bipartite network between authors and characters filtered by category of author
 */
 
