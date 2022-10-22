@@ -1,6 +1,7 @@
 /* TODO:
+- hide buttons comics when comicsbarview
+- fix too many labels + display all when comic view
 - test new sigma size ratio from jacomyal
-- try to set type=circle instead of image=null ?
 - mobiles bugs
   - comicslist min height
   - test centernode after rotate with no framedgraph
@@ -881,12 +882,12 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       ? { ...attrs,
           zIndex: 2,
           size: attrs.size * 1.75,
-          image: view === "pictures" ? attrs.image : null
+          type: view === "pictures" ? "image" : "circle"
         }
       : { ...attrs,
           zIndex: 0,
           color: "#2A2A2A",
-          image: null,
+          type: "circle",
           size: sigmaDim / 350,
           label: null
         }
@@ -905,6 +906,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           hidden: true
         }
   );
+// TODO: setlabelthreshold so that all visible nodes have one
 
   setTimeout(() => {
     centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
@@ -950,7 +952,7 @@ function buildNetwork(networkData, ent, siz) {
       data.counts[key] = 0;
     data.counts[key]++;
     data.graph.mergeNodeAttributes(node, {
-      type: "thumbnail",
+      type: "image",
       image: /available/i.test(image) ? "" : image,
       size: computeNodeSize(node, stories),
       color: color,
@@ -1006,7 +1008,7 @@ function renderNetwork() {
     labelRenderedSizeThreshold: ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000,
     nodesSizeZoomAdjuster: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
-      thumbnail: getNodeProgramImage()
+      image: getNodeProgramImage()
     }
   };
 
@@ -1040,18 +1042,14 @@ function renderNetwork() {
       else setSearchQuery();
     });
   } else {
-    renderer.setSetting("maxCameraRatio", 100);
-    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-    renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "small" ? 6 : 4) + (entity === "characters" ? 1 : 0)) * sigmaDim / 1000);
-
+    renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-    renderer.setSetting(
-      "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
-    );
+    renderer.setSetting("labelColor", sigmaSettings.labelColor);
+    renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings.labelRenderedSizeThreshold);
+    renderer.setSetting("maxCameraRatio", sigmaSettings.maxCameraRatio);
 
     renderer.setGraph(data.graph);
   }
-  renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, image: null }));
 
   // Render clusters labels layer on top of sigma for creators
   if (entity === "creators") {
@@ -1166,10 +1164,6 @@ function renderNetwork() {
       setSearchQuery();
   };
 
-  // Init view
-  if (view === "colors")
-    switchView();
-
   function adjustGraph(data, loop = null) {
     renderer.setSetting("maxCameraRatio", 1.3);
 
@@ -1193,7 +1187,8 @@ function renderNetwork() {
       camera.animatedReset({ duration: 0 });
       setTimeout(() => {
         showCanvases();
-        renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+        if (view === "colors")
+          renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "circle" }));
         loader.style.display = "none";
       }, 50);
     }
@@ -1260,15 +1255,9 @@ function clickNode(node, updateURL = true, center = false) {
       setPermalink(entity, networkSize, view, node);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
-    renderer.setSetting(
-      "nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null })
-    );
-    renderer.setSetting(
-      "edgeReducer", (edge, attrs) => attrs
-    );
-    renderer.setSetting(
-      "labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'}
-    );
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "colors" ? { ...attrs, type: "circle" } : attrs));
+    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
     return;
   }
 
@@ -1316,36 +1305,29 @@ function clickNode(node, updateURL = true, center = false) {
   }
 
   // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
-  function dataConnected(attrs) {
-    const res = {
-      ...attrs,
-      zIndex: 1,
-      hlcolor: null
-    }
-    if (view === "colors")
-      res.image = null;
-    return res;
-  }
   if (!comicsBarView || ! selectedComic) {
     data.graph.setNodeAttribute(node, "highlighted", true);
     renderer.setSetting(
-      "nodeReducer", (n, attrs) => {
-        return n === node
+      "nodeReducer", (n, attrs) => n === node
+        ? { ...attrs,
+            type: "image",
+            zIndex: 2,
+            size: attrs.size * 1.75,
+            hlcolor: "#ec1d24"
+          }
+        : data.graph.hasEdge(n, node)
           ? { ...attrs,
-              zIndex: 2,
-              size: attrs.size * 1.75,
-              hlcolor: "#ec1d24"
+              type: view === "pictures" ? "image" : "circle",
+              zIndex: 1,
+              hlcolor: null
             }
-          : data.graph.hasEdge(n, node)
-            ? dataConnected(attrs)
-            : { ...attrs,
-                zIndex: 0,
-                color: "#2A2A2A",
-                image: null,
-                size: sigmaDim / 350,
-                label: null
-              };
-      }
+          : { ...attrs,
+              type: "circle",
+              zIndex: 0,
+              color: "#2A2A2A",
+              size: sigmaDim / 350,
+              label: null
+            }
     );
     // Hide unrelated links and highlight, weight and color as the target the node's links
     renderer.setSetting(
@@ -1448,7 +1430,8 @@ function switchView() {
   loader.style.opacity = "0.5";
 
   setTimeout(() => {
-    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? attrs : { ...attrs, image: null }));
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "colors" ? { ...attrs, type: "circle" } : attrs));
+    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
     renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
     if (graph && comicsBarView && selectedComic)
       selectComic(selectedComic, true, true);
