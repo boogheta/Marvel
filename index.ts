@@ -1,6 +1,4 @@
 /* TODO:
-- mobiles bugs
-  - test centernode after rotate with no framedgraph
 - allow to switch from selected node to other entity and highlight corresponding
 - add search button with list filter
 - check bad data marvel :
@@ -341,13 +339,14 @@ function computeNodeSize(node, stories) {
     * sigmaDim / 1000
 };
 
-/*function rotatePosition(pos) {
+function rotatePosition(pos) {
   return {
     x: pos.x * Math.cos(-camera.angle) - pos.y * Math.sin(-camera.angle),
     y: pos.y * Math.cos(-camera.angle) + pos.x * Math.sin(-camera.angle)
   };
-}*/
+}
 
+// Move the camera to center it on the selected node and its neighbors:
 function centerNode(node, neighbors = null, force = true) {
   const data = networks[entity][networkSize];
 
@@ -360,23 +359,23 @@ function centerNode(node, neighbors = null, force = true) {
     neighbors.push(node);
 
   const recenter = function(duration) {
-    let x0, x1, y0, y1;
+    let x0 = null, x1 = null, y0 = null, y1 = null;
     neighbors.forEach(n => {
-        const attrs = renderer.getNodeDisplayData(n);
-        if (!x0 || x0 > attrs.x) x0 = attrs.x;
-        if (!x1 || x1 < attrs.x) x1 = attrs.x;
-        if (!y0 || y0 > attrs.y) y0 = attrs.y;
-        if (!y1 || y1 < attrs.y) y1 = attrs.y;
+        const pos = renderer.getNodeDisplayData(n);
+        if (x0 === null || x0 > pos.x) x0 = pos.x;
+        if (x1 === null || x1 < pos.x) x1 = pos.x;
+        if (y0 === null || y0 > pos.y) y0 = pos.y;
+        if (y1 === null || y1 < pos.y) y1 = pos.y;
       });
     const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
       ? divWidth("comics-bar")
       : 0,
-      leftCorner = renderer.framedGraphToViewport({x: x0, y: y0}),
-      rightCorner = renderer.framedGraphToViewport({x: x1, y: y1}),
-      viewPortPosition = {
-        x: (leftCorner.x + rightCorner.x) / 2 ,
-        y: (leftCorner.y + rightCorner.y) / 2
-      },
+      minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0})),
+      maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1})),
+      viewPortPosition = renderer.framedGraphToViewport({
+        x: (x0 + x1) / 2,
+        y: (y0 + y1) / 2
+      }),
       sigmaDims = container.getBoundingClientRect();
 
     // Handle comicsbar hiding part of the graph
@@ -386,40 +385,45 @@ function centerNode(node, neighbors = null, force = true) {
       35 / camera.ratio,
       Math.max(
         0.21 / camera.ratio,
-        1.3 / Math.min(
-          sigmaDims.width / (rightCorner.x - leftCorner.x),
-          sigmaDims.height / (leftCorner.y - rightCorner.y)
+        4 / 3 / Math.min(
+          sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
+          sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
         )
       )
     );
 
     // Evaluate acceptable window
-    const xMin = 15 * sigmaDims.width / 100,
-      xMax = 85 * sigmaDims.width / 100,
-      yMin = 15 * sigmaDims.height / 100,
-      yMax = 85 * sigmaDims.height / 100;
+    const minWin = rotatePosition({
+      x: 0,
+      y: 0
+    }), maxWin = rotatePosition({
+      x: sigmaDims.width,
+      y: sigmaDims.height
+    }), minPos = rotatePosition({
+      x: sigmaDims.width / 6,
+      y: sigmaDims.height / 6
+    }), maxPos = rotatePosition({
+      x: 5 * sigmaDims.width / 6,
+      y: 5 * sigmaDims.height / 6
+    });
 
-    // Zoom on node only if force, if more than 2 neighbors and outside acceptable window or nodes quite close together, or if outside full window or nodes really close together
+    // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
     if (force ||
-      leftCorner.x < 0 || rightCorner.y < 0 || rightCorner.x > sigmaDims.width || leftCorner.y > sigmaDims.height ||
+      minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
       (ratio !== 0 && (ratio < 0.35)) ||
-      (neighbors.length > 2 && (leftCorner.x < xMin || rightCorner.y < yMin || rightCorner.x > xMax || leftCorner.y > yMax))
+      (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
     ) {
       viewPortPosition.x += ratio * shift / 2;
       camera.animate(
         {
           ...renderer.viewportToFramedGraph(viewPortPosition),
-          ratio: camera.ratio * ratio,
-          angle: 0
+          ratio: camera.ratio * ratio
         },
         {duration: duration}
       );
     }
   }
-  if (camera.angle) {
-    camera.animate({angle: 0}, {duration: 100});
-    setTimeout(() => recenter(250), 100)
-  } else recenter(350);
+  recenter(300);
 }
 
 function loadComics(comicsData) {
@@ -1093,7 +1097,7 @@ function renderNetwork() {
     camera.animatedUnzoom({ duration: 600 });
   };
   document.getElementById("zoom-reset").onclick = () => {
-    camera.animatedReset({ duration: 250 });
+    camera.animatedReset({ duration: 300 });
   };
 
   // Prepare list of nodes for search/select suggestions
@@ -1143,7 +1147,6 @@ function renderNetwork() {
       const suggestionsMatch = suggestions.filter(x => x.label === query);
       if (suggestionsMatch.length === 1) {
         clickNode(suggestionsMatch[0].node);
-        // Move the camera to center it on the selected node and its neighbors:
         setTimeout(() => centerNode(selectedNode), 50);
         suggestions = [];
       } else if (selectedNode) {
@@ -1183,7 +1186,9 @@ function renderNetwork() {
     } else {
       if (selectedNodeLabel)
         clickNode(null);
-      camera.animatedReset({ duration: 0 });
+      camera.x = 0.5;
+      camera.y = 0.5;
+      camera.ratio = 1;
       setTimeout(() => {
         showCanvases();
         if (view === "colors")
