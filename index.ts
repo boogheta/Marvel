@@ -1384,6 +1384,7 @@ document.getElementById("view-node").onclick = () => {
   if (!graph || !renderer)
     return;
   const node = graph.nodes()[Math.floor(Math.random() * graph.order)];
+  if (selectedComic) unselectComic();
   clickNode(node, true, true);
 }
 
