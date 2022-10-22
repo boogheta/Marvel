@@ -1,5 +1,4 @@
 /* TODO:
-- hide buttons comics when comicsbarview
 - fix too many labels + display all when comic view
 - mobiles bugs
   - comicslist min height
@@ -318,9 +317,7 @@ function showCanvases(showClustersLayer = true) {
 
 function defaultSidebar() {
   explanations.style.display = "block";
-  explanations.scrollTo(0, 0);
   nodeDetails.style.display = "none";
-  nodeDetails.scrollTo(0, 0);
   modal.style.display = "none";
   modalImg.src = "";
 }
@@ -332,6 +329,7 @@ function hideComicsBar() {
   comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
+  showViewComicsButton();
   unselectComic();
   if (entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
@@ -505,6 +503,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
   comicsBarView = true;
   comicsBar.style.opacity = "1";
   comicsBar.style["z-index"] = "1";
+  hideViewComicsButton();
 
   comicsCache.style.display = "none";
 
@@ -1229,6 +1228,16 @@ function renderNetwork() {
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
+}
+function showViewComicsButton() {
+  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
+    el => el.className = ""
+  );
+}
+function hideViewComicsButton() {
+  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
+    el => el.className = "view-comics-selected"
+  );
 }
 
 function clickNode(node, updateURL = true, center = false) {

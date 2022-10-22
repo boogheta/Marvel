@@ -289,10 +289,18 @@ h2 {
   margin: 20px 0 20px 0!important;
   text-transform: uppercase;
   line-height: 20px;
+  -webkit-transition: 0.25s ease-in-out;
+  -moz-transition: 0.25s ease-in-out;
+  -o-transition: 0.25s ease-in-out;
+  transition: 0.25s ease-in-out;
 }
 #view-all-comics {
   display: none;
   padding-top: 5px;
+}
+.view-comics-selected {
+  opacity: 0;
+  cursor: default;
 }
 #view-comics > span, #view-node > span, #view-all-comics span {
   width: 170px;
