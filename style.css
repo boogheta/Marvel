@@ -258,6 +258,7 @@ h2 {
   align-items: flex-end;
   border-bottom: 1px solid var(--marvel-red);
   margin: 0 10px;
+  height: 25px;
 }
 .histobar {
   display: block;

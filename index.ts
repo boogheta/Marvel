@@ -1,6 +1,5 @@
 /* TODO:
 - allow to switch from selected node to other entity and highlight corresponding
-- plug histogram with search results?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -246,6 +245,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   nodeHistogram = document.getElementById("node-histogram") as HTMLElement,
+  fullHistogram = document.getElementById("full-histogram") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
@@ -330,6 +330,12 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
+  if (filterComics.className === "selected") {
+    filterComics.className = "";
+    filterSearch.style.display = "none";
+    doResize(true);
+    (selectedNode ? nodeHistogram : fullHistogram).innerHTML = renderHistogram(selectedNode);
+  }
   comicsCache.style.display = "none";
   comicsBarView = false;
   comicsBar.style.opacity = "0";
@@ -480,7 +486,7 @@ function loadComics(comicsData) {
       comicsReady = true;
       loaderComics.style.display = "none";
       viewAllComicsButton.style.display = "block";
-      (document.getElementById("full-histogram") as HTMLElement).innerHTML = buildHistogram();
+      fullHistogram.innerHTML = renderHistogram();
       doResize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
@@ -529,14 +535,18 @@ filterComics.onclick = () => {
 filterInput.oninput = refreshFilter;
 //filterInput.onblur = filterInput.oninput;
 
-function displayComics(node, autoReselect = false, resetTitle = true) {
-  const graph = networks[entity][networkSize].graph;
-  const comics = node === null
+function getNodeComics(node) {
+  return node === null
     ? allComics
     : (entity === "characters"
       ? charactersComics
       : creatorsComics
       )[node] || [];
+}
+
+function displayComics(node, autoReselect = false, resetTitle = true) {
+  const graph = networks[entity][networkSize].graph;
+  const comics = getNodeComics(node)
 
   comicsBarView = true;
   comicsBar.style.opacity = "1";
@@ -577,6 +587,9 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       ? fullList.filter(c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
       : fullList;
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
+
+    (selectedNode ? nodeHistogram : fullHistogram).innerHTML = renderHistogram(selectedNode, filteredList);
+
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
       if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
@@ -586,6 +599,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
           .join("&nbsp;")
           .replace(/&nbsp;([^&]+)$/, " or $1");
     }
+
     setTimeout(() => {
       comicsList.innerHTML = filteredList.length
         ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (labelNode && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
@@ -669,6 +683,8 @@ document.onkeydown = function(e) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return
 
+  if (searchInput === document.activeElement || filterInput === document.activeElement)
+    return
   if (modal.style.display === "block" && e.which === 27) {
     modal.style.display = "none";
     comicsCache.style.display = "none";
@@ -1281,30 +1297,32 @@ function buildLegendItem(year, ref = "") {
     color + '"' + className + '>' + year + '</span>';
 }
 
-function buildHistogram(node = null) {
-  if (!histograms[entity][node]) {
-    const comics = node === null
-      ? allComics
-      : (entity === "characters"
-        ? charactersComics
-        : creatorsComics
-        )[node] || [];
-    histograms[entity][node] = {
-      values: new Array(totalYears).fill(0),
-      start: curYear
-    };
-    comics.forEach(c => {
-      const comicYear = (new Date(c.date)).getFullYear();
-      if (!comicYear) return;
-      histograms[entity][node].values[comicYear - startYear] += 1;
-      histograms[entity][node].start = Math.min(histograms[entity][node].start, comicYear);
-    });
-  }
+function buildHistogram(comics) {
+  const histo = {
+    values: new Array(totalYears).fill(0),
+    start: curYear
+  };
+  comics.forEach(c => {
+    const comicYear = (new Date(c.date)).getFullYear();
+    if (!comicYear) return;
+    histo.values[comicYear - startYear] += 1;
+    histo.start = Math.min(histo.start, comicYear);
+  });
+  return histo;
+}
 
-  const heightRatio = 25 / Math.max.apply(Math, histograms[entity][node].values),
+function renderHistogram(node = null, comics = null) {
+  const histogram = comics === null && histograms[entity][node]
+    ? histograms[entity][node]
+    : buildHistogram(comics || getNodeComics(node));
+  if (comics === null && !histograms[entity][node])
+    histograms[entity][node] = histogram;
+
+console.log(node, comics, histograms[entity][node], histogram);
+  const heightRatio = 25 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
   let histogramDiv = '<div id="histogram">';
-  histograms[entity][node].values.forEach((y, idx) => histogramDiv +=
+  histogram.values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar" ' +
       'title="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' +
       'style="width: calc(100% / ' + totalYears + '); ' +
@@ -1314,15 +1332,15 @@ function buildHistogram(node = null) {
   histogramDiv += '</div><div id="histo-legend">';
 
   const legendYears = [startYear, 1960, 1980, 2000, curYear];
-  if (legendYears.indexOf(histograms[entity][node].start) === -1)
-    legendYears.push(histograms[entity][node].start);
+  if (legendYears.indexOf(histogram.start) === -1)
+    legendYears.push(histogram.start);
   legendYears.sort().forEach(y => {
-    if (y + 12 < histograms[entity][node].start)
+    if (y + 12 < histogram.start)
       histogramDiv += buildLegendItem(y, "old")
-    else if (y - 12 > histograms[entity][node].start)
+    else if (y - 12 > histogram.start)
       histogramDiv += buildLegendItem(y);
-    else if (y === histograms[entity][node].start)
-      histogramDiv += buildLegendItem(histograms[entity][node].start, "start");
+    else if (y === histogram.start)
+      histogramDiv += buildLegendItem(histogram.start, "start");
   });
   histogramDiv += '</div>';
   return histogramDiv;
@@ -1331,7 +1349,7 @@ function buildHistogram(node = null) {
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
-  nodeHistogram.innerHTML = buildHistogram(node);
+  nodeHistogram.innerHTML = renderHistogram(node);
 }
 
 function showViewComicsButton() {
