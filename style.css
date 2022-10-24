@@ -81,7 +81,7 @@ html, body {
   position: absolute;
   top: 0;
   right: 0;
-  margin: 4px 3px;
+  margin: 2px;
 }
 #comics-bar h3 {
   margin: 0;
@@ -132,13 +132,12 @@ html, body {
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: center;
+  justify-content: space-between;
   margin: 2px 0 0 0;
 }
 #comics-actions button {
   width: 35px;
   height: 35px;
-  margin: 0 2px;
   background: #eee;
   outline: none;
   cursor: pointer;
@@ -146,6 +145,7 @@ html, body {
   font-family: monospace;
   font-weight: bold;
   padding: 0;
+  margin: 0 2px;
   border: 2px solid #555;
   border-radius: 5px;
 }
@@ -167,6 +167,23 @@ html, body {
 #comics-actions button.sort-button:disabled {
   opacity: 1;
   background: var(--marvel-red-light);
+}
+#comics-actions button.selected, #modal-actions button.selected {
+  background: var(--marvel-red-light);
+  border: 2px solid #222;
+}
+#filter-comics {
+  display: none;
+}
+#filter-input {
+  width: calc(100% - 4px);
+  margin: -2px 2px 4px 2px;
+  font-family: monospace;
+  font-size: 14px;
+  border: 2px solid #111;
+  border-radius: 5px;
+  line-height: 24px;
+  padding: 0 10px;
 }
 #comics-pause {
   display: none;
@@ -784,7 +801,7 @@ label {
   input, textarea, button, select, a, label, div, p {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
-  #search input {
+  #search input, #comics-filter {
     display: none;
   }
   #suggestions-select {

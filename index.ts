@@ -1,6 +1,6 @@
 /* TODO:
 - allow to switch from selected node to other entity and highlight corresponding
-- add search button with list filter only on big screens
+- plug histogram with search results?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -232,6 +232,9 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicsPrev = document.getElementById("comics-prev") as HTMLButtonElement,
   comicsPlay = document.getElementById("comics-play") as HTMLButtonElement,
   comicsPause = document.getElementById("comics-pause") as HTMLButtonElement,
+  filterComics = document.getElementById("comics-filter") as HTMLButtonElement,
+  filterSearch = document.getElementById("filter-comics") as HTMLButtonElement,
+  filterInput = document.getElementById("filter-input") as HTMLButtonElement,
   sortAlpha = document.getElementById("comics-sort-alpha") as HTMLButtonElement,
   sortDate = document.getElementById("comics-sort-date") as HTMLButtonElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
@@ -502,6 +505,30 @@ sortDate.onclick = () => {
   displayComics(selectedNode, true, false);
 };
 
+let filterTimeout = null;
+function refreshFilter() {
+  if (filterTimeout)
+    clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    displayComics(selectedNode, true, false);
+    filterTimeout = null;
+  }, 200);
+}
+filterComics.onclick = () => {
+  if (filterComics.className === "selected") {
+    filterComics.className = "";
+    filterSearch.style.display = "none";
+  } else {
+    filterSearch.style.display = "block";
+    filterComics.className = "selected";
+  }
+  doResize(true);
+  if (filterInput.value)
+    refreshFilter();
+}
+filterInput.oninput = refreshFilter;
+//filterInput.onblur = filterInput.oninput;
+
 function displayComics(node, autoReselect = false, resetTitle = true) {
   const graph = networks[entity][networkSize].graph;
   const comics = node === null
@@ -543,9 +570,12 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
       autoReselect
     );
   setTimeout(() => {
-    const filteredList = comics
+    const fullList = comics
       ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
       : [];
+    const filteredList = filterComics.className === "selected" && filterInput.value
+      ? fullList.filter(c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
+      : fullList;
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
@@ -1098,7 +1128,6 @@ function renderNetwork() {
 
   // Bind zoom manipulation buttons
   camera = renderer.getCamera();
-(window as any).camera = data.camera;
   document.getElementById("zoom-in").onclick = () => {
     camera.animatedZoom({ duration: 600 });
   };
@@ -1270,7 +1299,6 @@ function buildHistogram(node = null) {
       histograms[entity][node].values[comicYear - startYear] += 1;
       histograms[entity][node].start = Math.min(histograms[entity][node].start, comicYear);
     });
-    console.log(histograms);
   }
 
   const heightRatio = 25 / Math.max.apply(Math, histograms[entity][node].values),
