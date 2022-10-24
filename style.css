@@ -233,6 +233,26 @@ h2 {
 #node-label, #node-extra {
   margin: 7px 10px;
 }
+#histogram {
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--marvel-red);
+}
+.histobar {
+  display: block;
+  background-color: var(--marvel-red);
+  box-shadow: 0px 0px 2px var(--marvel-red);
+}
+#histo-legend {
+  font-size: 10px;
+  color: #AAA;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+#histo-legend span {
+  position: sticky;
+  display: table-cell;
+}
 #node-img, #comic-img {
   max-width: 75%;
   max-height: 400px;
@@ -618,6 +638,9 @@ label {
   #sidebar, .footer, #comics-bar {
     width: 198px;
   }
+  #histo-legend .hidable {
+    display: none;
+  }
   #controls {
     top: 5px;
   }
@@ -692,16 +715,16 @@ label {
   }
 }
 @media (max-height: 400px) {
-  #search {
-    position: fixed;
-    bottom: 5px;
-    margin-right: 5px;
-  }
   #comic-details {
     height: calc(100% / 3);
   }
 }
 @media (max-height: 600px) {
+  #search {
+    position: fixed;
+    bottom: 5px;
+    margin-right: 5px;
+  }
   .network-choice {
     height: 20px;
   }
@@ -774,7 +797,7 @@ label {
     display: inline;
   }
 }
-@media (pointer: coarse) and (max-height: 400px) and (max-width: 700px) {
+@media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
   #loader-comics {
     left: 203px;
     right: unset;
