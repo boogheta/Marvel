@@ -8,6 +8,7 @@
   - test new spatialization graphology
  => scraper comics as counter-truth? :
   - select good creators fields
+  - handle missing dates?
   - rebuild creators network from cleaned comics instead
   - filter imprint marvel
   - add cover artist in comics list, not in links used
@@ -16,8 +17,7 @@
 - bind url with selected comic?
 - auto data updates
 IDEAS:
-- if low debit, load comics only on explore comics click?
-- plot time evolution of node?
+- if low debit, load comics/pictures only on explore comics click?
 - install app button?
 - cleanup and modularize code
 - test bipartite network between authors and characters filtered by category of author
@@ -45,6 +45,10 @@ let entity = "",
   camera = null,
   clustersLayer = null,
   resizeClusterLabels = function() {},
+  histograms = {
+    characters: {},
+    creators: {}
+  },
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
@@ -54,7 +58,10 @@ let entity = "",
   playing = null,
   sortComics = "date";
 
-const conf = {},
+const startYear = 1939,
+  curYear = (new Date).getFullYear(),
+  totalYears = curYear - startYear + 1,
+  conf = {},
   networks = {},
   allComics = [],
   allCharacters = {"-1": "missing info"},
@@ -1230,9 +1237,65 @@ function renderNetwork() {
   } else adjustGraph(data);
 }
 
+function buildLegendItem(year, ref = "") {
+  let className = '',
+    color = '';
+  if (ref !== "start" && year !== startYear && year !== curYear)
+    className = ' class="hidable"';
+  if (ref === "start")
+    color = '; color: var(--marvel-red-light)';
+  else if (ref === "old")
+    color = '; color: #555';
+  return '<span style="left: calc(' +
+    Math.round(100 * (year - startYear) / totalYears) + '% - 15px)' +
+    color + '"' + className + '>' + year + '</span>';
+}
+
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => displayComics(node);
+
+  if (!histograms[entity][node]) {
+    const comics = (entity === "characters"
+      ? charactersComics
+      : creatorsComics
+    )[node] || [];
+    histograms[entity][node] = {
+      values: new Array(totalYears).fill(0),
+      start: curYear
+    };
+    comics.forEach(c => {
+      const comicYear = (new Date(c.date)).getFullYear();
+      if (!comicYear) return;
+      histograms[entity][node].values[comicYear - startYear] += 1;
+      histograms[entity][node].start = Math.min(histograms[entity][node].start, comicYear);
+    });
+  }
+  const heightRatio = 25 / Math.max.apply(Math, histograms[entity][node].values),
+    barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
+  let histogramDiv = '<div id="histogram">';
+  histograms[entity][node].values.forEach((y, idx) => histogramDiv +=
+    '<span class="histobar" ' +
+      'title="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' +
+      'style="width: ' + barWidth + 'px; ' +
+        'height: ' + Math.round(y * heightRatio) + 'px">' +
+    '</span>'
+  );
+  histogramDiv += '</div><div id="histo-legend">';
+
+  const legendYears = [startYear, 1960, 1980, 2000, curYear];
+  if (legendYears.indexOf(histograms[entity][node].start) === -1)
+    legendYears.push(histograms[entity][node].start);
+  legendYears.sort().forEach(y => {
+    if (y + 12 < histograms[entity][node].start)
+      histogramDiv += buildLegendItem(y, "old")
+    else if (y - 12 > histograms[entity][node].start)
+      histogramDiv += buildLegendItem(y);
+    else if (y === histograms[entity][node].start)
+      histogramDiv += buildLegendItem(histograms[entity][node].start, "start");
+  });
+  histogramDiv += '</div>';
+  nodeExtra.innerHTML += histogramDiv;
 }
 function showViewComicsButton() {
   (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
