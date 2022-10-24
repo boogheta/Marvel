@@ -80,11 +80,13 @@
         <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p>
         <p id="view-node"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
         <p id="view-all-comics"><span>Explore all comics</span></p>
+        <div id="full-histogram"></div>
       </div>
       <div id="node-details">
         <h2 id="node-label"></h2>
         <img id="node-img"/>
         <div id="node-extra"></div>
+        <div id="node-histogram"></div>
       </div>
       <div id="credits" class="footer">
         <p class="characters-details"><sup>*</sup>&nbsp;Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,<br/>so they are sometimes imprecise</p>
@@ -136,6 +138,9 @@
           <span id="comics-subtitle-list"></span>
         </h3>
         <div id="comics-actions">
+          <button id="comics-filter" title="Filter comics">
+            <img src="./images/search.svg" alt="filter comics" />
+          </button>
           <button id="comics-sort-date" title="Sort comics by publication date" class="sort-button" disabled>
             <img src="./images/sort-date.svg" alt="sort chronologically" />
           </button>
@@ -148,12 +153,15 @@
           <button id="comics-play" title="Start scrolling comics">
             <img src="./images/play.svg" alt="play" />
           </button>
-          <button id="comics-pause" title="Stop scrolling comics">
+          <button id="comics-pause" title="Stop scrolling comics" class="selected">
             <img src="./images/pause.svg" alt="pause" />
           </button>
           <button id="comics-next" title="Next comic">
             <img src="./images/right.svg" alt="previous-picture" />
           </button>
+        </div>
+        <div id="filter-comics" title="Filter comics by title">
+          <input type="search" id="filter-input" placeholder="Search…" />
         </div>
       </div>
       <div id="comics">
@@ -190,7 +198,7 @@
         <button id="modal-play" class="action-button" title="Start scrolling comics">
           <img src="./images/play.svg" alt="play" />
         </button>
-        <button id="modal-pause" class="action-button" title="Stop scrolling comics">
+        <button id="modal-pause" class="action-button selected" title="Stop scrolling comics">
           <img src="./images/pause.svg" alt="pause" />
         </button>
         <button id="modal-next" class="action-button" title="Next comic">
