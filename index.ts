@@ -1056,7 +1056,7 @@ function renderNetwork() {
   // Instantiate sigma:
   let sigmaSettings = {
     minCameraRatio: (entity === "creators" && networkSize === "full" ? 0.035 : 0.07),
-    maxCameraRatio: 100,
+    maxCameraRatio: 75,
     defaultEdgeColor: '#2A2A2A',
     labelFont: 'monospace',
     labelWeight: 'bold',
@@ -1104,7 +1104,6 @@ function renderNetwork() {
     renderer.setSetting("labelColor", sigmaSettings.labelColor);
     renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings.labelRenderedSizeThreshold);
-    renderer.setSetting("maxCameraRatio", sigmaSettings.maxCameraRatio);
 
     renderer.setGraph(data.graph);
   }
@@ -1221,10 +1220,9 @@ function renderNetwork() {
   };
 
   function adjustGraph(data, loop = null) {
-    renderer.setSetting("maxCameraRatio", 1.3);
 
     // If a comic is selected we reload the list with it within it
-    if (comicsBarView && selectedComic && camera.ratio <= 2.25) {
+    if (comicsBarView && selectedComic) {
       showCanvases();
       if (selectedNode)
         displayComics(selectedNode, true, true);
@@ -1240,9 +1238,11 @@ function renderNetwork() {
     } else {
       if (selectedNodeLabel)
         clickNode(null);
-      camera.x = 0.5;
-      camera.y = 0.5;
-      camera.ratio = 1;
+      camera.animate({
+        x: 0.5,
+        y: 0.5,
+        ratio: 1
+      }, {duration: 50});
       setTimeout(() => {
         showCanvases();
         if (view === "colors")
