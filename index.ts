@@ -1,6 +1,6 @@
 /* TODO:
 - allow to switch from selected node to other entity and highlight corresponding
-- add search button with list filter
+- add search button with list filter only on big screens
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -242,6 +242,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
+  nodeHistogram = document.getElementById("node-histogram") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
@@ -476,6 +477,8 @@ function loadComics(comicsData) {
       comicsReady = true;
       loaderComics.style.display = "none";
       viewAllComicsButton.style.display = "block";
+      (document.getElementById("full-histogram") as HTMLElement).innerHTML = buildHistogram();
+      doResize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
       preloadOtherNetworks();
@@ -501,13 +504,12 @@ sortDate.onclick = () => {
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
   const graph = networks[entity][networkSize].graph;
-  const comics = (node === null
+  const comics = node === null
     ? allComics
     : (entity === "characters"
       ? charactersComics
       : creatorsComics
-    )[node]
-  );
+      )[node] || [];
 
   comicsBarView = true;
   comicsBar.style.opacity = "1";
@@ -1246,20 +1248,18 @@ function buildLegendItem(year, ref = "") {
     color = '; color: var(--marvel-red-light)';
   else if (ref === "old")
     color = '; color: #555';
-  return '<span style="left: calc(' +
-    Math.round(100 * (year - startYear) / totalYears) + '% - 15px)' +
+  return '<span style="left: calc(0px + calc((100% - 25px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + '))' +
     color + '"' + className + '>' + year + '</span>';
 }
 
-function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
-  document.getElementById('view-comics').onclick = () => displayComics(node);
-
+function buildHistogram(node = null) {
   if (!histograms[entity][node]) {
-    const comics = (entity === "characters"
-      ? charactersComics
-      : creatorsComics
-    )[node] || [];
+    const comics = node === null
+      ? allComics
+      : (entity === "characters"
+        ? charactersComics
+        : creatorsComics
+        )[node] || [];
     histograms[entity][node] = {
       values: new Array(totalYears).fill(0),
       start: curYear
@@ -1270,14 +1270,16 @@ function addViewComicsButton(node) {
       histograms[entity][node].values[comicYear - startYear] += 1;
       histograms[entity][node].start = Math.min(histograms[entity][node].start, comicYear);
     });
+    console.log(histograms);
   }
+
   const heightRatio = 25 / Math.max.apply(Math, histograms[entity][node].values),
     barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
   let histogramDiv = '<div id="histogram">';
   histograms[entity][node].values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar" ' +
       'title="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' +
-      'style="width: ' + barWidth + 'px; ' +
+      'style="width: calc(100% / ' + totalYears + '); ' +
         'height: ' + Math.round(y * heightRatio) + 'px">' +
     '</span>'
   );
@@ -1295,8 +1297,15 @@ function addViewComicsButton(node) {
       histogramDiv += buildLegendItem(histograms[entity][node].start, "start");
   });
   histogramDiv += '</div>';
-  nodeExtra.innerHTML += histogramDiv;
+  return histogramDiv;
 }
+
+function addViewComicsButton(node) {
+  nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
+  document.getElementById('view-comics').onclick = () => displayComics(node);
+  nodeHistogram.innerHTML = buildHistogram(node);
+}
+
 function showViewComicsButton() {
   (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
     el => el.className = ""

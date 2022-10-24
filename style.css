@@ -196,10 +196,10 @@ h2 {
   overflow-y: auto;
   line-height: 13px;
   opacity: 0;
-  -webkit-transition: 0.25s ease-in-out;
-  -moz-transition: 0.25s ease-in-out;
-  -o-transition: 0.25s ease-in-out;
-  transition: 0.25s ease-in-out;
+  -webkit-transition: opacity 0.5s ease-in-out;
+  -moz-transition: opacity 0.5s ease-in-out;
+  -o-transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
 }
 #explanations p {
   margin: 7px 10px;
@@ -233,10 +233,14 @@ h2 {
 #node-label, #node-extra {
   margin: 7px 10px;
 }
+#node-histogram, #full-histogram {
+  margin: 10px 0;
+}
 #histogram {
   display: flex;
   align-items: flex-end;
   border-bottom: 1px solid var(--marvel-red);
+  margin: 0 10px;
 }
 .histobar {
   display: block;
@@ -246,8 +250,7 @@ h2 {
 #histo-legend {
   font-size: 10px;
   color: #AAA;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding: 4px;
 }
 #histo-legend span {
   position: sticky;
@@ -319,7 +322,7 @@ h2 {
   padding-top: 5px;
 }
 .view-comics-selected {
-  opacity: 0;
+  opacity: 0.15;
   cursor: default;
 }
 #view-comics > span, #view-node > span, #view-all-comics span {
