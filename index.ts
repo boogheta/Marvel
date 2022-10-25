@@ -309,7 +309,7 @@ function setPermalink(ent, siz, vie, sel, keepSelected = false) {
   }
   switchNodeType.checked = ent === "creators";
   switchNodeFilter.checked = siz === "full";
-  window.location.hash = ent + "/" + siz + "/" + vie + selection;
+  window.location.hash = siz + "/" + ent + "/" + vie + selection;
 }
 
 function hideCanvases() {
@@ -1636,9 +1636,9 @@ function readUrl() {
   let reload = false,
     switchv = false,
     clickn = false;
-  if (args[0] !== entity)
+  if (args[1] !== entity)
     defaultSidebar()
-  if (args[0] !== entity || args[1] !== networkSize)
+  if (args[1] !== entity || args[0] !== networkSize)
     reload = true;
   else if (args[2] !== view)
     switchv = true;
@@ -1648,7 +1648,7 @@ function readUrl() {
     selectedNodeLabel = decodeURIComponent(args[3].replace(/\+/g, " "));
     searchInput.value = selectedNodeLabel;
   } else selectedNodeLabel = null;
-  const graph = networks[args[0]][args[1]].graph;
+  const graph = networks[args[1]][args[0]].graph;
   if (graph && (
     (selectedNodeLabel && (!selectedNode || (graph.hasNode(selectedNode) && selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label"))))
     || (!selectedNodeLabel && selectedNode)
@@ -1656,14 +1656,14 @@ function readUrl() {
     clickn = true;
 
   // Setup Node type switch
-  if (args[0] === "creators")
+  if (args[1] === "creators")
     switchNodeType.checked = true;
-  setEntity(args[0]);
+  setEntity(args[1]);
 
   // Setup Size filter switch
-  if (args[1] === "full")
+  if (args[0] === "full")
     switchNodeFilter.checked = true;
-  setSize(args[1]);
+  setSize(args[0]);
 
   // Setup View switch
   if (args[2] === "colors")
