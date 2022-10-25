@@ -7,6 +7,7 @@
   - test new spatialization graphology
  => scraper comics as counter-truth? :
   - select good creators fields
+  - take from scraping good image url if /clean within (example https://www.marvel.com/comics/issue/51567/captain_britain_and_the_mighty_defenders_2015_1)
   - handle missing dates?
   - rebuild creators network from cleaned comics instead
   - filter imprint marvel
