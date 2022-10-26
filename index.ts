@@ -1308,8 +1308,8 @@ function buildLegendItem(year, ref = "") {
     color = '; color: var(--marvel-red-light)';
   else if (ref === "old")
     color = '; color: #555';
-  return '<span style="left: calc(0px + calc((100% - 25px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + '))' +
-    color + '"' + className + '>' + year + '</span>';
+  return '<div style="left: calc((100% - 25px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + ')' +
+    color + '"' + className + '>' + year + '</div>';
 }
 
 function buildHistogram(comics) {

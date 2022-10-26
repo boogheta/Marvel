@@ -268,11 +268,13 @@ h2 {
 #histo-legend {
   font-size: 10px;
   color: #AAA;
-  padding: 4px;
+  padding: 4px 0 4px 2px;
+  text-align: left;
 }
-#histo-legend span {
-  position: sticky;
-  display: table-cell;
+#histo-legend div {
+  position: relative;
+  display: inline-block;
+  width: 0;
 }
 #node-img, #comic-img {
   max-width: 75%;
