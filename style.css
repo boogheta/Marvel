@@ -376,7 +376,7 @@ h2 {
 #credits, #title {
   display: block;
 }
-#credits-small {
+#credits-main {
   display: none;
 }
 #webgl-disclaimer, #noscript {
@@ -424,10 +424,10 @@ h2 {
   z-index: 10;
   display: none;
   opacity: 0.85;
-  -webkit-transition: 0.25s ease-in-out;
-  -moz-transition: 0.25s ease-in-out;
-  -o-transition: 0.25s ease-in-out;
-  transition: 0.25s ease-in-out;
+  -webkit-transition: opacity 0.25s ease-in-out;
+  -moz-transition: opacity 0.25s ease-in-out;
+  -o-transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
 }
 .loader img {
   width: 45px;
@@ -702,7 +702,7 @@ label {
   #comics-list li {
     padding: 2px;
   }
-  #credits-small {
+  #credits-main {
     display: block;
   }
   #credits, .asterisk, #title {
@@ -759,7 +759,7 @@ label {
   .choices {
     margin: 5px 0 0px 0;
   }
-  #credits-small {
+  #credits-main {
     display: block;
   }
   #credits, .asterisk, #title {

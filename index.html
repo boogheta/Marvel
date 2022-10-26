@@ -42,7 +42,7 @@
               <div class="toggle"></div>
               <div class="names">
                 <div class="left">main</div>
-                <div class="right">all</div>
+                <div class="right">most</div>
               </div>
             </label>
           </div>
@@ -71,7 +71,7 @@
       </div>
       <div id="explanations">
         <p>This graph shows a map of <b id="order"></b> Marvel <span class="entity"></span> positionned close to those they are the most linked with.</p>
-        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="small-details">at least </span><span class="small-details" id="min-stories"></span><span class="full-details">all</span> comic book stories registered into Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
+        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="main-details">at least </span><span class="main-details" id="min-stories"></span><span class="most-details">all</span> comic book stories registered into Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
         <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> the top buttons to switch between reduced or complete versions of the networks of characters or creators, using avatar pics or community colors.</p>
         <p>The size of each node reflects how often the <span class="entity"></span> have been accounted as participating to stories within Marvel API's data.</p>
         <p class="characters-details">Colors indicate which <i>family</i><sup class="asterisk">*</sup> each character belongs to (<span id="clusters-legend"></span>, etc.).</p>
@@ -90,10 +90,10 @@
       </div>
       <div id="credits" class="footer">
         <p class="characters-details"><sup>*</sup>&nbsp;Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,<br/>so they are sometimes imprecise</p>
-        <p>Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a><br/> Full credits and free open source code<br/>(AGPL v3) available on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a><br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
+        <p>Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a><br/>Full credits and free open source code<br/>(AGPL v3) available on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a><br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
         <p>Data provided by <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a><br/>© 2022 MARVEL</p>
       </div>
-      <div id="credits-small" class="footer">
+      <div id="credits-main" class="footer">
         <p>data from <a href="https://developer.marvel.com/" target="_blank">MARVEL's API</a> ©2022</p>
         <p>by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a></p>
       </div>
