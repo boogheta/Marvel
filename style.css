@@ -364,9 +364,12 @@ h2 {
 }
 .footer p {
   font-size: 11px;
-  padding: 4px 0px;
-  border-top: 1px solid #444;
+  padding: 2px 0px;
+  border-top: 1px dashed #444;
   margin: 0;
+}
+.footer p:last-child {
+  padding-bottom: 5px;
 }
 .footer p.characters-details {
   display: none;
@@ -451,8 +454,7 @@ h2 {
   position: relative;
   top: 35px;
   left: 0;
-  width: 35px;
-  height: 35px;
+  width: 45px;
 }
 #modal {
   position: absolute;
@@ -611,6 +613,7 @@ label {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  align-content: center;
   user-select: none;
 }
 .names > div {
@@ -671,11 +674,11 @@ label {
     left: calc(50% + 75px);
   }
   .logo {
-    height: 27px;
+    height: 42px;
   }
   h1 {
-    font-size: 20px!important;
-    padding: 4px 0!important;
+    font-size: 18px!important;
+    padding: 13px 0!important;
   }
   .choices {
     margin: 5px 0 0px 0;
@@ -687,7 +690,7 @@ label {
     width: 88px;
   }
   .names > div {
-    font-size: 12px;
+    font-size: 13px;
   }
   #view-comics, #view-node, #view-all-comics {
     font-size: 14px;
@@ -752,11 +755,11 @@ label {
     height: 20px;
   }
   .logo {
-    height: 27px;
+    height: 42px;
   }
   h1 {
-    font-size: 24px;
-    padding: 2px 0;
+    font-size: 28px;
+    padding: 7px 0;
   }
   .choices {
     margin: 5px 0 0px 0;
