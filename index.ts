@@ -1,6 +1,5 @@
 /* TODO:
   - load node sidebar after load all networks if landed on alternate view
-  - adjust sidebar node title when crossed
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -295,11 +294,6 @@ function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
 
-function setPermalink(ent, siz, vie, sel, selType) {
-  window.location.hash = siz + "/" + ent + "/" + vie + "/"
-    + (sel !== null ? "?" + (selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g,"+") : "");
-}
-
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
   if (showClustersLayer && clustersLayer && entity === "creators")
@@ -498,7 +492,9 @@ function loadComics(comicsData) {
       doResize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
-      preloadOtherNetworks();
+      ["creators", "characters"].forEach(e =>
+        ["main", "most"].forEach(s => loadNetwork(e, s))
+      );
     }
   });
 }
@@ -780,21 +776,21 @@ switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeType.checked = !switchNodeType.checked;
-    setPermalink(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
+    setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
   }
 };
 switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-    setPermalink(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
+    setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
   }
 };
 switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
   if (typ === "left" || typ === "right") {
     switchNodeView.checked = !switchNodeView.checked;
-    setPermalink(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
+    setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
   }
 };
 
@@ -930,12 +926,12 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comic.creators.forEach(c => {
     if (!allCreators[c]) return;
     const entityLi = document.getElementById("creator-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink(entity, networkSize, view, allCreators[c], "creators");
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCreators[c], "creators");
   });
   comic.characters.forEach(c => {
     if (!allCharacters[c]) return;
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink(entity, networkSize, view, allCharacters[c], "characters");
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters");
   });
 
   renderer.setSetting(
@@ -973,6 +969,16 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
     centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
     hideLoader();
   }, 50);
+}
+
+function loadNetwork(ent, siz) {
+  if (networks[ent][siz].loading)
+    return;
+  networks[ent][siz].loading = true;
+  loaderComics.style.display = "block";
+  return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
+    .then(res => res.arrayBuffer())
+    .then(content => buildNetwork(content, ent, siz));
 }
 
 function buildNetwork(networkData, ent, siz) {
@@ -1034,8 +1040,6 @@ function buildNetwork(networkData, ent, siz) {
   networksLoaded += 1;
   if (networksLoaded === 4)
     loaderComics.style.display = "none";
-  else if (comicsReady)
-    preloadOtherNetworks();
 }
 
 function renderNetwork() {
@@ -1317,7 +1321,6 @@ function renderHistogram(node = null, comics = null) {
   if (comics === null && !histograms[entity][node])
     histograms[entity][node] = histogram;
 
-console.log(node, comics, histograms[entity][node], histogram);
   const heightRatio = 25 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
   let histogramDiv = '<div id="histogram">';
@@ -1384,7 +1387,7 @@ function clickNode(node, updateURL = true, center = false) {
     selectedNodeType = null;
     selectedNodeLabel = null;
     if (updateURL)
-      setPermalink(entity, networkSize, view, null, null);
+      setURL(entity, networkSize, view, null, null);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
@@ -1400,11 +1403,11 @@ function clickNode(node, updateURL = true, center = false) {
     relatedNodes = Array.from(crossMap[entity][node] || []);
   }
 
-  if (updateURL && !data.graph.hasNode(node)) 
-    return setPermalink(entity, networkSize, view, null, null);
+  if (updateURL && !data.graph.hasNode(node))
+    return setURL(entity, networkSize, view, null, null);
 
   if (updateURL && !sameNode)
-    setPermalink(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity);
+    setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity);
 
   // Fill sidebar with selected node's details
   const attrs = data.graph.getNodeAttributes(node);
@@ -1581,6 +1584,23 @@ regScreenBtn.onclick = () => {
 };
 
 // Network switch buttons
+switchNodeType.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
+  setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
+};
+
+switchNodeFilter.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
+  setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
+};
+
+switchNodeView.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
+};
+
 function setEntity(val) {
   entity = val;
   entitySpans.forEach(span => span.innerHTML = val);
@@ -1628,8 +1648,8 @@ function doResize(fast = false) {
   explanations.style.opacity = "1"
   explanations.style.height = freeHeight + "px";
   explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = freeHeight + "px";
-  nodeDetails.style["min-height"] = freeHeight + "px";
+  nodeDetails.style.height = (freeHeight - 1) + "px";
+  nodeDetails.style["min-height"] = (freeHeight - 1) + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();
@@ -1647,29 +1667,19 @@ function doResize(fast = false) {
   }
   if (!fast) resizing = false;
 }
-function resize() {
+
+window.onresize = () => {
   if (resizing === true) return;
   if (resizing) clearTimeout(resizing);
   resizing = setTimeout(doResize, 0);
 };
-window.onresize = resize;
 
-switchNodeType.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  explanations.style.opacity = "0";
-  setPermalink(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
-};
-switchNodeFilter.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  explanations.style.opacity = "0";
-  setPermalink(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
-};
-switchNodeView.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  setPermalink(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
-};
+function setURL(ent, siz, vie, sel, selType) {
+  window.location.hash = siz + "/" + ent + "/" + vie + "/"
+    + (sel !== null ? "?" + (selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g,"+") : "");
+}
 
-function readUrl() {
+function readURL() {
   const args = window.location.hash
     .replace(/^#/, '')
     .split(/\/\??/);
@@ -1677,7 +1687,7 @@ function readUrl() {
     || ["main", "most"].indexOf(args[0]) === -1
     || ["characters", "creators"].indexOf(args[1]) === -1
     || ["pictures", "colors"].indexOf(args[2]) === -1
-  ) return setPermalink("characters", "main", "pictures", null, null);
+  ) return setURL("characters", "main", "pictures", null, null);
   const opts = Object.fromEntries(
     args[3].split("&")
     .map(o => o.split("="))
@@ -1698,6 +1708,15 @@ function readUrl() {
   });
   const clickn = selectedNodeLabel !== oldNodeLabel;
 
+  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same comics";
+  if (selectedNodeLabel)
+    title += " " + (selectedNodeType === args[1]
+      ? "as"
+      : (selectedNodeType === "creators"
+        ? "from"
+        : "with")) + " ";
+  document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
+  document.getElementById("title").innerHTML = "Here is a m" + title;
 
   if (reload) {
     // Hide canvases
@@ -1717,9 +1736,6 @@ function readUrl() {
     }
 
     // Setup Sidebar default content
-    const title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same stories";
-    document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title;
-    document.getElementById("title").innerHTML = "Here is a m" + title;
     orderSpan.innerHTML = '...';
 
     if (args[1] === "creators")
@@ -1771,21 +1787,7 @@ function readUrl() {
     clickNode(node, false);
   }
 }
-window.onhashchange = readUrl;
-
-function preloadOtherNetworks() {
-  ["creators", "characters"].forEach(e =>
-    ["main", "most"].forEach(s => {
-      if (!networks[e][s].loading) {
-        networks[e][s].loading = true;
-        loaderComics.style.display = "block";
-        return fetch("./data/Marvel_" + e + "_by_stories" + (s === "main" ? "" : "_full") + ".json.gz")
-          .then(res => res.arrayBuffer())
-          .then(content => buildNetwork(content, e, s));
-      }
-    })
-  );
-}
+window.onhashchange = readURL;
 
 // Collect algo's metadata to feed explanations
 fetch("./config.yml.example")
@@ -1804,5 +1806,5 @@ fetch("./config.yml.example")
   defaultSidebar();
 
   // Read first url to set settings
-  readUrl();
+  readURL();
 });
