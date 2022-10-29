@@ -1,5 +1,5 @@
 /* TODO:
-- allow to switch from selected node to other entity and highlight corresponding
+  - load node sidebar after load all networks if landed on alternate view
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -40,6 +40,7 @@ let entity = "",
   networkSize = "",
   view = "",
   selectedNode = null,
+  selectedNodeType = null,
   selectedNodeLabel = null,
   sigmaDim = null,
   renderer = null,
@@ -68,6 +69,7 @@ const startYear = 1939,
   allComics = [],
   allCharacters = {"-1": "missing info"},
   allCreators = {"-1": "missing info"},
+  crossMap = {creators: {}, characters: {}},
   charactersComics = {},
   creatorsComics = {},
   creatorsRoles = {
@@ -181,7 +183,7 @@ const startYear = 1939,
 // Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
 function lighten(col, amt) {
   var usePound = false;
-  if (col[0] == "#") {
+  if (col[0] === "#") {
     col = col.slice(1);
     usePound = true;
   }
@@ -292,34 +294,6 @@ function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
 
-function setPermalink(ent, siz, vie, sel, keepSelected = false) {
-  const graph = networks[entity][networkSize].graph,
-    newGraph = networks[ent][siz].graph,
-    selection = sel && (
-      (ent === entity && graph && graph.hasNode(sel)) ||
-      (keepSelected && newGraph && newGraph.hasNode(sel))
-    ) ? "/" + (keepSelected ? newGraph : graph).getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
-  if ((ent !== entity || siz !== networkSize)) {
-    hideCanvases();
-    if (selectedNode) {
-      if (graph && graph.hasNode(selectedNode))
-        graph.setNodeAttribute(selectedNode, "highlighted", false);
-      if (ent !== entity) {
-        selectedNode = null;
-        selectedNodeLabel = null;
-      }
-    }
-  }
-  switchNodeType.checked = ent === "creators";
-  switchNodeFilter.checked = siz === "most";
-  window.location.hash = siz + "/" + ent + "/" + vie + selection;
-}
-
-function hideCanvases() {
-  (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "none");
-  if (clustersLayer)
-    clustersLayer.style.display = "none";
-}
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
   if (showClustersLayer && clustersLayer && entity === "creators")
@@ -345,7 +319,7 @@ function hideComicsBar() {
   comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
-  doResize(true);
+  resize(true);
   showViewComicsButton();
   unselectComic();
   if (entity === "creators" && clustersLayer)
@@ -384,7 +358,7 @@ function centerNode(node, neighbors = null, force = true) {
   const data = networks[entity][networkSize];
 
   if (!camera || (!node && !neighbors)) return;
-  if (!neighbors)
+  if (!neighbors && data.graph.hasNode(node))
     neighbors = data.graph.neighbors(node);
   else if (!neighbors.length)
     neighbors = data.graph.nodes();
@@ -395,6 +369,7 @@ function centerNode(node, neighbors = null, force = true) {
     let x0 = null, x1 = null, y0 = null, y1 = null;
     neighbors.forEach(n => {
         const pos = renderer.getNodeDisplayData(n);
+        if (!pos) return;
         if (x0 === null || x0 > pos.x) x0 = pos.x;
         if (x1 === null || x1 < pos.x) x1 = pos.x;
         if (y0 === null || y0 > pos.y) y0 = pos.y;
@@ -497,16 +472,29 @@ function loadComics(comicsData) {
           creatorsComics[cr].push({...c, "role": "writer"});
       });
 
+      c.creators.forEach(cr => {
+        c.characters.forEach(ch => {
+          if (!crossMap.creators[ch])
+            crossMap.creators[ch] = new Set();
+          crossMap.creators[ch].add(cr);
+          if (!crossMap.characters[cr])
+            crossMap.characters[cr] = new Set();
+          crossMap.characters[cr].add(ch);
+        });
+      });
+
 	},
 	complete: function() {
       comicsReady = true;
       loaderComics.style.display = "none";
       viewAllComicsButton.style.display = "block";
       fullHistogram.innerHTML = renderHistogram();
-      doResize(true);
+      resize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
-      preloadOtherNetworks();
+      ["creators", "characters"].forEach(e =>
+        ["main", "most"].forEach(s => loadNetwork(e, s))
+      );
     }
   });
 }
@@ -544,7 +532,7 @@ filterComics.onclick = () => {
     filterSearch.style.display = "block";
     filterComics.className = "selected";
   }
-  doResize(true);
+  resize(true);
   if (filterInput.value)
     refreshFilter();
 }
@@ -554,10 +542,7 @@ filterInput.oninput = refreshFilter;
 function getNodeComics(node) {
   return node === null
     ? allComics
-    : (entity === "characters"
-      ? charactersComics
-      : creatorsComics
-      )[node] || [];
+    : charactersComics[node] || creatorsComics[node] || [];
 }
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
@@ -571,18 +556,17 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
   comicsCache.style.display = "none";
 
-  const labelNode = (node && graph.hasNode(node) ? graph.getNodeAttribute(node, "label") : "");
-  if (entity === "creators")
+  if ((selectedNode && creatorsComics[selectedNode]) || (!selectedNode && entity === "creators"))
     document.getElementById("clusters-layer").style.display = "none";
   if (resetTitle) {
     comicsTitle.innerHTML = "";
     if (comics) {
       comicsTitle.innerHTML = "... comics";
-      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
     }
     comicsSubtitleList.innerHTML = "";
   }
-  comicsSubtitle.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
+  comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
 
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
@@ -608,8 +592,8 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
-      if (labelNode && entity === "creators")
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
+      if (selectedNodeLabel && creatorsComics[selectedNode])
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
           .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
           .join("&nbsp;")
@@ -618,7 +602,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
     setTimeout(() => {
       comicsList.innerHTML = filteredList.length
-        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (labelNode && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
       filteredList.forEach(c => {
@@ -632,7 +616,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
         if (selectedComic) scrollComicsList();
         comicsCache.style.display = "none";
       }
-      doResize(true);
+      resize(true);
     }, 200);
   }, 200);
 }
@@ -738,7 +722,7 @@ document.onkeydown = function(e) {
     if (comicsBarView)
       hideComicsBar();
     else if (selectedNode)
-      clickNode(null, true);
+      clickNode(null);
     else return;
   } else return;
   e.preventDefault(); // prevent the default action (scroll / move caret)
@@ -792,21 +776,21 @@ switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeType.checked = !switchNodeType.checked;
-    setPermalink(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNode);
+    setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
   }
 };
 switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-    setPermalink(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNode);
+    setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
   }
 };
 switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
   if (typ === "left" || typ === "right") {
     switchNodeView.checked = !switchNodeView.checked;
-    setPermalink(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNode);
+    setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
   }
 };
 
@@ -842,10 +826,11 @@ function unselectComic() {
   selectedComic = null;
   selectComic(null, true);
   renderer.setSetting("labelGridCellSize", 200);
-  clickNode(selectedNode, false);
-  if (selectedNode && graph.hasNode(selectedNode)) {
+  if (selectedNode) {
+    clickNode(selectedNode, false);
+    // TODO check here what happens with center after keep
     setTimeout(() => centerNode(selectedNode), 50);
-  }
+  } else clickNode(null, false);
 }
 
 function selectComic(comic = null, keep = false, autoReselect = false) {
@@ -941,12 +926,12 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comic.creators.forEach(c => {
     if (!allCreators[c]) return;
     const entityLi = document.getElementById("creator-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink("creators", networkSize, view, c, true);
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCreators[c], "creators");
   });
   comic.characters.forEach(c => {
     if (!allCharacters[c]) return;
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink("characters", networkSize, view, c, true);
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters");
   });
 
   renderer.setSetting(
@@ -960,7 +945,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           zIndex: 0,
           color: "#2A2A2A",
           type: "circle",
-          size: sigmaDim / 350,
+          size: sigmaDim / 500,
           label: null
         }
   );
@@ -984,6 +969,16 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
     centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
     hideLoader();
   }, 50);
+}
+
+function loadNetwork(ent, siz) {
+  if (networks[ent][siz].loading)
+    return;
+  networks[ent][siz].loading = true;
+  loaderComics.style.display = "block";
+  return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
+    .then(res => res.arrayBuffer())
+    .then(content => buildNetwork(content, ent, siz));
 }
 
 function buildNetwork(networkData, ent, siz) {
@@ -1045,8 +1040,6 @@ function buildNetwork(networkData, ent, siz) {
   networksLoaded += 1;
   if (networksLoaded === 4)
     loaderComics.style.display = "none";
-  else if (comicsReady)
-    preloadOtherNetworks();
 }
 
 function renderNetwork() {
@@ -1186,8 +1179,7 @@ function renderNetwork() {
     .join("\n");
   selectSuggestions.onchange = () => {
     const idx = selectSuggestions.selectedIndex;
-    clickNode(idx ? allSuggestions[idx - 1].node : null);
-    setTimeout(() => centerNode(selectedNode), 50);
+    clickNode(idx ? allSuggestions[idx - 1].node : null, true, true);
   };
 
   function fillSuggestions() {
@@ -1214,8 +1206,7 @@ function renderNetwork() {
 
       const suggestionsMatch = suggestions.filter(x => x.label === query);
       if (suggestionsMatch.length === 1) {
-        clickNode(suggestionsMatch[0].node);
-        setTimeout(() => centerNode(selectedNode), 50);
+        clickNode(suggestionsMatch[0].node, true, true);
         suggestions = [];
       } else if (selectedNode) {
         clickNode(null);
@@ -1246,13 +1237,11 @@ function renderNetwork() {
     }
 
     // If a node is selected we refocus it
-    const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
-    if (nodeInGraph) {
+    const node = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
+    if (node || selectedNode) {
       showCanvases();
-      clickNode(nodeInGraph, false);
+      clickNode(node || selectedNode, false);
     } else {
-      if (selectedNodeLabel)
-        clickNode(null);
       camera.animate({
         x: 0.5,
         y: 0.5,
@@ -1265,7 +1254,6 @@ function renderNetwork() {
         hideLoader();
       }, 50);
     }
-    selectedNodeLabel = null;
 
     // Load comics data after first network rendered
     if (loop && comicsReady === null) {
@@ -1281,7 +1269,7 @@ function renderNetwork() {
   }
 
   loader.style.opacity = "0.5";
-  doResize();
+  resize();
   // Zoom in graph on first init network
   if (!data.rendered) {
     camera.x = 0.5;
@@ -1333,7 +1321,6 @@ function renderHistogram(node = null, comics = null) {
   if (comics === null && !histograms[entity][node])
     histograms[entity][node] = histogram;
 
-console.log(node, comics, histograms[entity][node], histogram);
   const heightRatio = 25 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
   let histogramDiv = '<div id="histogram">';
@@ -1379,7 +1366,7 @@ function hideViewComicsButton() {
 }
 
 function clickNode(node, updateURL = true, center = false) {
-  const data = networks[entity][networkSize];
+  let data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
   // Unselect previous node
@@ -1397,9 +1384,10 @@ function clickNode(node, updateURL = true, center = false) {
   // Reset unselected node view
   if (!node) {
     selectedNode = null;
+    selectedNodeType = null;
     selectedNodeLabel = null;
     if (updateURL)
-      setPermalink(entity, networkSize, view, node);
+      setURL(entity, networkSize, view, null, null);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
@@ -1408,12 +1396,23 @@ function clickNode(node, updateURL = true, center = false) {
     return;
   }
 
-  selectedNode = node;
+  let relatedNodes = null;
+  if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
+    data = networks[selectedNodeType]["main"];
+    // TODO handle graph not loaded yet
+    relatedNodes = Array.from(crossMap[entity][node] || []);
+  }
+
+  if (updateURL && !data.graph.hasNode(node))
+    return setURL(entity, networkSize, view, null, null);
+
   if (updateURL && !sameNode)
-    setPermalink(entity, networkSize, view, node);
+    setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity);
 
   // Fill sidebar with selected node's details
   const attrs = data.graph.getNodeAttributes(node);
+  selectedNode = node;
+  selectedNodeLabel = attrs.label;
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   if (!sameNode) {
@@ -1451,58 +1450,96 @@ function clickNode(node, updateURL = true, center = false) {
       addViewComicsButton(node);
   }
 
-  // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
-  if (!comicsBarView || ! selectedComic) {
-    data.graph.setNodeAttribute(node, "highlighted", true);
-    renderer.setSetting(
-      "nodeReducer", (n, attrs) => n === node
-        ? { ...attrs,
-            type: "image",
-            zIndex: 2,
-            size: attrs.size * 1.75,
-            hlcolor: "#ec1d24"
-          }
-        : data.graph.hasEdge(n, node)
+  if (!comicsBarView || !selectedComic) {
+    if (relatedNodes === null) {
+      // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
+      data.graph.setNodeAttribute(node, "highlighted", true);
+      renderer.setSetting(
+        "nodeReducer", (n, attrs) => n === node
+          ? { ...attrs,
+              type: "image",
+              zIndex: 2,
+              size: attrs.size * 1.75,
+              hlcolor: "#ec1d24"
+            }
+          : data.graph.hasEdge(n, node)
+            ? { ...attrs,
+                type: view === "pictures" ? "image" : "circle",
+                zIndex: 1,
+                hlcolor: null
+              }
+            : { ...attrs,
+                type: "circle",
+                zIndex: 0,
+                color: "#2A2A2A",
+                size: sigmaDim / 350,
+                label: null
+              }
+      );
+      // Hide unrelated links and highlight, weight and color as the target the node's links
+      renderer.setSetting(
+        "edgeReducer", (edge, attrs) =>
+          data.graph.hasExtremity(edge, node)
+            ? { ...attrs,
+                zIndex: 0,
+                color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
+                size: Math.max(1, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
+              }
+            : { ...attrs,
+                zIndex: 0,
+                color: "#FFF",
+                hidden: true
+              }
+      );
+    } else {
+      // Display the alternate entity graph for the selected node
+      renderer.setSetting(
+        "nodeReducer", (n, attrs) => relatedNodes.indexOf(n) !== -1
           ? { ...attrs,
               type: view === "pictures" ? "image" : "circle",
-              zIndex: 1,
-              hlcolor: null
+              zIndex: 2
             }
           : { ...attrs,
               type: "circle",
               zIndex: 0,
               color: "#2A2A2A",
-              size: sigmaDim / 350,
+              size: sigmaDim / 500,
               label: null
             }
-    );
-    // Hide unrelated links and highlight, weight and color as the target the node's links
-    renderer.setSetting(
-      "edgeReducer", (edge, attrs) =>
-        data.graph.hasExtremity(edge, node)
-          ? { ...attrs,
-              zIndex: 0,
-              color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-              size: Math.max(1, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
-            }
-          : { ...attrs,
-              zIndex: 0,
-              color: "#FFF",
-              hidden: true
-            }
-    );
+      );
+      renderer.setSetting(
+        "edgeReducer", (edge, attrs) =>
+          relatedNodes.indexOf(networks[entity][networkSize].graph.source(edge)) !== -1 &&
+          relatedNodes.indexOf(networks[entity][networkSize].graph.target(edge)) !== -1
+            ? { ...attrs,
+                zIndex: 0,
+                color: '#222',
+                size: 1
+              }
+            : { ...attrs,
+                zIndex: 0,
+                color: "#FFF",
+                hidden: true
+              }
+      );
+    }
+
     renderer.setSetting(
       "labelColor", {attribute: "hlcolor", color: "#CCC"}
     );
   }
+
   if (comicsBarView && !sameNode)
     displayComics(node, true);
   else if (!updateURL || center)
     setTimeout(() => {
-      centerNode(node);
+      if (relatedNodes)
+        centerNode(null, relatedNodes);
+      else centerNode(node);
       hideLoader();
     }, 50);
   else hideLoader();
+
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
 };
@@ -1547,6 +1584,23 @@ regScreenBtn.onclick = () => {
 };
 
 // Network switch buttons
+switchNodeType.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
+  setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType);
+};
+
+switchNodeFilter.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  explanations.style.opacity = "0";
+  setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType);
+};
+
+switchNodeView.onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType);
+};
+
 function setEntity(val) {
   entity = val;
   entitySpans.forEach(span => span.innerHTML = val);
@@ -1579,23 +1633,23 @@ function switchView() {
     renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
     if (graph && comicsBarView && selectedComic)
       selectComic(selectedComic, true, true);
-    else if (graph && selectedNode && graph.hasNode(selectedNode))
-      clickNode(selectedNode);
+    else if (graph && selectedNode)
+      clickNode(selectedNode, false);
     else hideLoader();
   }, 10);
 };
 
 // Responsiveness
 let resizing = undefined;
-function doResize(fast = false) {
+function resize(fast = false) {
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main") - 10;
   explanations.style.opacity = "1"
   explanations.style.height = freeHeight + "px";
   explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = freeHeight + "px";
-  nodeDetails.style["min-height"] = freeHeight + "px";
+  nodeDetails.style.height = (freeHeight + 10) + "px";
+  nodeDetails.style["min-height"] = (freeHeight + 10) + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();
@@ -1613,92 +1667,78 @@ function doResize(fast = false) {
   }
   if (!fast) resizing = false;
 }
-function resize() {
+
+window.onresize = () => {
   if (resizing === true) return;
   if (resizing) clearTimeout(resizing);
-  resizing = setTimeout(doResize, 0);
-};
-window.onresize = resize;
-
-switchNodeType.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  explanations.style.opacity = "0";
-  setPermalink(target.checked ? "creators" : "characters", networkSize, view, selectedNode);
-};
-switchNodeFilter.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  explanations.style.opacity = "0";
-  setPermalink(entity, target.checked ? "most" : "main", view, selectedNode);
-};
-switchNodeView.onchange = (event) => {
-  const target = event.target as HTMLInputElement;
-  setPermalink(entity, networkSize, target.checked ? "colors" : "pictures", selectedNode);
+  resizing = setTimeout(resize, 0);
 };
 
-function readUrl() {
-  let currentUrl = window.location.hash.replace(/^#/, '');
-  if (currentUrl === "" || currentUrl.split("/").length < 3)
-    currentUrl = "main/characters/pictures";
-  let args = currentUrl.split("/");
+function setURL(ent, siz, vie, sel, selType) {
+  window.location.hash = siz + "/" + ent + "/" + vie + "/"
+    + (sel !== null ? "?" + (selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g,"+") : "");
+}
 
-  let reload = false,
-    switchv = false,
-    clickn = false;
-  if (args[1] !== entity)
-    defaultSidebar()
-  if (args[1] !== entity || args[0] !== networkSize)
-    reload = true;
-  else if (args[2] !== view)
-    switchv = true;
+function readURL() {
+  const args = window.location.hash
+    .replace(/^#/, '')
+    .split(/\/\??/);
+  if (args.length < 4
+    || ["main", "most"].indexOf(args[0]) === -1
+    || ["characters", "creators"].indexOf(args[1]) === -1
+    || ["pictures", "colors"].indexOf(args[2]) === -1
+  ) return setURL("characters", "main", "pictures", null, null);
+  const opts = Object.fromEntries(
+    args[3].split("&")
+    .map(o => o.split("="))
+    .filter(o => ["creator", "character", "comics"].indexOf(o[0]) !== -1)
+  );
 
-  // Setup optional SelectedNode (before setting view which depends on it)
-  if (args.length >= 4 && args[3]) {
-    selectedNodeLabel = decodeURIComponent(args[3].replace(/\+/g, " "));
-    searchInput.value = selectedNodeLabel;
-  } else selectedNodeLabel = null;
-  const graph = networks[args[1]][args[0]].graph;
-  if (graph && (
-    (selectedNodeLabel && (!selectedNode || (graph.hasNode(selectedNode) && selectedNodeLabel !== graph.getNodeAttribute(selectedNode, "label"))))
-    || (!selectedNodeLabel && selectedNode)
-  ))
-    clickn = true;
+  const reload = args[1] !== entity || args[0] !== networkSize,
+    switchv = args[2] !== view;
 
-  // Setup Node type switch
-  if (args[1] === "creators")
-    switchNodeType.checked = true;
-  setEntity(args[1]);
+  const oldNodeLabel = selectedNodeLabel;
+  selectedNodeLabel = null;
+  ["character", "creator"].forEach(e => {
+    if (opts[e]) {
+      selectedNodeType = e + "s";
+      selectedNodeLabel = decodeURIComponent(opts[e].replace(/\+/g, " "));
+      searchInput.value = selectedNodeLabel;
+    }
+  });
+  const clickn = selectedNodeLabel !== oldNodeLabel;
 
-  // Setup Size filter switch
-  if (args[0] === "most")
-    switchNodeFilter.checked = true;
-  setSize(args[0]);
-
-  // Setup View switch
-  if (args[2] === "colors")
-    switchNodeView.checked = true;
-  setView(args[2]);
-
-  if (!webGLSupport()) {
-    document.getElementById("webgl-disclaimer").style.display = "block";
-    return;
-  }
+  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
+  if (selectedNodeLabel)
+    title += " " + (selectedNodeType === args[1]
+      ? "as"
+      : (selectedNodeType === "creators"
+        ? "from"
+        : "with")) + " ";
+  document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
+  document.getElementById("title").innerHTML = "Here is a m" + title;
 
   if (reload) {
-    loader.style.opacity = "1";
-    loader.style.display = "block";
-
-    orderSpan.innerHTML = '...';
+    // Hide canvases
+    (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "none");
     if (clustersLayer) {
       clustersLayer.innerHTML = "";
       clustersLayer.style.display = "none";
     }
+    loader.style.opacity = "1";
+    loader.style.display = "block";
+
+    // Clear highlighted node from previous graph so it won't remain further on
+    if (entity && selectedNode) {
+      const prevGraph = networks[entity][networkSize].graph;
+      if (prevGraph && prevGraph.hasNode(selectedNode))
+        prevGraph.setNodeAttribute(selectedNode, "highlighted", false);
+    }
 
     // Setup Sidebar default content
-    const title = "ap of Marvel's " + networkSize + " " + entity + " featured together within same stories";
-    document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title;
-    document.getElementById("title").innerHTML = "Here is a m" + title;
+    orderSpan.innerHTML = '...';
 
-    if (entity === "creators")
+    if (args[1] === "creators")
       Object.keys(creatorsRoles).forEach(k => {
         const role = document.getElementById(k + "-color");
         role.style.color = creatorsRoles[k];
@@ -1706,44 +1746,50 @@ function readUrl() {
       });
     else document.querySelectorAll("#clusters-legend .color")
       .forEach(el => el.innerHTML = "...");
+  }
 
-    setTimeout(() => {
-      // If graph already loaded, just render it
-      if (networks[entity][networkSize].graph)
-        renderNetwork();
+  // Setup Size filter switch
+  switchNodeFilter.checked = args[0] === "most";
+  setSize(args[0]);
+
+  // Setup Node type switch
+  switchNodeType.checked = args[1] === "creators";
+  setEntity(args[1]);
+
+  // Setup View switch
+  switchNodeView.checked = args[2] === "colors";
+  setView(args[2]);
+
+  if (reload) setTimeout(() => {
+    // If graph already loaded, just render it
+    if (networks[entity][networkSize].graph)
+      renderNetwork();
     // Otherwise load network file
-      else {
-        networks[entity][networkSize].loading = true;
-        fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "main" ? "" : "_full") + ".json.gz")
-          .then((res) => res.arrayBuffer())
-          .then((content) => {
-            buildNetwork(content, entity, networkSize);
-            setTimeout(renderNetwork, 0);
-          });
-      }
-    }, 0);
-  } else if (switchv)
+    else {
+      networks[entity][networkSize].loading = true;
+      fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "main" ? "" : "_full") + ".json.gz")
+        .then((res) => res.arrayBuffer())
+        .then((content) => {
+          buildNetwork(content, entity, networkSize);
+          setTimeout(renderNetwork, 0);
+        });
+    }
+  }, 0);
+  else if (switchv)
     switchView();
-  if (clickn)
-    clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+  else if (clickn) {
+    let network = networks[entity][networkSize];
+    if (selectedNodeType !== entity) {
+      network = networks[selectedNodeType].most;
+    // TODO handle graph not loaded yet
+    }
+    const node = network.graph.findNode((n, {label}) => label === selectedNodeLabel);
+    clickNode(node, false);
+  }
 }
-window.onhashchange = readUrl;
+window.onhashchange = readURL;
 
-function preloadOtherNetworks() {
-  ["creators", "characters"].forEach(e =>
-    ["main", "most"].forEach(s => {
-      if (!networks[e][s].loading) {
-        networks[e][s].loading = true;
-        loaderComics.style.display = "block";
-        return fetch("./data/Marvel_" + e + "_by_stories" + (s === "main" ? "" : "_full") + ".json.gz")
-          .then(res => res.arrayBuffer())
-          .then(content => buildNetwork(content, e, s));
-      }
-    })
-  );
-}
-
-// Collect data's metadata to feed explanations
+// Collect algo's metadata to feed explanations
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confData) => {
@@ -1752,6 +1798,13 @@ fetch("./config.yml.example")
     conf[keyval[0]] = keyval[1];
   });
 
+  if (!webGLSupport()) {
+    document.getElementById("webgl-disclaimer").style.display = "block";
+    return;
+  }
+
+  defaultSidebar();
+
   // Read first url to set settings
-  readUrl();
+  readURL();
 });
