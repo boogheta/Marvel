@@ -399,6 +399,7 @@ function centerNode(node, neighbors = null, force = true) {
     let x0 = null, x1 = null, y0 = null, y1 = null;
     neighbors.forEach(n => {
         const pos = renderer.getNodeDisplayData(n);
+        if (!pos) return;
         if (x0 === null || x0 > pos.x) x0 = pos.x;
         if (x1 === null || x1 < pos.x) x1 = pos.x;
         if (y0 === null || y0 > pos.y) y0 = pos.y;
@@ -975,7 +976,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
           zIndex: 0,
           color: "#2A2A2A",
           type: "circle",
-          size: sigmaDim / 350,
+          size: sigmaDim / 500,
           label: null
         }
   );

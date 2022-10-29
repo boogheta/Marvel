@@ -343,7 +343,7 @@ h2 {
 }
 .view-comics-selected {
   opacity: 0.15;
-  cursor: default;
+  cursor: default!important;
 }
 #view-comics > span, #view-node > span, #view-all-comics span {
   width: 170px;
