@@ -20,7 +20,6 @@ IDEAS:
 - if low debit, load comics/pictures only on explore comics click?
 - install app button?
 - swipe images with actual slide effect?
-- cleanup and modularize code
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -34,6 +33,17 @@ import { animateNodes } from "./sigma.js/utils/animate";
 import { Sigma } from "./sigma.js";
 import { Coordinates } from "./sigma.js/types";
 import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
+
+import {
+  formatNumber,
+  formatMonth,
+  lightenColor,
+  meanArray,
+  divWidth,
+  divHeight,
+  webGLSupport,
+  rotatePosition
+} from "./utils";
 
 // Init global vars
 let entity = "",
@@ -180,49 +190,6 @@ const startYear = 1939,
   });
 });
 
-// Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
-function lighten(col, amt) {
-  var usePound = false;
-  if (col[0] === "#") {
-    col = col.slice(1);
-    usePound = true;
-  }
-  var num = parseInt(col,16);
-  var r = (num >> 16) + amt;
-  if (r > 255) r = 255;
-  else if  (r < 0) r = 0;
-  var b = ((num >> 8) & 0x00FF) + amt;
-  if (b > 255) b = 255;
-  else if  (b < 0) b = 0;
-  var g = (num & 0x0000FF) + amt;
-  if (g > 255) g = 255;
-  else if (g < 0) g = 0;
-  return (usePound?"#":"") + (g | (b << 8) | (r << 16)).toString(16);
-}
-
-function fmtNumber(x) {
-  return (x + "")
-    .replace(/(.)(.{3})$/, "$1&nbsp;$2");
-}
-function meanArray(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-function formatMonth(dat) {
-  const d = new Date(dat);
-  return monthNames[new Date(dat).getMonth()] + " " + dat.slice(0, 4);
-}
-
-function webGLSupport() {
-  try {
-   var canvas = document.createElement('canvas');
-   return !!window.WebGLRenderingContext &&
-     (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-  } catch(e) {
-    return false;
-  }
-};
-
 const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
@@ -287,13 +254,6 @@ comicsCache.onwheel = () => comicsCache.style.display = "none";
 comicsCache.onmousedown = comicsCache.onwheel;
 comicsCache.onmouseout = comicsCache.onwheel;
 
-function divWidth(divId) {
-  return document.getElementById(divId).getBoundingClientRect().width;
-}
-function divHeight(divId) {
-  return document.getElementById(divId).getBoundingClientRect().height;
-}
-
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
   if (showClustersLayer && clustersLayer && entity === "creators")
@@ -346,13 +306,6 @@ function computeNodeSize(node, stories) {
     * sigmaDim / 1000
 };
 
-function rotatePosition(pos) {
-  return {
-    x: pos.x * Math.cos(-camera.angle) - pos.y * Math.sin(-camera.angle),
-    y: pos.y * Math.cos(-camera.angle) + pos.x * Math.sin(-camera.angle)
-  };
-}
-
 // Move the camera to center it on the selected node and its neighbors:
 function centerNode(node, neighbors = null, force = true) {
   const data = networks[entity][networkSize];
@@ -378,8 +331,8 @@ function centerNode(node, neighbors = null, force = true) {
     const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
       ? divWidth("comics-bar")
       : 0,
-      minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0})),
-      maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1})),
+      minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
+      maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1}), camera.angle),
       viewPortPosition = renderer.framedGraphToViewport({
         x: (x0 + x1) / 2,
         y: (y0 + y1) / 2
@@ -404,16 +357,19 @@ function centerNode(node, neighbors = null, force = true) {
     const minWin = rotatePosition({
       x: 0,
       y: 0
-    }), maxWin = rotatePosition({
+    }, camera.angle),
+    maxWin = rotatePosition({
       x: sigmaDims.width,
       y: sigmaDims.height
-    }), minPos = rotatePosition({
+    }, camera.angle),
+    minPos = rotatePosition({
       x: sigmaDims.width / 6,
       y: sigmaDims.height / 6
-    }), maxPos = rotatePosition({
+    }, camera.angle),
+    maxPos = rotatePosition({
       x: 5 * sigmaDims.width / 6,
       y: 5 * sigmaDims.height / 6
-    });
+    }, camera.angle);
 
     // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
     if (force ||
@@ -537,7 +493,6 @@ filterComics.onclick = () => {
     refreshFilter();
 }
 filterInput.oninput = refreshFilter;
-//filterInput.onblur = filterInput.oninput;
 
 function getNodeComics(node) {
   return node === null
@@ -591,18 +546,18 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
     (selectedNode ? nodeHistogram : fullHistogram).innerHTML = renderHistogram(selectedNode, filteredList);
 
     if (filteredList.length) {
-      comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
+      comicsTitle.innerHTML = formatNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
       if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
       if (selectedNodeLabel && creatorsComics[selectedNode])
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-          .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
+          .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x], 50) + '">' + x + '</span>')
           .join("&nbsp;")
           .replace(/&nbsp;([^&]+)$/, " or $1");
     }
 
     setTimeout(() => {
       comicsList.innerHTML = filteredList.length
-        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
       filteredList.forEach(c => {
@@ -620,6 +575,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
     }, 200);
   }, 200);
 }
+
 function scrollComicsList() {
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
@@ -632,11 +588,13 @@ function scrollComicsList() {
     comicsDiv.scrollTo(0, offset.offsetTop - diff);
   }, 10);
 }
+
 function selectAndScroll(el) {
   if (!el) return;
   selectComic(el.comic, true);
   scrollComicsList();
 }
+
 function selectAndScrollSibling(typ, loop = false) {
   if (!comicsBarView) return;
   const selected = document.querySelector("#comics-list li.selected") as any;
@@ -657,6 +615,7 @@ function playComics() {
   selectAndScrollSibling("next", true);
   playing = setInterval(() => selectAndScrollSibling("next"), 1500);
 }
+
 function stopPlayComics() {
   comicsPause.style.display = "none";
   comicsPlay.style.display = "inline-block";
@@ -665,6 +624,7 @@ function stopPlayComics() {
   if (playing) clearInterval(playing);
   playing = false;
 }
+
 comicsPlay.onclick = playComics;
 comicsPause.onclick = stopPlayComics;
 comicsPrev.onclick = () => selectAndScrollSibling("previous", true);
@@ -900,7 +860,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       ? '<li id="creator-' + x + '" ' +
         (x !== "-1" ? 'class="entity-link" ' : '') +
         'title="writer" ' +
-        'style="color: ' + lighten(creatorsRoles["writer"], 50) + '">' +
+        'style="color: ' + lightenColor(creatorsRoles["writer"], 50) + '">' +
         allCreators[x] + "</li>"
       : ""
     ).join("");
@@ -909,7 +869,7 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
       ? '<li id="creator-' + x + '" ' +
         (x !== "-1" ? 'class="entity-link" ' : '') +
         'title="artist" ' +
-        'style="color: ' + lighten(creatorsRoles["artist"], 50) + '">' +
+        'style="color: ' + lightenColor(creatorsRoles["artist"], 50) + '">' +
         allCreators[x] + "</li>"
       : ""
     ).join("");
@@ -1020,7 +980,7 @@ function buildNetwork(networkData, ent, siz) {
       image: /available/i.test(image) ? "" : image,
       size: computeNodeSize(node, stories),
       color: color,
-      hlcolor: lighten(color, 35)
+      hlcolor: lightenColor(color, 35)
     });
     if (ent === "creators")
       allCreators[node] = label;
@@ -1041,22 +1001,23 @@ function buildNetwork(networkData, ent, siz) {
 }
 
 function renderNetwork() {
+console.log("RENDER", entity, networkSize, view, selectedNode, comicsBarView, selectedComic);
   const data = networks[entity][networkSize];
 
   // Feed communities size to explanations
-  orderSpan.innerHTML = fmtNumber(data.graph.order);
+  orderSpan.innerHTML = formatNumber(data.graph.order);
   if (entity === "creators") {
     Object.keys(creatorsRoles).forEach(k => {
       const role = document.getElementById(k + "-color");
       role.style.color = creatorsRoles[k];
-      role.innerHTML = k + " (" + fmtNumber(data.counts[k]) + ")";
+      role.innerHTML = k + " (" + formatNumber(data.counts[k]) + ")";
     })
   } else document.getElementById("clusters-legend").innerHTML = Object.keys(data.clusters)
     .filter(k => !data.clusters[k].hide)
     .map(k =>
       '<b style="color: ' + data.clusters[k].color + '">'
       + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
-      + ' (<span class="color">' + fmtNumber(data.counts[data.clusters[k].community]) + '</span>)</b>'
+      + ' (<span class="color">' + formatNumber(data.counts[data.clusters[k].community]) + '</span>)</b>'
     ).join(", ");
 
   // Instantiate sigma:
@@ -1480,7 +1441,7 @@ function clickNode(node, updateURL = true, center = false) {
           data.graph.hasExtremity(edge, node)
             ? { ...attrs,
                 zIndex: 0,
-                color: lighten(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
+                color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
                 size: Math.max(1, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
               }
             : { ...attrs,
