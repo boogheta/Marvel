@@ -319,7 +319,7 @@ function hideComicsBar() {
   comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
-  doResize(true);
+  resize(true);
   showViewComicsButton();
   unselectComic();
   if (entity === "creators" && clustersLayer)
@@ -489,7 +489,7 @@ function loadComics(comicsData) {
       loaderComics.style.display = "none";
       viewAllComicsButton.style.display = "block";
       fullHistogram.innerHTML = renderHistogram();
-      doResize(true);
+      resize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
       ["creators", "characters"].forEach(e =>
@@ -532,7 +532,7 @@ filterComics.onclick = () => {
     filterSearch.style.display = "block";
     filterComics.className = "selected";
   }
-  doResize(true);
+  resize(true);
   if (filterInput.value)
     refreshFilter();
 }
@@ -616,7 +616,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
         if (selectedComic) scrollComicsList();
         comicsCache.style.display = "none";
       }
-      doResize(true);
+      resize(true);
     }, 200);
   }, 200);
 }
@@ -1269,7 +1269,7 @@ function renderNetwork() {
   }
 
   loader.style.opacity = "0.5";
-  doResize();
+  resize();
   // Zoom in graph on first init network
   if (!data.rendered) {
     camera.x = 0.5;
@@ -1641,15 +1641,15 @@ function switchView() {
 
 // Responsiveness
 let resizing = undefined;
-function doResize(fast = false) {
+function resize(fast = false) {
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main") - 10;
   explanations.style.opacity = "1"
   explanations.style.height = freeHeight + "px";
   explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = (freeHeight - 1) + "px";
-  nodeDetails.style["min-height"] = (freeHeight - 1) + "px";
+  nodeDetails.style.height = (freeHeight + 10) + "px";
+  nodeDetails.style["min-height"] = (freeHeight + 10) + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();
@@ -1671,7 +1671,7 @@ function doResize(fast = false) {
 window.onresize = () => {
   if (resizing === true) return;
   if (resizing) clearTimeout(resizing);
-  resizing = setTimeout(doResize, 0);
+  resizing = setTimeout(resize, 0);
 };
 
 function setURL(ent, siz, vie, sel, selType) {
@@ -1708,7 +1708,7 @@ function readURL() {
   });
   const clickn = selectedNodeLabel !== oldNodeLabel;
 
-  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same comics";
+  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === args[1]
       ? "as"

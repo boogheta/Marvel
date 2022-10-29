@@ -240,11 +240,9 @@ h2 {
 #node-details {
   clear: both;
   padding: 0;
-  margin-top: 10px;
   text-align: center;
   overflow-y: auto;
   max-height: 60%;
-  border-top: 1px solid #444;
   line-height: 13px;
 }
 #node-label, #node-extra {
@@ -710,7 +708,7 @@ label {
   #credits-main {
     display: block;
   }
-  #credits, .asterisk, #title {
+  #credits, .asterisk {
     display: none;
   }
 }
@@ -769,6 +767,9 @@ label {
   }
   #credits, .asterisk, #title {
     display: none;
+  }
+  #node-label {
+    padding-top: 5px;
   }
   #comics {
     line-height: 18px;
