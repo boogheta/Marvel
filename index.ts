@@ -827,9 +827,7 @@ function unselectComic() {
   selectComic(null, true);
   renderer.setSetting("labelGridCellSize", 200);
   if (selectedNode) {
-    clickNode(selectedNode, false);
-    // TODO check here what happens with center after keep
-    setTimeout(() => centerNode(selectedNode), 50);
+    clickNode(selectedNode, false, true);
   } else clickNode(null, false);
 }
 
@@ -1714,7 +1712,7 @@ function readURL() {
       ? "as"
       : (selectedNodeType === "creators"
         ? "from"
-        : "with")) + " ";
+        : "casting")) + " ";
   document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
   document.getElementById("title").innerHTML = "Here is a m" + title;
 
