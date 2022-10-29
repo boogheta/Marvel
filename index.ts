@@ -297,26 +297,28 @@ function divHeight(divId) {
 }
 
 function setPermalink(ent, siz, vie, sel, keepSelected = false) {
-  const graph = networks[entity][networkSize].graph,
-    newGraph = networks[ent][siz].graph,
-    selection = sel && (
-      (ent === entity && graph && graph.hasNode(sel)) ||
-      (keepSelected && newGraph && newGraph.hasNode(sel))
-    ) ? "/" + (keepSelected ? newGraph : graph).getNodeAttribute(sel, "label").replace(/ /g, "+") : "";
+  const prevGraph = networks[entity][networkSize].graph,
+    graph = networks[ent][siz].graph,
+    altGraph = networks[ent === "creators" ? "characters" : "creators"].most.graph;
+  let selection = "";
+  if (sel) {
+    if (graph && graph.hasNode(sel))
+      selection = graph.getNodeAttribute(sel, "label");
+    else if (altGraph && altGraph.hasNode(sel))
+      selection = altGraph.getNodeAttribute(sel, "label");
+    else if (selectedNodeLabel)
+      selection = selectedNodeLabel;
+  }
   if ((ent !== entity || siz !== networkSize)) {
     hideCanvases();
     if (selectedNode) {
-      if (graph && graph.hasNode(selectedNode))
-        graph.setNodeAttribute(selectedNode, "highlighted", false);
-      if (ent !== entity) {
-        selectedNode = null;
-        selectedNodeLabel = null;
-      }
+      if (prevGraph && prevGraph.hasNode(selectedNode))
+        prevGraph.setNodeAttribute(selectedNode, "highlighted", false);
     }
   }
   switchNodeType.checked = ent === "creators";
   switchNodeFilter.checked = siz === "most";
-  window.location.hash = siz + "/" + ent + "/" + vie + selection;
+  window.location.hash = siz + "/" + ent + "/" + vie + "/" + selection.replace(/ /g,"+");
 }
 
 function hideCanvases() {
@@ -570,10 +572,7 @@ filterInput.oninput = refreshFilter;
 function getNodeComics(node) {
   return node === null
     ? allComics
-    : (entity === "characters"
-      ? charactersComics
-      : creatorsComics
-      )[node] || [];
+    : charactersComics[node] || creatorsComics[node] || [];
 }
 
 function displayComics(node, autoReselect = false, resetTitle = true) {
@@ -587,18 +586,17 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
   comicsCache.style.display = "none";
 
-  const labelNode = (node && graph.hasNode(node) ? graph.getNodeAttribute(node, "label") : "");
-  if (entity === "creators")
+  if ((selectedNode && creatorsComics[selectedNode]) || (!selectedNode && entity === "creators"))
     document.getElementById("clusters-layer").style.display = "none";
   if (resetTitle) {
     comicsTitle.innerHTML = "";
     if (comics) {
       comicsTitle.innerHTML = "... comics";
-      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
     }
     comicsSubtitleList.innerHTML = "";
   }
-  comicsSubtitle.style.display = (entity === "creators" && selectedNode ? "inline" : "none");
+  comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
 
   comicsList.innerHTML = "";
   if (comics && comics.length > 500)
@@ -624,8 +622,8 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
     if (filteredList.length) {
       comicsTitle.innerHTML = fmtNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (labelNode) comicsTitle.innerHTML += " " + (entity === "creators" ? "by" : "with") + "<br/>" + labelNode;
-      if (labelNode && entity === "creators")
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
+      if (selectedNodeLabel && creatorsComics[selectedNode])
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
           .map(x => '<span style="color: ' + lighten(creatorsRoles[x], 50) + '">' + x + '</span>')
           .join("&nbsp;")
@@ -634,7 +632,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 
     setTimeout(() => {
       comicsList.innerHTML = filteredList.length
-        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (labelNode && entity === "creators" ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lighten(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
       filteredList.forEach(c => {
@@ -808,21 +806,21 @@ switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeType.checked = !switchNodeType.checked;
-    setPermalink(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNode);
+    setPermalink(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNode || selectedNodeLabel);
   }
 };
 switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-    setPermalink(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNode);
+    setPermalink(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNode || selectedNodeLabel);
   }
 };
 switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
   if (typ === "left" || typ === "right") {
     switchNodeView.checked = !switchNodeView.checked;
-    setPermalink(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNode);
+    setPermalink(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNode || selectedNodeLabel);
   }
 };
 
@@ -858,10 +856,12 @@ function unselectComic() {
   selectedComic = null;
   selectComic(null, true);
   renderer.setSetting("labelGridCellSize", 200);
-  clickNode(selectedNode, false);
   if (selectedNode && graph.hasNode(selectedNode)) {
+    clickNode(selectedNode, false);
     setTimeout(() => centerNode(selectedNode), 50);
-  }
+  } else if (selectedNode && crossMap[entity][selectedNode])
+    keepNode(crossMap[entity][selectedNode]);
+  else clickNode(null, false);
 }
 
 function selectComic(comic = null, keep = false, autoReselect = false) {
@@ -957,12 +957,28 @@ function selectComic(comic = null, keep = false, autoReselect = false) {
   comic.creators.forEach(c => {
     if (!allCreators[c]) return;
     const entityLi = document.getElementById("creator-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink("creators", networkSize, view, c, true);
+    entityLi.onclick = () => {
+      if (entity === "creators")
+        clickNode(c, true);
+      else {
+        setPermalink(entity, networkSize, view, c);
+        keepNode(crossMap.characters[c]);
+        displayComics(c, true);
+      }
+    };
   });
   comic.characters.forEach(c => {
     if (!allCharacters[c]) return;
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
-    entityLi.onclick = () => setPermalink("characters", networkSize, view, c, true);
+    entityLi.onclick = () => {
+      if (entity === "characters")
+        clickNode(c, true);
+      else {
+        setPermalink(entity, networkSize, view, c);
+        keepNode(crossMap.creators[c]);
+        displayComics(c, true);
+      }
+    };
   });
 
   renderer.setSetting(
@@ -1262,13 +1278,15 @@ function renderNetwork() {
     }
 
     // If a node is selected we refocus it
-    const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null;
+    const nodeInGraph = selectedNodeLabel ? data.graph.findNode((n, {label}) => label === selectedNodeLabel) : null,
+      neighborsInAlternateGraph = selectedNode && crossMap[entity][selectedNode] || null;
     if (nodeInGraph) {
       showCanvases();
       clickNode(nodeInGraph, false);
+    } else if (neighborsInAlternateGraph) {
+      showCanvases();
+      keepNode(neighborsInAlternateGraph);
     } else {
-      if (selectedNodeLabel)
-        clickNode(null);
       camera.animate({
         x: 0.5,
         y: 0.5,
@@ -1281,7 +1299,6 @@ function renderNetwork() {
         hideLoader();
       }, 50);
     }
-    selectedNodeLabel = null;
 
     // Load comics data after first network rendered
     if (loop && comicsReady === null) {
@@ -1394,6 +1411,49 @@ function hideViewComicsButton() {
   );
 }
 
+function keepNode(relatedNodes) {
+  const graph = networks[entity][networkSize].graph,
+    nodes = Array.from(relatedNodes);
+  if (!graph || !renderer) return;
+
+  renderer.setSetting(
+    "nodeReducer", (n, attrs) => nodes.indexOf(n) !== -1
+      ? { ...attrs,
+          type: view === "pictures" ? "image" : "circle",
+          zIndex: 2
+        }
+      : { ...attrs,
+          type: "circle",
+          zIndex: 0,
+          color: "#2A2A2A",
+          size: sigmaDim / 500,
+          label: null
+        }
+  );
+  renderer.setSetting(
+    "edgeReducer", (edge, attrs) =>
+      nodes.indexOf(graph.source(edge)) !== -1 &&
+      nodes.indexOf(graph.target(edge)) !== -1
+        ? { ...attrs,
+            zIndex: 0,
+            color: '#333',
+            size: 1
+          }
+        : { ...attrs,
+            zIndex: 0,
+            color: "#FFF",
+            hidden: true
+          }
+  );
+  renderer.setSetting(
+    "labelColor", {attribute: "hlcolor", color: "#CCC"}
+  );
+
+  setTimeout(() => {
+    centerNode(null, nodes);
+    hideLoader();
+  }, 50);
+}
 function clickNode(node, updateURL = true, center = false) {
   const data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
@@ -1597,6 +1657,8 @@ function switchView() {
       selectComic(selectedComic, true, true);
     else if (graph && selectedNode && graph.hasNode(selectedNode))
       clickNode(selectedNode);
+    else if (selectedNode && crossMap[entity][selectedNode])
+      keepNode(crossMap[entity][selectedNode]);
     else hideLoader();
   }, 10);
 };
@@ -1639,16 +1701,16 @@ window.onresize = resize;
 switchNodeType.onchange = (event) => {
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setPermalink(target.checked ? "creators" : "characters", networkSize, view, selectedNode);
+  setPermalink(target.checked ? "creators" : "characters", networkSize, view, selectedNode || selectedNodeLabel);
 };
 switchNodeFilter.onchange = (event) => {
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setPermalink(entity, target.checked ? "most" : "main", view, selectedNode);
+  setPermalink(entity, target.checked ? "most" : "main", view, selectedNode || selectedNodeLabel);
 };
 switchNodeView.onchange = (event) => {
   const target = event.target as HTMLInputElement;
-  setPermalink(entity, networkSize, target.checked ? "colors" : "pictures", selectedNode);
+  setPermalink(entity, networkSize, target.checked ? "colors" : "pictures", selectedNode || selectedNodeLabel);
 };
 
 function readUrl() {
@@ -1660,7 +1722,7 @@ function readUrl() {
   let reload = false,
     switchv = false,
     clickn = false;
-  if (args[1] !== entity)
+  if (entity === "")
     defaultSidebar()
   if (args[1] !== entity || args[0] !== networkSize)
     reload = true;
@@ -1740,8 +1802,13 @@ function readUrl() {
     }, 0);
   } else if (switchv)
     switchView();
-  if (clickn)
-    clickNode(graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+  else if (clickn) {
+    const node = graph.findNode((n, {label}) => label === selectedNodeLabel);
+    if (node)
+      clickNode(node, false);
+    else if (selectedNode && crossMap[entity][selectedNode])
+      keepNode(crossMap[entity][selectedNode]);
+  }
 }
 window.onhashchange = readUrl;
 
