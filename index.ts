@@ -1,5 +1,8 @@
 /* TODO:
 - allow to switch from selected node to other entity and highlight corresponding
+  - load node sidebar after load all networks if landed on alternate view
+  - fix entity links from comic
+  - adjust sidebar node title when crossed
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -68,6 +71,7 @@ const startYear = 1939,
   allComics = [],
   allCharacters = {"-1": "missing info"},
   allCreators = {"-1": "missing info"},
+  crossMap = {creators: {}, characters: {}},
   charactersComics = {},
   creatorsComics = {},
   creatorsRoles = {
@@ -495,6 +499,17 @@ function loadComics(comicsData) {
           creatorsComics[cr][artistsIds[cr]].role = "both";
         else
           creatorsComics[cr].push({...c, "role": "writer"});
+      });
+
+      c.creators.forEach(cr => {
+        c.characters.forEach(ch => {
+          if (!crossMap.creators[ch])
+            crossMap.creators[ch] = new Set();
+          crossMap.creators[ch].add(cr);
+          if (!crossMap.characters[cr])
+            crossMap.characters[cr] = new Set();
+          crossMap.characters[cr].add(ch);
+        });
       });
 
 	},
@@ -1399,7 +1414,7 @@ function clickNode(node, updateURL = true, center = false) {
     selectedNode = null;
     selectedNodeLabel = null;
     if (updateURL)
-      setPermalink(entity, networkSize, view, node);
+      setPermalink(entity, networkSize, view, null);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
