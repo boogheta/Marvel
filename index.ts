@@ -783,7 +783,7 @@ function clickNode(node, updateURL = true, center = false) {
                 type: "circle",
                 zIndex: 0,
                 color: "#2A2A2A",
-                size: sigmaDim / 350,
+                size: sigmaDim < 500 ? 1 : 2,
                 label: null
               }
       );
@@ -814,7 +814,7 @@ function clickNode(node, updateURL = true, center = false) {
               type: "circle",
               zIndex: 0,
               color: "#2A2A2A",
-              size: sigmaDim / 500,
+              size: sigmaDim < 500 ? 1 : 2,
               label: null
             }
       );
@@ -1056,7 +1056,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
           zIndex: 0,
           color: "#2A2A2A",
           type: "circle",
-          size: sigmaDim / 500,
+          size: sigmaDim < 500 ? 1 : 2,
           label: null
         }
   );
