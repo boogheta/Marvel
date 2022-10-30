@@ -671,12 +671,12 @@ function clickNode(node, updateURL = true, center = false) {
 
   let relatedNodes = null;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
-    data = networks[selectedNodeType]["main"];
+    data = networks[selectedNodeType].most;
     // TODO handle graph not loaded yet
     relatedNodes = Array.from(crossMap[entity][node] || []);
   }
 
-  if (updateURL && !data.graph.hasNode(node))
+  if (!data.graph.hasNode(node))
     return setURL(entity, networkSize, view, null, null);
 
   if (updateURL && !sameNode)
