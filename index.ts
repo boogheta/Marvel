@@ -1,5 +1,6 @@
 /* TODO:
-  - load node sidebar after load all networks if landed on alternate view
+- bind url with selected comic?
+- if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -14,10 +15,8 @@
   - add cover artist in comics list, not in links used
  => one more check with takoyaki on authors/characters labels + readjust louvain after
 - update screenshots
-- bind url with selected comic?
 - auto data updates
 IDEAS:
-- if low debit, load comics/pictures only on explore comics click?
 - install app button?
 - swipe images with actual slide effect?
 - test bipartite network between authors and characters filtered by category of author
@@ -164,14 +163,48 @@ const container = document.getElementById("sigma-container") as HTMLElement,
 
 /* -- Load & prepare data -- */
 
-function loadNetwork(ent, siz) {
-  if (networks[ent][siz].loading)
+function loadNetwork(ent, siz, callback = null, waitForComics = false) {
+  if (networks[ent][siz].loaded && (!waitForComics || comicsReady))
+    return callback ? setTimeout(callback, 0) : null;
+
+  if (callback || (waitForComics && !comicsReady)) {
+    loader.style.display = "block";
+    loader.style.opacity = "0.5";
+  }
+
+  if (networks[ent][siz].loading) {
+    if (callback) {
+      const waiter = setInterval(() => {
+        if (!networks[ent][siz].loaded || (waitForComics && !comicsReady))
+          return;
+        clearInterval(waiter);
+        return setTimeout(callback, 0);
+      }, 50);
+    }
     return;
+  }
+
   networks[ent][siz].loading = true;
   loaderComics.style.display = "block";
   return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
     .then(res => res.arrayBuffer())
-    .then(content => buildNetwork(content, ent, siz));
+    .then(content => {
+      buildNetwork(content, ent, siz)
+      networks[ent][siz].loaded = true;
+      networksLoaded += 1;
+      if (networksLoaded === 4)
+        loaderComics.style.display = "none";
+      if (callback) {
+        if (waitForComics && !comicsReady) {
+          const waiter = setInterval(() => {
+          if (waitForComics && !comicsReady)
+            return;
+          clearInterval(waiter);
+          return setTimeout(callback, 0);
+          }, 50);
+        } else return setTimeout(callback, 0);
+      }
+    });
 }
 
 function loadComics(comicsData) {
@@ -307,10 +340,6 @@ function buildNetwork(networkData, ent, siz) {
       data.clusters[cluster].y = meanArray(data.clusters[cluster].positions.map(n => n.y));
     }
   }
-
-  networksLoaded += 1;
-  if (networksLoaded === 4)
-    loaderComics.style.display = "none";
 }
 
 
@@ -488,7 +517,18 @@ function renderNetwork() {
       setSearchQuery();
   };
 
-  function finalizeGraph(data, loop = null) {
+  function finalizeGraph(loop = null) {
+    // Load comics data after first network rendered
+    if (loop && comicsReady === null) {
+      comicsReady = false;
+      loaderComics.style.display = "block";
+      setTimeout(() => {
+        fetch("./data/Marvel_comics.csv.gz")
+          .then((res) => res.arrayBuffer())
+          .then((content) => loadComics(content))
+      }, selectedNodeLabel && selectedNodeType !== entity ? 100 : 2000);
+    }
+
     // If a comic is selected we reload the list with it within it
     if (comicsBarView && selectedComic) {
       showCanvases();
@@ -499,35 +539,31 @@ function renderNetwork() {
     }
 
     // If a node is selected we refocus it
-    const node = selectedNodeLabel
-      ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
-      : null;
-    if (node || selectedNode) {
-      showCanvases();
-      clickNode(node || selectedNode, false);
-    } else {
-      camera.animate({
-        x: 0.5,
-        y: 0.5,
-        ratio: 1
-      }, {duration: 50});
-      setTimeout(() => {
+    if (selectedNodeLabel && selectedNodeType !== entity) {
+      loadNetwork(selectedNodeType, "most", () => {
         showCanvases();
-        if (view === "pictures")
-          renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
-        hideLoader();
-      }, 50);
-    }
-
-    // Load comics data after first network rendered
-    if (loop && comicsReady === null) {
-      comicsReady = false;
-      loaderComics.style.display = "block";
-      setTimeout(() => {
-        fetch("./data/Marvel_comics.csv.gz")
-          .then((res) => res.arrayBuffer())
-          .then((content) => loadComics(content))
-      }, 2000);
+        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      }, true);
+    } else {
+      const node = selectedNodeLabel
+        ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
+        : null;
+      if (node || selectedNode) {
+        showCanvases();
+        clickNode(node || selectedNode, false);
+      } else {
+        camera.animate({
+          x: 0.5,
+          y: 0.5,
+          ratio: 1
+        }, {duration: 50});
+        setTimeout(() => {
+          showCanvases();
+          if (view === "pictures")
+            renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+          hideLoader();
+        }, 50);
+      }
     }
     return loop ? clearInterval(loop) : null;
   }
@@ -544,11 +580,11 @@ function renderNetwork() {
     const initLoop = setInterval(() => {
       if (!camera) return clearInterval(initLoop);
       if (camera.ratio <= 1.5)
-        return finalizeGraph(data, initLoop)
+        return finalizeGraph(initLoop)
       camera.animate({ratio: camera.ratio / 1.5}, {duration: 50, easing: "linear"});
     }, 50);
     data.rendered = true;
-  } else finalizeGraph(data);
+  } else finalizeGraph();
 }
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
@@ -672,7 +708,6 @@ function clickNode(node, updateURL = true, center = false) {
   let relatedNodes = null;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
     data = networks[selectedNodeType].most;
-    // TODO handle graph not loaded yet
     relatedNodes = Array.from(crossMap[entity][node] || []);
   }
 
@@ -1639,23 +1674,15 @@ function readURL() {
   colorsDetailsSpans.forEach(span => span.style.display = (view === "colors" ? "inline" : "none"));
   picturesDetailsSpans.forEach(span => span.style.display = (view === "pictures" ? "inline" : "none"));
 
+  const graph = networks[entity][networkSize].graph;
   if (reload) setTimeout(() => {
     // If graph already loaded, just render it
-    if (networks[entity][networkSize].graph)
+    if (graph)
       renderNetwork();
     // Otherwise load network file
-    else {
-      networks[entity][networkSize].loading = true;
-      fetch("./data/Marvel_" + entity + "_by_stories" + (networkSize === "main" ? "" : "_full") + ".json.gz")
-        .then((res) => res.arrayBuffer())
-        .then((content) => {
-          buildNetwork(content, entity, networkSize);
-          setTimeout(renderNetwork, 0);
-        });
-    }
+    else loadNetwork(entity, networkSize, renderNetwork);
   }, 0);
   else if (switchv) {
-    const graph = networks[entity][networkSize].graph;
     if (graph && renderer) {
       loader.style.display = "block";
       loader.style.opacity = "0.5";
@@ -1674,11 +1701,10 @@ function readURL() {
   } else if (clickn) {
     let network = networks[entity][networkSize];
     if (selectedNodeType !== entity) {
-      network = networks[selectedNodeType].most;
-    // TODO handle graph not loaded yet
-    }
-    const node = network.graph.findNode((n, {label}) => label === selectedNodeLabel);
-    clickNode(node, false);
+      loadNetwork(selectedNodeType, "most", () => {
+        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+      }, true);
+    } else clickNode(graph.findNode((n, {label}) =>label === selectedNodeLabel), false);
   }
 }
 
