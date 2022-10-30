@@ -59,12 +59,10 @@ function rotatePosition(pos, angle) {
 }
 
 export {
-  formatNumber,
-  formatMonth,
+  formatNumber, formatMonth,
   lightenColor,
   meanArray,
-  divWidth,
-  divHeight,
+  divWidth, divHeight,
   webGLSupport,
   rotatePosition
 };
