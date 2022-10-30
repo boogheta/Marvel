@@ -1,5 +1,6 @@
 /* TODO:
 - bind url with selected comic?
+- size of nodes in alternate view prop to comics?
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -241,8 +242,7 @@ function loadComics(comicsData) {
           creatorsComics[cr] = [];
         if (artistsIds[cr])
           creatorsComics[cr][artistsIds[cr]].role = "both";
-        else
-          creatorsComics[cr].push({...c, "role": "writer"});
+        else creatorsComics[cr].push({...c, "role": "writer"});
       });
 
       c.creators.forEach(cr => {
@@ -311,8 +311,15 @@ function buildNetwork(networkData, ent, siz) {
 
   // Adjust nodes visual attributes for rendering (size, color, images)
   data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
-    const artist_ratio = (ent === "creators" ? artist / (writer + artist) : undefined),
-      role = artist_ratio > 0.65 ? "artist" : (artist_ratio < 0.34 ? "writer" : "both"),
+    const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
+      role = artist_ratio !== null
+        ? (artist_ratio > 0.65
+          ? "artist"
+          : (artist_ratio < 0.34
+            ? "writer"
+            : "both"
+          )
+        ) : null,
       color = (ent === "characters"
         ? (data.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
         : creatorsRoles[role]
@@ -394,21 +401,18 @@ function renderNetwork() {
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => {
       if (comicsBarView)
-        hideComicsBar();
+        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
       else setSearchQuery();
     });
 
     // Bind zoom manipulation buttons
     camera = renderer.getCamera();
-    document.getElementById("zoom-in").onclick = () => {
-      camera.animatedZoom({ duration: 600 });
-    };
-    document.getElementById("zoom-out").onclick = () => {
-      camera.animatedUnzoom({ duration: 600 });
-    };
-    document.getElementById("zoom-reset").onclick = () => {
-      camera.animatedReset({ duration: 300 });
-    };
+    document.getElementById("zoom-in").onclick =
+      () => camera.animatedZoom({ duration: 600 });
+    document.getElementById("zoom-out").onclick =
+      () => camera.animatedUnzoom({ duration: 600 });
+    document.getElementById("zoom-reset").onclick =
+      () => camera.animatedReset({ duration: 300 });
   } else {
     renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
@@ -598,77 +602,76 @@ function centerNode(node, neighbors = null, force = true) {
     neighbors = data.graph.nodes();
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
+  if (!neighbors.length)
+    return;
 
-  const recenter = function(duration) {
-    let x0 = null, x1 = null, y0 = null, y1 = null;
-    neighbors.forEach(n => {
-        const pos = renderer.getNodeDisplayData(n);
-        if (!pos) return;
-        if (x0 === null || x0 > pos.x) x0 = pos.x;
-        if (x1 === null || x1 < pos.x) x1 = pos.x;
-        if (y0 === null || y0 > pos.y) y0 = pos.y;
-        if (y1 === null || y1 < pos.y) y1 = pos.y;
-      });
-    const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
-      ? divWidth("comics-bar")
-      : 0,
-      minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
-      maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1}), camera.angle),
-      viewPortPosition = renderer.framedGraphToViewport({
-        x: (x0 + x1) / 2,
-        y: (y0 + y1) / 2
-      }),
-      sigmaDims = container.getBoundingClientRect();
+  let x0 = null, x1 = null, y0 = null, y1 = null;
+  neighbors.forEach(n => {
+      const pos = renderer.getNodeDisplayData(n);
+      if (!pos) return;
+      if (x0 === null || x0 > pos.x) x0 = pos.x;
+      if (x1 === null || x1 < pos.x) x1 = pos.x;
+      if (y0 === null || y0 > pos.y) y0 = pos.y;
+      if (y1 === null || y1 < pos.y) y1 = pos.y;
+    });
+  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
+    ? divWidth("comics-bar")
+    : 0,
+    minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
+    maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1}), camera.angle),
+    viewPortPosition = renderer.framedGraphToViewport({
+      x: (x0 + x1) / 2,
+      y: (y0 + y1) / 2
+    }),
+    sigmaDims = container.getBoundingClientRect();
 
-    // Handle comicsbar hiding part of the graph
-    sigmaDims.width -= shift;
-    // Evaluate required zoom ratio
-    let ratio = Math.min(
-      35 / camera.ratio,
-      Math.max(
-        0.21 / camera.ratio,
-        4 / 3 / Math.min(
-          sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
-          sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
-        )
+  // Handle comicsbar hiding part of the graph
+  sigmaDims.width -= shift;
+  // Evaluate required zoom ratio
+  let ratio = Math.min(
+    35 / camera.ratio,
+    Math.max(
+      0.21 / camera.ratio,
+      4 / 3 / Math.min(
+        sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
+        sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
+    )
+  );
+
+  // Evaluate acceptable window
+  const minWin = rotatePosition({
+    x: 0,
+    y: 0
+  }, camera.angle),
+  maxWin = rotatePosition({
+    x: sigmaDims.width,
+    y: sigmaDims.height
+  }, camera.angle),
+  minPos = rotatePosition({
+    x: sigmaDims.width / 6,
+    y: sigmaDims.height / 6
+  }, camera.angle),
+  maxPos = rotatePosition({
+    x: 5 * sigmaDims.width / 6,
+    y: 5 * sigmaDims.height / 6
+  }, camera.angle);
+
+  // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
+  if (force ||
+    minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
+    (ratio !== 0 && (ratio < 0.35)) ||
+    (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
+  ) {
+    viewPortPosition.x += ratio * shift / 2;
+    camera.animate(
+      {
+        ...renderer.viewportToFramedGraph(viewPortPosition),
+        ratio: camera.ratio * ratio
+      },
+      {duration: 300}
     );
-
-    // Evaluate acceptable window
-    const minWin = rotatePosition({
-      x: 0,
-      y: 0
-    }, camera.angle),
-    maxWin = rotatePosition({
-      x: sigmaDims.width,
-      y: sigmaDims.height
-    }, camera.angle),
-    minPos = rotatePosition({
-      x: sigmaDims.width / 6,
-      y: sigmaDims.height / 6
-    }, camera.angle),
-    maxPos = rotatePosition({
-      x: 5 * sigmaDims.width / 6,
-      y: 5 * sigmaDims.height / 6
-    }, camera.angle);
-
-    // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
-    if (force ||
-      minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
-      (ratio !== 0 && (ratio < 0.35)) ||
-      (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
-    ) {
-      viewPortPosition.x += ratio * shift / 2;
-      camera.animate(
-        {
-          ...renderer.viewportToFramedGraph(viewPortPosition),
-          ratio: camera.ratio * ratio
-        },
-        {duration: duration}
-      );
-    }
   }
-  recenter(300);
 }
 
 
@@ -740,9 +743,9 @@ function clickNode(node, updateURL = true, center = false) {
     nodeExtra.innerHTML = "";
     if (attrs.description)
       nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
-    nodeExtra.innerHTML += "<p>" + (entity === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with<br/><b>" + data.graph.degree(node) + " other " + entity + "</b></p>";
+    nodeExtra.innerHTML += "<p>" + (selectedNodeType === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with<br/><b>" + data.graph.degree(node) + " other " + selectedNodeType + "</b></p>";
     // Display roles in stories for creators
-    if (entity === "creators") {
+    if (selectedNodeType === "creators") {
       if (attrs.writer === 0 && attrs.artist)
         nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist (' + attrs.artist + ')</b></p>';
       else if (attrs.artist === 0 && attrs.writer)
@@ -941,7 +944,7 @@ function unselectComic() {
   } else clickNode(null, false);
 }
 
-function selectComic(comic = null, keep = false, autoReselect = false) {
+function selectComic(comic, keep = false, autoReselect = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
@@ -1540,7 +1543,7 @@ function renderHistogram(node = null, comics = null) {
 
 /* -- Responsiveness handling -- */
 
-let resizing = undefined;
+let resizing = null;
 
 function resize(fast = false) {
   if (!fast) resizing = true;
