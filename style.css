@@ -805,6 +805,9 @@ label {
   }
 }
 @media (pointer: coarse) {
+  html, body {
+    touch-action: pan-x, pan-y;
+  }
   input, textarea, button, select, a, label, div, p {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
