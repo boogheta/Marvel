@@ -1,7 +1,7 @@
 /* TODO:
 - bind url with selected comic
   - waitforcomics on first load
-  - fix no open comics on no nodeselected
+  - plug sort comics
 - handle clear animation if one running
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
@@ -552,6 +552,7 @@ function renderNetwork(shouldComicsBarView) {
         displayComics(selectedNode, true, true);
       else if (selectedComic)
         selectComic(selectedComic, true, true);
+      else unselectComic();
       return loop ? clearInterval(loop) : null;
     }
 
@@ -689,7 +690,7 @@ function centerNode(node, neighbors = null, force = true) {
 /* -- Graph interactions -- */
 
 function clickNode(node, updateURL = true, center = false) {
-  logDebug("CLICK NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, updateURL, center});
+  logDebug("CLICK NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, updateURL, center, comicsBarView, selectedComic});
   let data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
@@ -717,6 +718,8 @@ function clickNode(node, updateURL = true, center = false) {
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
     renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
+    if (comicsBarView)
+      displayComics(null, true);
     return;
   }
 
@@ -897,7 +900,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
     comicsTitle.innerHTML = "";
     if (comics) {
       comicsTitle.innerHTML = "... comics";
-      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (selectedNodeType === "creators" ? "by" : "with") + "<br/>" + selectedNodeLabel;
     }
     comicsSubtitleList.innerHTML = "";
   }
@@ -927,7 +930,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
 
     if (filteredList.length) {
       comicsTitle.innerHTML = formatNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
-      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (creatorsComics[selectedNode] ? "by" : "with") + "<br/>" + selectedNodeLabel;
+      if (selectedNodeLabel) comicsTitle.innerHTML += " " + (selectedNodeType === "creators" ? "by" : "with") + "<br/>" + selectedNodeLabel;
       if (selectedNodeLabel && creatorsComics[selectedNode])
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
           .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x], 50) + '">' + x + '</span>')
@@ -1235,7 +1238,6 @@ function hideComicsBar() {
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
-//displayComics(node);
   nodeHistogram.innerHTML = renderHistogram(node);
 }
 
