@@ -538,7 +538,7 @@ function renderNetwork() {
       showCanvases();
       if (selectedNode)
         displayComics(selectedNode, true, true);
-      else selectComic(selectedComic, true, true)
+      else selectComic(selectedComic, true, true);
       return loop ? clearInterval(loop) : null;
     }
 
@@ -1579,20 +1579,24 @@ window.onresize = () => {
 
 /* -- URL actions routing -- */
 
-function setURL(ent, siz, vie, sel, selType) {
-  window.location.hash = siz + "/" + ent + "/" + vie + "/"
-    + (sel !== null ? "?" + (selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g,"+") : "");
+function setURL(ent, siz, vie, sel = null, selType = null) {
+  const opts = [];
+  if (sel !== null)
+    opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
+
+  window.location.hash = "/" + siz + "/" + ent + "/" + vie + "/"
+    + (opts.length ? "?" + opts.join("&") : "");
 }
 
 function readURL() {
   const args = window.location.hash
-    .replace(/^#/, '')
+    .replace(/^#\//, '')
     .split(/\/\??/);
   if (args.length < 4
     || ["main", "most"].indexOf(args[0]) === -1
     || ["characters", "creators"].indexOf(args[1]) === -1
     || ["pictures", "colors"].indexOf(args[2]) === -1
-  ) return setURL("characters", "main", "pictures", null, null);
+  ) return setURL("characters", "main", "pictures");
   const opts = Object.fromEntries(
     args[3].split("&")
     .map(o => o.split("="))
