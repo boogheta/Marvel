@@ -1,7 +1,9 @@
 /* TODO:
-- bind url with selected comic?
-- size of nodes in alternate view prop to comics?
+- bind url with selected comic
 - if low debit, load comics/pictures only on explore comics click?
+- size of nodes in alternate view prop to comics?
+- check hidecomicsbar not working on touch stage
+- center zoom on mobile a bit too tight?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
