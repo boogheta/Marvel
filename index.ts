@@ -2,8 +2,8 @@
 - bind url with selected comic
   - autoscroll comics list on change from urlchange
   - waitforcomics on first load
-  - fix unclick selected comic
   - fix no open comics on no nodeselected
+- handle clear animation if one running
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
 - check hidecomicsbar not working on touch stage
@@ -968,16 +968,29 @@ viewAllComicsButton.onclick =
 document.getElementById("close-bar").onclick =
   () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
 
+function clearComicDetails() {
+  comicTitle.innerHTML = "";
+  comicImg.src = "";
+  comicDesc.innerHTML = "";
+  comicEntities.forEach(el => el.style.display = "none");
+  comicCreators.innerHTML = "";
+  comicCharacters.innerHTML = "";
+  comicUrl.style.display = "none";
+}
+
 function unselectComic() {
   logDebug("UNSELECT COMIC", {selectedComic, selectedNodeLabel});
   const graph = networks[entity][networkSize].graph;
   hoveredComic = null;
-  selectedComic = "";
   selectComic("", true);
+  clearComicDetails();
+  document.querySelectorAll("#comics-list li.selected").forEach(
+    el => el.className = ""
+  );
   renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
-  if (selectedNode) {
+  if (selectedNode)
     clickNode(selectedNode, false, true);
-  } else clickNode(null, false);
+  else clickNode(null, false);
 }
 
 function selectComic(comic, keep = false, autoReselect = false) {
@@ -988,17 +1001,8 @@ function selectComic(comic, keep = false, autoReselect = false) {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
-  if (!autoReselect) {
-    if (!comic || !hoveredComic || comic.id !== hoveredComic.id) {
-      comicTitle.innerHTML = "";
-      comicImg.src = "";
-      comicDesc.innerHTML = "";
-      comicEntities.forEach(el => el.style.display = "none");
-      comicCreators.innerHTML = "";
-      comicCharacters.innerHTML = "";
-      comicUrl.style.display = "none";
-    }
-  }
+  if (!autoReselect && (!comic || !hoveredComic || comic.id !== hoveredComic.id))
+      clearComicDetails()
 
   if (keep) {
     selectedComic = comic;
