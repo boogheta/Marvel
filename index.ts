@@ -1,6 +1,5 @@
 /* TODO:
 - bind url with selected comic
-  - autoscroll comics list on change from urlchange
   - waitforcomics on first load
   - fix no open comics on no nodeselected
 - handle clear animation if one running
@@ -73,6 +72,7 @@ let entity = "",
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
+  preventAutoScroll = false,
   hoveredComic = null,
   selectedComic = null,
   networksLoaded = 0,
@@ -875,8 +875,8 @@ function getNodeComics(node) {
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
-  if (comicsBarView && node == selectedNode && autoReselect && !resetTitle)
-    return;
+  if (comicsBarView && node === selectedNode && autoReselect && !resetTitle)
+    return selectedComic ? scrollComicsList() : null;
 
   logDebug("DISPLAY COMICS", {node, autoReselect, resetTitle, selectedComic, selectedNodeLabel,sortComics, filter: filterInput.value});
   const graph = networks[entity][networkSize].graph,
@@ -947,6 +947,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
             comicLi.onmouseup = onmouseup;
             setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
           };
+          preventAutoScroll = true;
           setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic);
         };
         comicLi.comic = c;
@@ -1115,6 +1116,10 @@ function selectComic(comic, keep = false, autoReselect = false) {
   );
   renderer.setSetting("labelGridCellSize", 10);
 
+  if (!preventAutoScroll)
+    scrollComicsList();
+  preventAutoScroll = false;
+
   setTimeout(() => {
     centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
     hideLoader();
@@ -1251,6 +1256,7 @@ function hideViewComicsButton() {
 
 // Next/Previous/Play/Pause comics buttons handling
 function scrollComicsList() {
+  preventAutoScroll = false;
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
     if (!offset) return;
@@ -1266,7 +1272,6 @@ function scrollComicsList() {
 function selectAndScroll(el) {
   if (!el) return;
   setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, el.comic);
-  //TODO CHECK WHETHER THIS NEEDS TO RUN AFTER
   scrollComicsList();
 }
 
@@ -1402,14 +1407,6 @@ document.onkeydown = function(e) {
   if (modal.style.display === "block" && e.which === 27) {
     modal.style.display = "none";
     comicsCache.style.display = "none";
-  } else if (comicsBarView && !selectedComic) {
-    if (e.which === 37 || e.which === 38)
-      selectAndScroll(document.querySelector("#comics-list li:last-child") as any);
-    else if (e.which === 39 || e.which === 40)
-      selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
-    else if (e.which === 27)
-      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
-    else return;
   } else if (selectedComic) {
     switch(e.which) {
       case 37: // left
@@ -1432,6 +1429,14 @@ document.onkeydown = function(e) {
 
       default: return; // exit this handler for other keys
     }
+  } else if (comicsBarView) {
+    if (e.which === 37 || e.which === 38)
+      selectAndScroll(document.querySelector("#comics-list li:last-child") as any);
+    else if (e.which === 39 || e.which === 40)
+      selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
+    else if (e.which === 27)
+      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
+    else return;
   } else if (e.which === 27) {
     if (comicsBarView)
       setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
