@@ -840,7 +840,7 @@ function clickNode(node, updateURL = true, center = false) {
 
   if (comicsBarView && !sameNode)
     displayComics(node, true);
-  if (!selectedComic && (!updateURL || center))
+  if (!(comicsBarView && selectedComic) && (!updateURL || center))
     setTimeout(() => {
       if (relatedNodes)
         centerNode(null, relatedNodes);
