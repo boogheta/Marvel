@@ -1,3 +1,9 @@
+const DEBUG = false;
+
+function logDebug(action, vars = {}) {
+  if (DEBUG)
+    console.log(" -> " + action, vars || "");
+}
 function formatNumber(x) {
   return (x + "")
     .replace(/(.)(.{3})$/, "$1&nbsp;$2");
@@ -59,6 +65,7 @@ function rotatePosition(pos, angle) {
 }
 
 export {
+  logDebug,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
