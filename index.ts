@@ -32,6 +32,7 @@ import { animateNodes } from "./sigma.js/utils/animate";
 import { Sigma } from "./sigma.js";
 import { Coordinates } from "./sigma.js/types";
 import {
+  logDebug,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
@@ -187,12 +188,13 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
     return;
   }
 
+  logDebug("LOAD NETWORK", {ent, siz});
   networks[ent][siz].loading = true;
   loaderComics.style.display = "block";
   return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
     .then(res => res.arrayBuffer())
     .then(content => {
-      buildNetwork(content, ent, siz)
+      buildNetwork(content, ent, siz);
       networks[ent][siz].loaded = true;
       networksLoaded += 1;
       if (networksLoaded === 4)
@@ -210,70 +212,6 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
     });
 }
 
-function loadComics(comicsData) {
-  const comicsStr = pako.ungzip(comicsData, {to: "string"});
-  Papa.parse(comicsStr, {
-	worker: true,
-    header: true,
-    skipEmptyLines: "greedy",
-	step: function(c) {
-      c = c.data;
-      allComics.push(c);
-
-      c.characters = c.characters.split("|").filter(x => x);
-      c.characters.forEach(ch => {
-        if (!charactersComics[ch])
-          charactersComics[ch] = [];
-        charactersComics[ch].push(c);
-      });
-
-      const artistsIds = {};
-      c.artists = c.artists.split("|").filter(x => x);
-      c.writers = c.writers.split("|").filter(x => x);
-      c.creators = c.writers.concat(c.artists);
-
-      c.artists.forEach(cr => {
-        if (!creatorsComics[cr])
-          creatorsComics[cr] = [];
-        creatorsComics[cr].push({...c, "role": "artist"});
-        artistsIds[cr] = creatorsComics[cr].length - 1;
-      });
-
-      c.writers.forEach(cr => {
-        if (!creatorsComics[cr])
-          creatorsComics[cr] = [];
-        if (artistsIds[cr])
-          creatorsComics[cr][artistsIds[cr]].role = "both";
-        else creatorsComics[cr].push({...c, "role": "writer"});
-      });
-
-      c.creators.forEach(cr => {
-        c.characters.forEach(ch => {
-          if (!crossMap.creators[ch])
-            crossMap.creators[ch] = new Set();
-          crossMap.creators[ch].add(cr);
-          if (!crossMap.characters[cr])
-            crossMap.characters[cr] = new Set();
-          crossMap.characters[cr].add(ch);
-        });
-      });
-
-	},
-	complete: function() {
-      comicsReady = true;
-      loaderComics.style.display = "none";
-      viewAllComicsButton.style.display = "block";
-      fullHistogram.innerHTML = renderHistogram();
-      resize(true);
-      if (selectedNode)
-        addViewComicsButton(selectedNode);
-      ["creators", "characters"].forEach(e =>
-        ["main", "most"].forEach(s => loadNetwork(e, s))
-      );
-    }
-  });
-}
-
 function computeNodeSize(node, stories) {
   return Math.pow(stories, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
@@ -281,13 +219,8 @@ function computeNodeSize(node, stories) {
     * sigmaDim / 1000
 };
 
-function getNodeComics(node) {
-  return node === null
-    ? allComics
-    : charactersComics[node] || creatorsComics[node] || [];
-}
-
 function buildNetwork(networkData, ent, siz) {
+  logDebug("BUILD GRAPH", {ent, siz});
   const data = networks[ent][siz];
   // Parse pako zipped graphology serialized network JSON
   data.graph = Graph.from(JSON.parse(pako.inflate(networkData, {to: "string"})));
@@ -351,10 +284,82 @@ function buildNetwork(networkData, ent, siz) {
   }
 }
 
+function loadComics() {
+  logDebug("LOAD COMICS");
+  fetch("./data/Marvel_comics.csv.gz")
+    .then((res) => res.arrayBuffer())
+    .then(buildComics);
+}
+
+function buildComics(comicsData) {
+  const comicsStr = pako.ungzip(comicsData, {to: "string"});
+  Papa.parse(comicsStr, {
+	worker: true,
+    header: true,
+    skipEmptyLines: "greedy",
+	step: function(c) {
+      c = c.data;
+      allComics.push(c);
+
+      c.characters = c.characters.split("|").filter(x => x);
+      c.characters.forEach(ch => {
+        if (!charactersComics[ch])
+          charactersComics[ch] = [];
+        charactersComics[ch].push(c);
+      });
+
+      const artistsIds = {};
+      c.artists = c.artists.split("|").filter(x => x);
+      c.writers = c.writers.split("|").filter(x => x);
+      c.creators = c.writers.concat(c.artists);
+
+      c.artists.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        creatorsComics[cr].push({...c, "role": "artist"});
+        artistsIds[cr] = creatorsComics[cr].length - 1;
+      });
+
+      c.writers.forEach(cr => {
+        if (!creatorsComics[cr])
+          creatorsComics[cr] = [];
+        if (artistsIds[cr])
+          creatorsComics[cr][artistsIds[cr]].role = "both";
+        else creatorsComics[cr].push({...c, "role": "writer"});
+      });
+
+      c.creators.forEach(cr => {
+        c.characters.forEach(ch => {
+          if (!crossMap.creators[ch])
+            crossMap.creators[ch] = new Set();
+          crossMap.creators[ch].add(cr);
+          if (!crossMap.characters[cr])
+            crossMap.characters[cr] = new Set();
+          crossMap.characters[cr].add(ch);
+        });
+      });
+
+	},
+	complete: function() {
+      comicsReady = true;
+      loaderComics.style.display = "none";
+      viewAllComicsButton.style.display = "block";
+      fullHistogram.innerHTML = renderHistogram();
+      resize(true);
+      if (selectedNode)
+        addViewComicsButton(selectedNode);
+      ["creators", "characters"].forEach(e =>
+        ["main", "most"].forEach(s => loadNetwork(e, s))
+      );
+    }
+  });
+}
+
 
 /* -- Graphs display -- */
 
 function renderNetwork() {
+  logDebug("RENDER", {entity, networkSize, view, selectedNode, selectedNodeType, selectedNodeLabel, comicsBarView, selectedComic});
   const data = networks[entity][networkSize];
 
   // Feed communities size to explanations
@@ -528,11 +533,10 @@ function renderNetwork() {
     if (loop && comicsReady === null) {
       comicsReady = false;
       loaderComics.style.display = "block";
-      setTimeout(() => {
-        fetch("./data/Marvel_comics.csv.gz")
-          .then((res) => res.arrayBuffer())
-          .then((content) => loadComics(content))
-      }, selectedNodeLabel && selectedNodeType !== entity ? 100 : 2000);
+      setTimeout(
+        loadComics,
+        selectedNodeLabel && selectedNodeType !== entity ? 100 : 2000
+      );
     }
 
     // If a comic is selected we reload the list with it within it
@@ -595,8 +599,8 @@ function renderNetwork() {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
+  logDebug("CENTER ON", {node, neighbors, force});
   const data = networks[entity][networkSize];
-
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
     neighbors = data.graph.neighbors(node);
@@ -678,6 +682,7 @@ function centerNode(node, neighbors = null, force = true) {
 /* -- Graph interactions -- */
 
 function clickNode(node, updateURL = true, center = false) {
+  logDebug("CLICK NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, updateURL, center});
   let data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
@@ -710,6 +715,7 @@ function clickNode(node, updateURL = true, center = false) {
 
   let relatedNodes = null;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
+    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes});
     data = networks[selectedNodeType].most;
     relatedNodes = Array.from(crossMap[entity][node] || []);
   }
@@ -855,9 +861,16 @@ function clickNode(node, updateURL = true, center = false) {
     comicsDiv.scrollTo(0, 0);
 };
 
+function getNodeComics(node) {
+  return node === null
+    ? allComics
+    : charactersComics[node] || creatorsComics[node] || [];
+}
+
 function displayComics(node, autoReselect = false, resetTitle = true) {
-  const graph = networks[entity][networkSize].graph;
-  const comics = getNodeComics(node)
+  logDebug("DISPLAY COMICS", {node, autoReselect, resetTitle, selectedComic, selectedNodeLabel,sortComics, filter: filterInput.value});
+  const graph = networks[entity][networkSize].graph,
+    comics = getNodeComics(node);
 
   comicsBarView = true;
   comicsBar.style.opacity = "1";
@@ -934,6 +947,7 @@ function displayComics(node, autoReselect = false, resetTitle = true) {
 viewAllComicsButton.onclick = () => displayComics(null);
 
 function unselectComic() {
+  logDebug("UNSELECT COMIC", {selectedComic, selectedNodeLabel});
   const graph = networks[entity][networkSize].graph;
   hoveredComic = null;
   selectedComic = null;
@@ -945,6 +959,7 @@ function unselectComic() {
 }
 
 function selectComic(comic, keep = false, autoReselect = false) {
+  logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel});
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
@@ -1546,6 +1561,7 @@ function renderHistogram(node = null, comics = null) {
 let resizing = null;
 
 function resize(fast = false) {
+  logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main") - 10;
@@ -1618,6 +1634,8 @@ function readURL() {
     }
   });
   const clickn = selectedNodeLabel !== oldNodeLabel;
+
+  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, selectedComic, comicsBarView});
 
   // Update titles
   let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
