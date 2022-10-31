@@ -598,8 +598,6 @@ function centerNode(node, neighbors = null, force = true) {
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
     neighbors = data.graph.neighbors(node);
-  else if (!neighbors.length)
-    neighbors = data.graph.nodes();
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
   if (!neighbors.length)
