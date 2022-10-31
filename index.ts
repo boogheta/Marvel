@@ -1,5 +1,9 @@
 /* TODO:
 - bind url with selected comic
+  - autoscroll comics list on change from urlchange
+  - waitforcomics on first load
+  - fix unclick selected comic
+  - fix no open comics on no nodeselected
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
 - check hidecomicsbar not working on touch stage
@@ -360,8 +364,8 @@ function buildComics(comicsData) {
 
 /* -- Graphs display -- */
 
-function renderNetwork() {
-  logDebug("RENDER", {entity, networkSize, view, selectedNode, selectedNodeType, selectedNodeLabel, comicsBarView, selectedComic});
+function renderNetwork(shouldComicsBarView) {
+  logDebug("RENDER", {entity, networkSize, view, selectedNode, selectedNodeType, selectedNodeLabel, shouldComicsBarView, comicsBarView, selectedComic});
   const data = networks[entity][networkSize];
 
   // Feed communities size to explanations
@@ -542,12 +546,12 @@ function renderNetwork() {
     }
 
     // If a comic is selected we reload the list with it within it
-    if (comicsBarView && selectedComic) {
+    if (shouldComicsBarView) {
       showCanvases();
-      if (selectedNode)
+      if (!comicsBarView)
         displayComics(selectedNode, true, true);
-      else selectComic(selectedComic, true, true);
-      //  hideLoader();
+      else if (selectedComic)
+        selectComic(selectedComic, true, true);
       return loop ? clearInterval(loop) : null;
     }
 
@@ -689,7 +693,7 @@ function clickNode(node, updateURL = true, center = false) {
   let data = networks[entity][networkSize];
   if (!data.graph || !renderer) return;
 
-  // Unselect previous node
+  // Unhiglight previous node
   const sameNode = (node === selectedNode);
   if (selectedNode) {
     if (data.graph.hasNode(selectedNode))
@@ -871,6 +875,9 @@ function getNodeComics(node) {
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
+  if (comicsBarView && node == selectedNode && autoReselect && !resetTitle)
+    return;
+
   logDebug("DISPLAY COMICS", {node, autoReselect, resetTitle, selectedComic, selectedNodeLabel,sortComics, filter: filterInput.value});
   const graph = networks[entity][networkSize].graph,
     comics = getNodeComics(node);
@@ -935,8 +942,15 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
         : "No comic-book found.";
       filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
+        const onmouseup = () => {
+          comicLi.onmouseup = () => {
+            comicLi.onmouseup = onmouseup;
+            setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+          };
+          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic);
+        };
         comicLi.comic = c;
-        comicLi.onmouseup = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, c);
+        comicLi.onmouseup = onmouseup;
         comicLi.onmouseenter = () => selectComic(c);
       });
       loaderList.style.display = "none";
@@ -968,15 +982,13 @@ function unselectComic() {
 
 function selectComic(comic, keep = false, autoReselect = false) {
   logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel});
+  if (typeof comic === 'string' || comic instanceof String)
+    // TODO handle wait for comics
+    return;
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
   if (!autoReselect) {
-    if (keep && comic && selectedComic && comic.id === selectedComic.id) {
-      comic = "";
-      unselectComic();
-    }
-
     if (!comic || !hoveredComic || comic.id !== hoveredComic.id) {
       comicTitle.innerHTML = "";
       comicImg.src = "";
@@ -1649,12 +1661,12 @@ function readURL() {
   });
   const clickn = selectedNodeLabel !== oldNodeLabel;
 
-  const oldComic = selectedComic;
-  comicsBarView = opts["comics"] !== undefined;
-  selectedComic = comicsBarView ? allComicsMap[opts["comics"]] || "" : null;
+  const oldComic = selectedComic,
+    shouldComicsBarView = opts["comics"] !== undefined;
+  selectedComic = shouldComicsBarView ? allComicsMap[opts["comics"]] || opts["comics"] || "" : null;
   const dispc = selectedComic !== oldComic;
 
-  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, comicsBarView});
+  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView});
 
   // Update titles
   let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
@@ -1722,9 +1734,9 @@ function readURL() {
   if (reload) setTimeout(() => {
     // If graph already loaded, just render it
     if (graph)
-      renderNetwork();
+      renderNetwork(shouldComicsBarView);
     // Otherwise load network file
-    else loadNetwork(entity, networkSize, renderNetwork);
+    else loadNetwork(entity, networkSize, () => renderNetwork(shouldComicsBarView));
   }, 0);
   else if (switchv) {
     if (graph && renderer) {
@@ -1735,7 +1747,7 @@ function readURL() {
         renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
         renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
         renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-        if (graph && comicsBarView && selectedComic)
+        if (graph && shouldComicsBarView && selectedComic)
           selectComic(selectedComic, true, true);
         else if (graph && selectedNode)
           clickNode(selectedNode, false);
@@ -1750,11 +1762,13 @@ function readURL() {
       }, true);
     } else clickNode(graph.findNode((n, {label}) =>label === selectedNodeLabel), false);
   } else if (dispc) {
-    if (!comicsBarView)
+    if (!shouldComicsBarView)
       hideComicsBar();
+    else if (!comicsBarView)
+      displayComics(selectedNode, true, true);
     else if (selectedComic)
       selectComic(selectedComic, true);
-    else displayComics(selectedNode, true, true);
+    else unselectComic();
     hideLoader();
   }
 }
