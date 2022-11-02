@@ -1,7 +1,4 @@
 /* TODO:
-- bind url with selected comic
-  - fix click comic autoscrolls
-  - plug sort comics
 - handle clear animation if one running
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
@@ -413,7 +410,9 @@ function renderNetwork(shouldComicsBarView) {
     // Handle clicks on nodes
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => {
-      if (comicsBarView)
+      if (comicsBarView && selectedComic)
+        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+      else if (comicsBarView)
         setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
       else setSearchQuery();
     });
@@ -717,7 +716,7 @@ function clickNode(node, updateURL = true, center = false) {
     selectedNodeType = null;
     selectedNodeLabel = null;
     if (updateURL)
-      setURL(entity, networkSize, view, null, null, selectedComic);
+      setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
@@ -736,10 +735,10 @@ function clickNode(node, updateURL = true, center = false) {
   }
 
   if (!data.graph.hasNode(node))
-    return setURL(entity, networkSize, view, null, null, selectedComic);
+    return setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
 
   if (updateURL && !sameNode)
-    setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity, selectedComic);
+    setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
 
   // Fill sidebar with selected node's details
   const attrs = data.graph.getNodeAttributes(node);
@@ -883,13 +882,13 @@ function getNodeComics(node) {
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
-  if (comicsBarView && node === selectedNode && autoReselect && !resetTitle)
+  if (comicsBarView && node === selectedNode && !autoReselect && !resetTitle)
     return selectedComic ? scrollComicsList() : null;
 
   if (selectedNodeLabel && selectedNodeType && !selectedNode)
     clickNode(node, false, false);
 
-  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel,sortComics, filter: filterInput.value});
+  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
 
   if (!selectedComic)
     selectedComic = "";
@@ -968,10 +967,10 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         const onmouseup = () => {
           comicLi.onmouseup = () => {
             comicLi.onmouseup = onmouseup;
-            setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+            setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
           };
           preventAutoScroll = true;
-          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic);
+          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic, sortComics);
         };
         comicLi.comic = c;
         comicLi.onmouseup = onmouseup;
@@ -988,7 +987,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
 }
 
 viewAllComicsButton.onclick =
-  () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+  () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
 document.getElementById("close-bar").onclick =
   () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
 
@@ -1100,12 +1099,12 @@ function selectComic(comic, keep = false, autoReselect = false) {
   comic.creators.forEach(c => {
     if (!allCreators[c]) return;
     const entityLi = document.getElementById("creator-" + c) as HTMLElement;
-    entityLi.onclick = () => setURL(entity, networkSize, view, allCreators[c], "creators", selectedComic);
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCreators[c], "creators", selectedComic, sortComics);
   });
   comic.characters.forEach(c => {
     if (!allCharacters[c]) return;
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
-    entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters", selectedComic);
+    entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters", selectedComic, sortComics);
   });
 
   renderer.setSetting(
@@ -1139,7 +1138,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
   );
   renderer.setSetting("labelGridCellSize", 10);
 
-  if (!preventAutoScroll)
+  if (!preventAutoScroll && keep)
     scrollComicsList();
   preventAutoScroll = false;
 
@@ -1193,18 +1192,18 @@ regScreenBtn.onclick = () => {
 switchNodeType.onchange = (event) => {
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic);
+  setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeFilter.onchange = (event) => {
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic);
+  setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeView.onchange = (event) => {
   const target = event.target as HTMLInputElement;
-  setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic);
+  setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 
@@ -1257,7 +1256,7 @@ function hideComicsBar() {
 
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"' + (comicsBarView ? ' class="view-comics-selected"': '') + '><span>Explore comics</span></p>';
-  document.getElementById('view-comics').onclick = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+  document.getElementById('view-comics').onclick = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
   nodeHistogram.innerHTML = renderHistogram(node);
 }
 
@@ -1293,7 +1292,7 @@ function scrollComicsList() {
 
 function selectAndScroll(el) {
   if (!el) return;
-  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, el.comic);
+  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, el.comic, sortComics);
   scrollComicsList();
 }
 
@@ -1364,7 +1363,7 @@ document.getElementById("close-modal").onclick = modal.onclick;
 comicsList.onmouseleave = () => {
   if (selectedComic)
     selectComic(selectedComic);
-  else setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+  else setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
 };
 
 comicsCache.onwheel = () => comicsCache.style.display = "none";
@@ -1377,17 +1376,11 @@ const sortableTitle = s => s.replace(/^(.* \(\d+\)).*$/, "$1 / ") + s.replace(/^
   sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
 
 sortAlpha.onclick = () => {
-  sortAlpha.disabled = true;
-  sortDate.disabled = false;
-  sortComics = "alpha";
-  displayComics(selectedNode, true, false);
+  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, "alpha");
 };
 
 sortDate.onclick = () => {
-  sortDate.disabled = true;
-  sortAlpha.disabled = false;
-  sortComics = "date";
-  displayComics(selectedNode, true, false);
+  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, "date");
 };
 
 // Search comics input
@@ -1446,7 +1439,7 @@ document.onkeydown = function(e) {
         break;
 
       case 27: // esc
-        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "");
+        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
         break;
 
       default: return; // exit this handler for other keys
@@ -1459,13 +1452,9 @@ document.onkeydown = function(e) {
     else if (e.which === 27)
       setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
     else return;
-  } else if (e.which === 27) {
-    if (comicsBarView)
-      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
-    else if (selectedNode)
-      clickNode(null);
-    else return;
-  } else return;
+  }  else if (selectedNode && e.which === 27)
+    clickNode(null);
+  else return;
   e.preventDefault(); // prevent the default action (scroll / move caret)
 };
 
@@ -1523,7 +1512,7 @@ switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeType.checked = !switchNodeType.checked;
-    setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic);
+    setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
   }
 };
 
@@ -1531,7 +1520,7 @@ switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
   if (typ === "left" || typ === "right") {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-    setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic);
+    setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
   }
 };
 
@@ -1539,7 +1528,7 @@ switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
   if (typ === "left" || typ === "right") {
     switchNodeView.checked = !switchNodeView.checked;
-    setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic);
+    setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
   }
 };
 
@@ -1649,13 +1638,13 @@ window.onresize = () => {
 
 /* -- URL actions routing -- */
 
-function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = null) {
+function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = "date") {
   const opts = [];
   if (sel !== null)
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
   if (comics !== null) {
     opts.push("comics=" + (comics ? comics.id : ""));
-    if (sort !== null)
+    if (sort === "alpha")
       opts.push("sort=" + sort);
   }
 
@@ -1693,11 +1682,15 @@ function readURL() {
   const clickn = selectedNodeLabel !== oldNodeLabel;
 
   const oldComic = selectedComic,
+    oldSort = sortComics,
     shouldComicsBarView = opts["comics"] !== undefined;
   selectedComic = shouldComicsBarView ? allComicsMap[opts["comics"]] || opts["comics"] || "" : null;
-  const dispc = selectedComic !== oldComic;
+  sortComics = opts["sort"] || "date";
+  sortDate.disabled = sortComics === "date";
+  sortAlpha.disabled = sortComics === "alpha";
+  const dispc = selectedComic !== oldComic || sortComics !== oldSort;
 
-  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView});
+  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
   let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
@@ -1795,8 +1788,8 @@ function readURL() {
   } else if (dispc) {
     if (!shouldComicsBarView)
       hideComicsBar();
-    else if (!comicsBarView)
-      displayComics(selectedNode, true, true);
+    else if (!comicsBarView || oldSort !== sortComics)
+      displayComics(selectedNode, true, oldSort === sortComics);
     else if (selectedComic)
       selectComic(selectedComic, true);
     else unselectComic();
