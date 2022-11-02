@@ -2,7 +2,7 @@ const DEBUG = false;
 
 function logDebug(action, vars = {}) {
   if (DEBUG)
-    console.log(" -> " + action, vars || "");
+    console.log(" -> " + action, vars);
 }
 function formatNumber(x) {
   return (x + "")
