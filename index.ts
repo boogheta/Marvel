@@ -2,7 +2,6 @@
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
 - test getImageData working in addition to getWebGL?
-- center zoom on mobile a bit too tight?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -642,7 +641,7 @@ function centerNode(node, neighbors = null, force = true) {
     35 / camera.ratio,
     Math.max(
       0.21 / camera.ratio,
-      4 / 3 / Math.min(
+      1.55 / Math.min(
         sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
         sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
@@ -670,7 +669,7 @@ function centerNode(node, neighbors = null, force = true) {
   // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
   if (force ||
     minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
-    (ratio !== 0 && (ratio < 0.35)) ||
+    (ratio !== 0 && (ratio < 0.35 || ratio > 1.55)) ||
     (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
   ) {
     viewPortPosition.x += ratio * shift / 2;
