@@ -1,7 +1,6 @@
 /* TODO:
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
-- test getImageData working in addition to getWebGL?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -20,6 +19,7 @@
 IDEAS:
 - install app button?
 - swipe images with actual slide effect?
+- handle old browsers where nodeImages are full black (ex: old iPad)
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -1354,7 +1354,7 @@ document.getElementById("close-modal").onclick = modal.onclick;
 comicsList.onmouseleave = () => {
   if (selectedComic)
     selectComic(selectedComic);
-  else setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+  else unselectComic();
 };
 
 comicsCache.onwheel = () => comicsCache.style.display = "none";
