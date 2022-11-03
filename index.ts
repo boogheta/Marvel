@@ -1,6 +1,5 @@
 /* TODO:
  * - update sigma
-- handle clear animation if one running
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
 - check hidecomicsbar not working on touch stage
@@ -565,17 +564,16 @@ function renderNetwork(shouldComicsBarView) {
       conditionalOpenComicsBar();
     } else {
       conditionalOpenComicsBar();
-      camera.animate({
-        x: 0.5,
-        y: 0.5,
-        ratio: 1
-      }, {duration: 50});
-      setTimeout(() => {
-        showCanvases();
-        if (view === "pictures")
-          renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
-        hideLoader();
-      }, 50);
+      camera.animate(
+        {x: 0.5, y: 0.5, ratio: 1},
+        {duration: 50},
+        () => {
+          showCanvases();
+          if (view === "pictures")
+            renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+          hideLoader();
+        }
+      );
     }
   }
 
@@ -588,9 +586,10 @@ function renderNetwork(shouldComicsBarView) {
     camera.ratio = Math.pow(1.5, 10);
     camera.angle = 0;
     showCanvases(false);
-    setTimeout(() => {
-      camera.animate({ratio: 1}, {duration: 1500, easing: "linear"});
-      setTimeout(() => {
+    setTimeout(() => camera.animate(
+      {ratio: 1},
+      {duration: 1500},
+      () => {
         finalizeGraph();
         // Load comics data after first network rendered
         if (comicsReady === null) {
@@ -600,8 +599,8 @@ function renderNetwork(shouldComicsBarView) {
             selectedComic || (selectedNodeLabel && selectedNodeType !== entity) ? 50 : 2000
           );
         }
-      }, 1750);
-    }, 50);
+      }
+    ), 50);
     data.rendered = true;
   } else finalizeGraph();
 }
