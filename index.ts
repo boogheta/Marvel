@@ -1,9 +1,7 @@
 /* TODO:
-- handle clear animation if one running
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
-- check hidecomicsbar not working on touch stage
-- center zoom on mobile a bit too tight?
+- test getImageData working in addition to getWebGL?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -28,7 +26,6 @@ IDEAS:
 import pako from "pako";
 import Papa from "papaparse";
 import Graph from "graphology";
-import { animateNodes } from "./sigma.js/utils/animate";
 import { Sigma } from "./sigma.js";
 import { Coordinates } from "./sigma.js/types";
 import {
@@ -192,7 +189,6 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
 
   logDebug("LOAD NETWORK", {ent, siz});
   networks[ent][siz].loading = true;
-  loaderComics.style.display = "block";
   return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
     .then(res => res.arrayBuffer())
     .then(content => {
@@ -287,6 +283,7 @@ function buildNetwork(networkData, ent, siz) {
 }
 
 function loadComics() {
+  loaderComics.style.display = "block";
   logDebug("LOAD COMICS");
   fetch("./data/Marvel_comics.csv.gz")
     .then((res) => res.arrayBuffer())
@@ -345,7 +342,6 @@ function buildComics(comicsData) {
 	},
 	complete: function() {
       comicsReady = true;
-      loaderComics.style.display = "none";
       viewAllComicsButton.style.display = "block";
       fullHistogram.innerHTML = renderHistogram();
       resize(true);
@@ -534,7 +530,7 @@ function renderNetwork(shouldComicsBarView) {
   };
 
   // If a comic is selected we reload the list with it within it
-  function conditionalOpenComicsBar(loop = null) {
+  function conditionalOpenComicsBar() {
     if (shouldComicsBarView) {
       showCanvases();
       if (!comicsBarView)
@@ -546,25 +542,15 @@ function renderNetwork(shouldComicsBarView) {
     }
   }
 
-  function finalizeGraph(loop = null) {
-    // Load comics data after first network rendered
-    if (loop && comicsReady === null) {
-      comicsReady = false;
-      loaderComics.style.display = "block";
-      setTimeout(
-        loadComics,
-        selectedNodeLabel && selectedNodeType !== entity ? 100 : 2000
-      );
-    }
-
+  function finalizeGraph() {
     // If a node is selected we refocus it
     if (selectedNodeLabel && selectedNodeType !== entity) {
       loadNetwork(selectedNodeType, "most", () => {
         showCanvases();
         clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
-        conditionalOpenComicsBar(loop);
+        conditionalOpenComicsBar();
       }, true);
-      return loop ? clearInterval(loop) : null;
+      return;
     }
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
@@ -572,22 +558,18 @@ function renderNetwork(shouldComicsBarView) {
     if (node || selectedNode) {
       showCanvases();
       clickNode(node || selectedNode, false);
-      conditionalOpenComicsBar(loop);
+      conditionalOpenComicsBar();
     } else {
       conditionalOpenComicsBar();
-      camera.animate({
-        x: 0.5,
-        y: 0.5,
-        ratio: 1
-      }, {duration: 50});
-      setTimeout(() => {
-        showCanvases();
-        if (view === "pictures")
-          renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
-        hideLoader();
-      }, 50);
+      camera.animate(
+        {x: 0.5, y: 0.5, ratio: 1},
+        {duration: 50}
+      );
+      showCanvases();
+      if (view === "pictures")
+        renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+      hideLoader();
     }
-    return loop ? clearInterval(loop) : null;
   }
 
   loader.style.opacity = "0.5";
@@ -599,12 +581,21 @@ function renderNetwork(shouldComicsBarView) {
     camera.ratio = Math.pow(1.5, 10);
     camera.angle = 0;
     showCanvases(false);
-    const initLoop = setInterval(() => {
-      if (!camera) return clearInterval(initLoop);
-      if (camera.ratio <= 1.5)
-        return finalizeGraph(initLoop)
-      camera.animate({ratio: camera.ratio / 1.5}, {duration: 50, easing: "linear"});
-    }, 50);
+    setTimeout(() => camera.animate(
+      {ratio: 1},
+      {duration: 1500},
+      () => {
+        finalizeGraph();
+        // Load comics data after first network rendered
+        if (comicsReady === null) {
+          comicsReady = false;
+          setTimeout(
+            loadComics,
+            comicsBarView || (selectedNodeLabel && selectedNodeType !== entity) ? 50 : 2000
+          );
+        }
+      }
+    ), 50);
     data.rendered = true;
   } else finalizeGraph();
 }
@@ -648,7 +639,7 @@ function centerNode(node, neighbors = null, force = true) {
     35 / camera.ratio,
     Math.max(
       0.21 / camera.ratio,
-      4 / 3 / Math.min(
+      1.55 / Math.min(
         sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
         sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
@@ -676,7 +667,7 @@ function centerNode(node, neighbors = null, force = true) {
   // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
   if (force ||
     minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
-    (ratio !== 0 && (ratio < 0.35)) ||
+    (ratio !== 0 && (ratio < 0.5 || ratio > 1.55)) ||
     (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
   ) {
     viewPortPosition.x += ratio * shift / 2;

@@ -444,6 +444,7 @@ h2 {
   bottom: 0;
   right: 0;
   padding: 0 5px;
+  display: none;
 }
 #loader-list {
   display: none;
@@ -715,7 +716,7 @@ label {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
-    height: calc(100% - 33px);
+    height: calc(100% - 48px);
     width: 200px;
     border-radius: 0 6px 6px 0;
   }
