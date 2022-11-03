@@ -563,14 +563,12 @@ function renderNetwork(shouldComicsBarView) {
       conditionalOpenComicsBar();
       camera.animate(
         {x: 0.5, y: 0.5, ratio: 1},
-        {duration: 50},
-        () => {
-          showCanvases();
-          if (view === "pictures")
-            renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
-          hideLoader();
-        }
+        {duration: 50}
       );
+      showCanvases();
+      if (view === "pictures")
+        renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+      hideLoader();
     }
   }
 
@@ -593,7 +591,7 @@ function renderNetwork(shouldComicsBarView) {
           comicsReady = false;
           setTimeout(
             loadComics,
-            selectedComic || (selectedNodeLabel && selectedNodeType !== entity) ? 50 : 2000
+            comicsBarView || (selectedNodeLabel && selectedNodeType !== entity) ? 50 : 2000
           );
         }
       }
@@ -669,7 +667,7 @@ function centerNode(node, neighbors = null, force = true) {
   // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
   if (force ||
     minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
-    (ratio !== 0 && (ratio < 0.35 || ratio > 1.55)) ||
+    (ratio !== 0 && (ratio < 0.5 || ratio > 1.55)) ||
     (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
   ) {
     viewPortPosition.x += ratio * shift / 2;
