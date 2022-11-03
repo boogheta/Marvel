@@ -1,8 +1,6 @@
 /* TODO:
- * - update sigma
 - if low debit, load comics/pictures only on explore comics click?
 - size of nodes in alternate view prop to comics?
-- check hidecomicsbar not working on touch stage
 - test getImageData working in addition to getWebGL?
 - center zoom on mobile a bit too tight?
 - check bad data marvel :

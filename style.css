@@ -716,7 +716,7 @@ label {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
-    height: calc(100% - 33px);
+    height: calc(100% - 48px);
     width: 200px;
     border-radius: 0 6px 6px 0;
   }
