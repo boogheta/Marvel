@@ -13,6 +13,12 @@ html, body {
   font-family: sans-serif;
   background-color: black;
 }
+::selection {
+  background-color: black;
+}
+::-moz-selection {
+  background-color: black;
+}
 #sidebar {
   width: 300px;
   height: 100%;
