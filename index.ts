@@ -562,7 +562,7 @@ function renderNetwork(shouldComicsBarView) {
     if (selectedNodeLabel && selectedNodeType !== entity) {
       loadNetwork(selectedNodeType, "most", () => {
         showCanvases();
-        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false, true);
         conditionalOpenComicsBar();
       }, true);
       return;
@@ -570,19 +570,18 @@ function renderNetwork(shouldComicsBarView) {
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
       : null;
-    if (node || selectedNode) {
+    if (node) {
       showCanvases();
-      clickNode(node || selectedNode, false);
+      clickNode(node, false, true);
       conditionalOpenComicsBar();
     } else {
-      conditionalOpenComicsBar();
+      showCanvases();
       camera.animate(
         {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
         {duration: 50}
       );
-      showCanvases();
-      if (view === "pictures")
-        renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+      clickNode(null, false, true);
+      conditionalOpenComicsBar();
       hideLoader();
     }
   }
@@ -726,8 +725,6 @@ function clickNode(node, updateURL = true, center = false) {
   renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (!node) {
-    if (comicsBarView && node !== selectedNode)
-      displayComics(null, true);
     selectedNode = null;
     selectedNodeType = null;
     selectedNodeLabel = null;
@@ -735,6 +732,8 @@ function clickNode(node, updateURL = true, center = false) {
       setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
+    if (comicsBarView && !sameNode)
+      displayComics(null, true);
     return;
   }
 
@@ -897,7 +896,7 @@ function getNodeComics(node) {
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
   logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
 
-  if (comicsBarView && node === selectedNode && autoReselect && !resetTitle)
+  if (comicsBarView && node === selectedNode && !autoReselect && !resetTitle)
     return selectedComic ? scrollComicsList() : null;
 
   if (selectedNodeLabel && selectedNodeType && !selectedNode)
@@ -1654,7 +1653,7 @@ window.onresize = () => {
 
 function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = "date") {
   const opts = [];
-  if (sel !== null)
+  if (sel !== null && !(ent === selType && !networks[ent][siz].graph.findNode((node, {label}) => label === sel)))
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
   if (comics !== null) {
     opts.push("comics=" + (comics ? comics.id : ""));
@@ -1686,6 +1685,7 @@ function readURL() {
 
   const oldNodeLabel = selectedNodeLabel;
   selectedNodeLabel = null;
+  searchInput.value = "";
   ["character", "creator"].forEach(e => {
     if (opts[e]) {
       selectedNodeType = e + "s";
