@@ -1656,7 +1656,7 @@ function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort =
   if (sel !== null && !(ent === selType && !networks[ent][siz].graph.findNode((node, {label}) => label === sel)))
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
   if (comics !== null) {
-    opts.push("comics=" + (comics ? comics.id : ""));
+    opts.push("comics" + (comics ? "=" + comics.id : ""));
     if (sort === "alpha")
       opts.push("sort=" + sort);
   }
@@ -1676,7 +1676,7 @@ function readURL() {
   ) return setURL("characters", "main", "pictures");
   const opts = Object.fromEntries(
     args[3].split("&")
-    .map(o => o.split("="))
+    .map(o => /=/.test(o) ? o.split("=") : [o, ""])
     .filter(o => ["creator", "character", "comics", "sort"].indexOf(o[0]) !== -1)
   );
 
