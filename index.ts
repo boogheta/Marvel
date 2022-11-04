@@ -1,6 +1,13 @@
 /* TODO:
+- fix bad title http://localhost:3000/#/main/characters/pictures/?comics=20192  
+- fix triple click on select comic
+- fix "shared with" message in node-details for alternate
+- add explanation on node sizes in alternate
+- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
+- take node title out of node-details
+- make credits a modal to free some space ?
 - if low debit, load comics/pictures only on explore comics click?
-- size of nodes in alternate view prop to comics?
+- add urlrooting for modal?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -57,6 +64,7 @@ let entity = "",
   sigmaDim = null,
   renderer = null,
   camera = null,
+  animation = null,
   clustersLayer = null,
   resizeClusterLabels = function() {},
   histograms = {
@@ -66,6 +74,7 @@ let entity = "",
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
+  shift = 0,
   preventAutoScroll = false,
   hoveredComic = null,
   selectedComic = null,
@@ -210,8 +219,8 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
     });
 }
 
-function computeNodeSize(node, stories) {
-  return Math.pow(stories, 0.2)
+function computeNodeSize(count) {
+  return Math.pow(count, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
     * (networkSize === "main" ? 1.75 : 1.25)
     * sigmaDim / 1000
@@ -264,7 +273,7 @@ function buildNetwork(networkData, ent, siz) {
     data.graph.mergeNodeAttributes(node, {
       type: "circle",
       image: /available/i.test(image) ? "" : image,
-      size: computeNodeSize(node, stories),
+      size: computeNodeSize(stories),
       color: color,
       hlcolor: lightenColor(color, 35)
     });
@@ -331,11 +340,15 @@ function buildComics(comicsData) {
       c.creators.forEach(cr => {
         c.characters.forEach(ch => {
           if (!crossMap.creators[ch])
-            crossMap.creators[ch] = new Set();
-          crossMap.creators[ch].add(cr);
+            crossMap.creators[ch] = {};
+          if (!crossMap.creators[ch][cr])
+            crossMap.creators[ch][cr] = 0;
+          crossMap.creators[ch][cr]++;
           if (!crossMap.characters[cr])
-            crossMap.characters[cr] = new Set();
-          crossMap.characters[cr].add(ch);
+            crossMap.characters[cr] = {};
+          if (!crossMap.characters[cr][ch])
+            crossMap.characters[cr][ch] = 0;
+          crossMap.characters[cr][ch]++;
         });
       });
 
@@ -513,10 +526,10 @@ function renderNetwork(shouldComicsBarView) {
         clickNode(suggestionsMatch[0].node, true, true);
         suggestions = [];
       } else if (selectedNode) {
-        clickNode(null);
+        clickNode(null, true, true);
       }
     } else if (selectedNode) {
-      clickNode(null);
+      clickNode(null, true, true);
       feedAllSuggestions();
     }
     fillSuggestions();
@@ -542,12 +555,14 @@ function renderNetwork(shouldComicsBarView) {
     }
   }
 
+  const sigmaWidth = divWidth("sigma-container");
   function finalizeGraph() {
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
     // If a node is selected we refocus it
     if (selectedNodeLabel && selectedNodeType !== entity) {
       loadNetwork(selectedNodeType, "most", () => {
         showCanvases();
-        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false);
+        clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false, true);
         conditionalOpenComicsBar();
       }, true);
       return;
@@ -555,19 +570,18 @@ function renderNetwork(shouldComicsBarView) {
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
       : null;
-    if (node || selectedNode) {
+    if (node) {
       showCanvases();
-      clickNode(node || selectedNode, false);
+      clickNode(node, false, true);
       conditionalOpenComicsBar();
     } else {
-      conditionalOpenComicsBar();
+      showCanvases();
       camera.animate(
-        {x: 0.5, y: 0.5, ratio: 1},
+        {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
         {duration: 50}
       );
-      showCanvases();
-      if (view === "pictures")
-        renderer.setSetting("nodeReducer", (n, attrs) => ({ ...attrs, type: "image" }));
+      clickNode(null, false, true);
+      conditionalOpenComicsBar();
       hideLoader();
     }
   }
@@ -576,13 +590,13 @@ function renderNetwork(shouldComicsBarView) {
   resize();
   // Zoom in graph on first init network
   if (!data.rendered) {
-    camera.x = 0.5;
+    camera.x = 0.5 + (shift / (2 * sigmaWidth));
     camera.y = 0.5;
     camera.ratio = Math.pow(1.5, 10);
     camera.angle = 0;
     showCanvases(false);
     setTimeout(() => camera.animate(
-      {ratio: 1},
+      {ratio: sigmaWidth / (sigmaWidth - shift)},
       {duration: 1500},
       () => {
         finalizeGraph();
@@ -603,14 +617,22 @@ function renderNetwork(shouldComicsBarView) {
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
   logDebug("CENTER ON", {node, neighbors, force});
+  if (animation) clearTimeout(animation);
+  if (camera.isAnimated()) {
+    camera.animate(camera.getState, {duration: 0});
+    animation = setTimeout(() => centerNode(node, neighbors, force), 100);
+    return;
+  }
   const data = networks[entity][networkSize];
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
     neighbors = data.graph.neighbors(node);
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
-  if (!neighbors.length)
+  if (!neighbors.length) {
+    hideLoader();
     return;
+  }
 
   let x0 = null, x1 = null, y0 = null, y1 = null;
   neighbors.forEach(n => {
@@ -621,10 +643,7 @@ function centerNode(node, neighbors = null, force = true) {
       if (y0 === null || y0 > pos.y) y0 = pos.y;
       if (y1 === null || y1 < pos.y) y1 = pos.y;
     });
-  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
-    ? divWidth("comics-bar")
-    : 0,
-    minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
+  const minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
     maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1}), camera.angle),
     viewPortPosition = renderer.framedGraphToViewport({
       x: (x0 + x1) / 2,
@@ -639,7 +658,7 @@ function centerNode(node, neighbors = null, force = true) {
     35 / camera.ratio,
     Math.max(
       0.21 / camera.ratio,
-      1.55 / Math.min(
+      (sigmaDim < 500 ? 1.55 : 1.35) / Math.min(
         sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
         sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
@@ -676,9 +695,10 @@ function centerNode(node, neighbors = null, force = true) {
         ...renderer.viewportToFramedGraph(viewPortPosition),
         ratio: camera.ratio * ratio
       },
-      {duration: 300}
+      {duration: 300},
+      hideLoader
     );
-  }
+  } else hideLoader();
 }
 
 
@@ -694,7 +714,6 @@ function clickNode(node, updateURL = true, center = false) {
   if (selectedNode) {
     if (data.graph.hasNode(selectedNode))
       data.graph.setNodeAttribute(selectedNode, "highlighted", false)
-    selectedNode = null;
   }
 
   if (!node || !sameNode) {
@@ -702,6 +721,9 @@ function clickNode(node, updateURL = true, center = false) {
     modalImg.src = "";
   }
   // Reset unselected node view
+  renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
+  renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (!node) {
     selectedNode = null;
     selectedNodeType = null;
@@ -710,19 +732,18 @@ function clickNode(node, updateURL = true, center = false) {
       setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
-    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
-    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-    if (comicsBarView)
+    if (comicsBarView && !sameNode)
       displayComics(null, true);
     return;
   }
 
-  let relatedNodes = null;
+  let relatedNodes = null,
+    comicsRatio = 0;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
-    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes});
     data = networks[selectedNodeType].most;
-    relatedNodes = Array.from(crossMap[entity][node] || []);
+    relatedNodes = crossMap[entity][node] || {};
+    comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
+    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes, comicsRatio});
   }
 
   if (!data.graph.hasNode(node))
@@ -816,9 +837,10 @@ function clickNode(node, updateURL = true, center = false) {
     } else {
       // Display the alternate entity graph for the selected node
       renderer.setSetting(
-        "nodeReducer", (n, attrs) => relatedNodes.indexOf(n) !== -1
+        "nodeReducer", (n, attrs) => relatedNodes[n] !== undefined
           ? { ...attrs,
               type: view === "pictures" ? "image" : "circle",
+              size: computeNodeSize(relatedNodes[n] * comicsRatio),
               zIndex: 2
             }
           : { ...attrs,
@@ -831,8 +853,8 @@ function clickNode(node, updateURL = true, center = false) {
       );
       renderer.setSetting(
         "edgeReducer", (edge, attrs) =>
-          relatedNodes.indexOf(networks[entity][networkSize].graph.source(edge)) !== -1 &&
-          relatedNodes.indexOf(networks[entity][networkSize].graph.target(edge)) !== -1
+          relatedNodes[networks[entity][networkSize].graph.source(edge)] !== undefined &&
+          relatedNodes[networks[entity][networkSize].graph.target(edge)] !== undefined
             ? { ...attrs,
                 zIndex: 0,
                 color: '#222',
@@ -856,9 +878,8 @@ function clickNode(node, updateURL = true, center = false) {
   if (!(comicsBarView && selectedComic) && (!updateURL || center))
     setTimeout(() => {
       if (relatedNodes)
-        centerNode(null, relatedNodes);
+        centerNode(null, Object.keys(relatedNodes));
       else centerNode(node);
-      hideLoader();
     }, 50);
   else hideLoader();
 
@@ -873,13 +894,13 @@ function getNodeComics(node) {
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
+  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
+
   if (comicsBarView && node === selectedNode && !autoReselect && !resetTitle)
     return selectedComic ? scrollComicsList() : null;
 
   if (selectedNodeLabel && selectedNodeType && !selectedNode)
     clickNode(node, false, false);
-
-  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
 
   if (!selectedComic)
     selectedComic = "";
@@ -990,6 +1011,7 @@ function clearComicDetails() {
   comicCreators.innerHTML = "";
   comicCharacters.innerHTML = "";
   comicUrl.style.display = "none";
+  renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
 }
 
 function unselectComic() {
@@ -1001,17 +1023,14 @@ function unselectComic() {
   document.querySelectorAll("#comics-list li.selected").forEach(
     el => el.className = ""
   );
-  renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
   if (selectedNode)
     clickNode(selectedNode, false, true);
   else clickNode(null, false);
 }
 
 function selectComic(comic, keep = false, autoReselect = false) {
-  logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel});
-  if (typeof comic === 'string' || comic instanceof String)
-    // TODO handle wait for comics
-    return;
+  logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel, selectedNodeType});
+
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
@@ -1610,11 +1629,14 @@ function resize(fast = false) {
   );
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
-  if (!fast && renderer && graph && camera) {
+  shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
+    ? divWidth("comics-bar")
+    : 0;
+  if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
     graph.forEachNode((node, {stories}) =>
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
+      graph.setNodeAttribute(node, "size", computeNodeSize(stories))
     );
   }
   if (!fast) resizing = false;
@@ -1631,10 +1653,10 @@ window.onresize = () => {
 
 function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = "date") {
   const opts = [];
-  if (sel !== null)
+  if (sel !== null && !(ent === selType && !networks[ent][siz].graph.findNode((node, {label}) => label === sel)))
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
   if (comics !== null) {
-    opts.push("comics=" + (comics ? comics.id : ""));
+    opts.push("comics" + (comics ? "=" + comics.id : ""));
     if (sort === "alpha")
       opts.push("sort=" + sort);
   }
@@ -1654,7 +1676,7 @@ function readURL() {
   ) return setURL("characters", "main", "pictures");
   const opts = Object.fromEntries(
     args[3].split("&")
-    .map(o => o.split("="))
+    .map(o => /=/.test(o) ? o.split("=") : [o, ""])
     .filter(o => ["creator", "character", "comics", "sort"].indexOf(o[0]) !== -1)
   );
 
@@ -1663,6 +1685,7 @@ function readURL() {
 
   const oldNodeLabel = selectedNodeLabel;
   selectedNodeLabel = null;
+  searchInput.value = "";
   ["character", "creator"].forEach(e => {
     if (opts[e]) {
       selectedNodeType = e + "s";
