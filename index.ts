@@ -1,5 +1,4 @@
 /* TODO:
-- fix bad title http://localhost:3000/#/main/characters/pictures/?comics=20192  
 - fix triple click on select comic
 - fix "shared with" message in node-details for alternate
 - add explanation on node sizes in alternate
@@ -27,6 +26,7 @@ IDEAS:
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
+- handle alternate phone browsers where sigma does not work, ex Samsung Internet on Android 8
 - test bipartite network between authors and characters filtered by category of author
 */
 
@@ -1714,7 +1714,7 @@ function readURL() {
       : (selectedNodeType === "creators"
         ? "from"
         : "casting")) + " ";
-  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
+  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; M" + title + (selectedNodeLabel ? selectedNodeLabel : "");
   document.getElementById("title").innerHTML = "Here is a m" + title;
 
   if (reload) {
