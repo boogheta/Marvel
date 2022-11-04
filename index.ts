@@ -1,6 +1,12 @@
 /* TODO:
 - if low debit, load comics/pictures only on explore comics click?
-- size of nodes in alternate view prop to comics?
+- fix display all comics gets reloaded when unselect comic or switch view
+- take node title out of node-details
+- fix "shared with" message in node-details for alternate
+- add explanation on node sizes in alternate
+- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
+- make credits a modal to free some space ?
+- add urlrooting for modal?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -332,11 +338,15 @@ function buildComics(comicsData) {
       c.creators.forEach(cr => {
         c.characters.forEach(ch => {
           if (!crossMap.creators[ch])
-            crossMap.creators[ch] = new Set();
-          crossMap.creators[ch].add(cr);
+            crossMap.creators[ch] = {};
+          if (!crossMap.creators[ch][cr])
+            crossMap.creators[ch][cr] = 0;
+          crossMap.creators[ch][cr]++;
           if (!crossMap.characters[cr])
-            crossMap.characters[cr] = new Set();
-          crossMap.characters[cr].add(ch);
+            crossMap.characters[cr] = {};
+          if (!crossMap.characters[cr][ch])
+            crossMap.characters[cr][ch] = 0;
+          crossMap.characters[cr][ch]++;
         });
       });
 
@@ -717,11 +727,13 @@ function clickNode(node, updateURL = true, center = false) {
     return;
   }
 
-  let relatedNodes = null;
+  let relatedNodes = null,
+    comicsRatio = 0;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
-    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes});
     data = networks[selectedNodeType].most;
-    relatedNodes = Array.from(crossMap[entity][node] || []);
+    relatedNodes = crossMap[entity][node] || {};
+    comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
+    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes, comicsRatio});
   }
 
   if (!data.graph.hasNode(node))
@@ -815,9 +827,10 @@ function clickNode(node, updateURL = true, center = false) {
     } else {
       // Display the alternate entity graph for the selected node
       renderer.setSetting(
-        "nodeReducer", (n, attrs) => relatedNodes.indexOf(n) !== -1
+        "nodeReducer", (n, attrs) => relatedNodes[n] !== undefined
           ? { ...attrs,
               type: view === "pictures" ? "image" : "circle",
+              size: computeNodeSize(relatedNodes[n] * comicsRatio),
               zIndex: 2
             }
           : { ...attrs,
@@ -830,8 +843,8 @@ function clickNode(node, updateURL = true, center = false) {
       );
       renderer.setSetting(
         "edgeReducer", (edge, attrs) =>
-          relatedNodes.indexOf(networks[entity][networkSize].graph.source(edge)) !== -1 &&
-          relatedNodes.indexOf(networks[entity][networkSize].graph.target(edge)) !== -1
+          relatedNodes[networks[entity][networkSize].graph.source(edge)] !== undefined &&
+          relatedNodes[networks[entity][networkSize].graph.target(edge)] !== undefined
             ? { ...attrs,
                 zIndex: 0,
                 color: '#222',
@@ -855,7 +868,7 @@ function clickNode(node, updateURL = true, center = false) {
   if (!(comicsBarView && selectedComic) && (!updateURL || center))
     setTimeout(() => {
       if (relatedNodes)
-        centerNode(null, relatedNodes);
+        centerNode(null, Object.keys(relatedNodes));
       else centerNode(node);
       hideLoader();
     }, 50);
