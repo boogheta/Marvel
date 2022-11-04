@@ -524,10 +524,10 @@ function renderNetwork(shouldComicsBarView) {
         clickNode(suggestionsMatch[0].node, true, true);
         suggestions = [];
       } else if (selectedNode) {
-        clickNode(null);
+        clickNode(null, true, true);
       }
     } else if (selectedNode) {
-      clickNode(null);
+      clickNode(null, true, true);
       feedAllSuggestions();
     }
     fillSuggestions();
@@ -712,7 +712,6 @@ function clickNode(node, updateURL = true, center = false) {
   if (selectedNode) {
     if (data.graph.hasNode(selectedNode))
       data.graph.setNodeAttribute(selectedNode, "highlighted", false)
-    selectedNode = null;
   }
 
   if (!node || !sameNode) {
@@ -893,13 +892,13 @@ function getNodeComics(node) {
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
-  if (comicsBarView && node === selectedNode && !autoReselect && !resetTitle)
+  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
+
+  if (comicsBarView && node === selectedNode && autoReselect && !resetTitle)
     return selectedComic ? scrollComicsList() : null;
 
   if (selectedNodeLabel && selectedNodeType && !selectedNode)
     clickNode(node, false, false);
-
-  logDebug("DISPLAY COMICS", {selectedNode, node, autoReselect, resetTitle, selectedComic, selectedNodeLabel, sortComics, filter: filterInput.value});
 
   if (!selectedComic)
     selectedComic = "";
