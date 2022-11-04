@@ -66,6 +66,7 @@ let entity = "",
   suggestions = [],
   comicsReady = null,
   comicsBarView = false,
+  shift = 0,
   preventAutoScroll = false,
   hoveredComic = null,
   selectedComic = null,
@@ -542,6 +543,7 @@ function renderNetwork(shouldComicsBarView) {
     }
   }
 
+  const sigmaWidth = divWidth("sigma-container");
   function finalizeGraph() {
     // If a node is selected we refocus it
     if (selectedNodeLabel && selectedNodeType !== entity) {
@@ -562,7 +564,7 @@ function renderNetwork(shouldComicsBarView) {
     } else {
       conditionalOpenComicsBar();
       camera.animate(
-        {x: 0.5, y: 0.5, ratio: 1},
+        {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
         {duration: 50}
       );
       showCanvases();
@@ -576,13 +578,13 @@ function renderNetwork(shouldComicsBarView) {
   resize();
   // Zoom in graph on first init network
   if (!data.rendered) {
-    camera.x = 0.5;
+    camera.x = 0.5 + (shift / (2 * sigmaWidth));
     camera.y = 0.5;
     camera.ratio = Math.pow(1.5, 10);
     camera.angle = 0;
     showCanvases(false);
     setTimeout(() => camera.animate(
-      {ratio: 1},
+      {ratio: sigmaWidth / (sigmaWidth - shift)},
       {duration: 1500},
       () => {
         finalizeGraph();
@@ -621,10 +623,7 @@ function centerNode(node, neighbors = null, force = true) {
       if (y0 === null || y0 > pos.y) y0 = pos.y;
       if (y1 === null || y1 < pos.y) y1 = pos.y;
     });
-  const shift = comicsBar.getBoundingClientRect()["x"] && comicsBar.style.opacity !== "0"
-    ? divWidth("comics-bar")
-    : 0,
-    minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
+  const minCorner = rotatePosition(renderer.framedGraphToViewport({x: x0, y: y0}), camera.angle),
     maxCorner = rotatePosition(renderer.framedGraphToViewport({x: x1, y: y1}), camera.angle),
     viewPortPosition = renderer.framedGraphToViewport({
       x: (x0 + x1) / 2,
@@ -1610,6 +1609,9 @@ function resize(fast = false) {
   );
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
+  shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
+    ? divWidth("comics-bar")
+    : 0;
   if (!fast && renderer && graph && camera) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
