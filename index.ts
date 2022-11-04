@@ -62,6 +62,7 @@ let entity = "",
   sigmaDim = null,
   renderer = null,
   camera = null,
+  animation = null,
   clustersLayer = null,
   resizeClusterLabels = function() {},
   histograms = {
@@ -614,14 +615,22 @@ function renderNetwork(shouldComicsBarView) {
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
   logDebug("CENTER ON", {node, neighbors, force});
+  if (animation) clearTimeout(animation);
+  if (camera.isAnimated()) {
+    camera.animate(camera.getState, {duration: 0});
+    animation = setTimeout(() => centerNode(node, neighbors, force), 100);
+    return;
+  }
   const data = networks[entity][networkSize];
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
     neighbors = data.graph.neighbors(node);
   if (node && neighbors.indexOf(node) === -1)
     neighbors.push(node);
-  if (!neighbors.length)
+  if (!neighbors.length) {
+    hideLoader();
     return;
+  }
 
   let x0 = null, x1 = null, y0 = null, y1 = null;
   neighbors.forEach(n => {
@@ -684,9 +693,10 @@ function centerNode(node, neighbors = null, force = true) {
         ...renderer.viewportToFramedGraph(viewPortPosition),
         ratio: camera.ratio * ratio
       },
-      {duration: 300}
+      {duration: 300},
+      hideLoader
     );
-  }
+  } else hideLoader();
 }
 
 
@@ -869,7 +879,6 @@ function clickNode(node, updateURL = true, center = false) {
       if (relatedNodes)
         centerNode(null, Object.keys(relatedNodes));
       else centerNode(node);
-      hideLoader();
     }, 50);
   else hideLoader();
 
@@ -1019,10 +1028,8 @@ function unselectComic() {
 }
 
 function selectComic(comic, keep = false, autoReselect = false) {
-  logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel});
-  if (typeof comic === 'string' || comic instanceof String)
-    // TODO handle wait for comics
-    return;
+  logDebug("SELECT COMIC", {selectedComic, comic, keep, autoReselect, selectedNodeLabel, selectedNodeType});
+
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer) return;
 
@@ -1624,7 +1631,7 @@ function resize(fast = false) {
   shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
     ? divWidth("comics-bar")
     : 0;
-  if (!fast && renderer && graph && camera) {
+  if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
     graph.forEachNode((node, {stories}) =>
