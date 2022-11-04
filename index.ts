@@ -1,11 +1,10 @@
 /* TODO:
-- if low debit, load comics/pictures only on explore comics click?
-- fix display all comics gets reloaded when unselect comic or switch view
-- take node title out of node-details
 - fix "shared with" message in node-details for alternate
 - add explanation on node sizes in alternate
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
+- take node title out of node-details
 - make credits a modal to free some space ?
+- if low debit, load comics/pictures only on explore comics click?
 - add urlrooting for modal?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -712,6 +711,8 @@ function clickNode(node, updateURL = true, center = false) {
   }
   // Reset unselected node view
   if (!node) {
+    if (comicsBarView && node !== selectedNode)
+      displayComics(null, true);
     selectedNode = null;
     selectedNodeType = null;
     selectedNodeLabel = null;
@@ -722,8 +723,6 @@ function clickNode(node, updateURL = true, center = false) {
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
     renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-    if (comicsBarView)
-      displayComics(null, true);
     return;
   }
 
