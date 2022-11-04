@@ -210,8 +210,8 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
     });
 }
 
-function computeNodeSize(node, stories) {
-  return Math.pow(stories, 0.2)
+function computeNodeSize(count) {
+  return Math.pow(count, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
     * (networkSize === "main" ? 1.75 : 1.25)
     * sigmaDim / 1000
@@ -264,7 +264,7 @@ function buildNetwork(networkData, ent, siz) {
     data.graph.mergeNodeAttributes(node, {
       type: "circle",
       image: /available/i.test(image) ? "" : image,
-      size: computeNodeSize(node, stories),
+      size: computeNodeSize(stories),
       color: color,
       hlcolor: lightenColor(color, 35)
     });
@@ -639,7 +639,7 @@ function centerNode(node, neighbors = null, force = true) {
     35 / camera.ratio,
     Math.max(
       0.21 / camera.ratio,
-      1.55 / Math.min(
+      (sigmaDim < 500 ? 1.55 : 1.35) / Math.min(
         sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
         sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
@@ -1614,7 +1614,7 @@ function resize(fast = false) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
     graph.forEachNode((node, {stories}) =>
-      graph.setNodeAttribute(node, "size", computeNodeSize(node, stories))
+      graph.setNodeAttribute(node, "size", computeNodeSize(stories))
     );
   }
   if (!fast) resizing = false;
