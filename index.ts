@@ -1,4 +1,6 @@
 /* TODO:
+- fix bad title http://localhost:3000/#/main/characters/pictures/?comics=20192  
+- fix triple click on select comic
 - fix "shared with" message in node-details for alternate
 - add explanation on node sizes in alternate
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
@@ -555,6 +557,7 @@ function renderNetwork(shouldComicsBarView) {
 
   const sigmaWidth = divWidth("sigma-container");
   function finalizeGraph() {
+    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
     // If a node is selected we refocus it
     if (selectedNodeLabel && selectedNodeType !== entity) {
       loadNetwork(selectedNodeType, "most", () => {
@@ -719,6 +722,9 @@ function clickNode(node, updateURL = true, center = false) {
     modalImg.src = "";
   }
   // Reset unselected node view
+  renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
+  renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (!node) {
     if (comicsBarView && node !== selectedNode)
       displayComics(null, true);
@@ -729,9 +735,6 @@ function clickNode(node, updateURL = true, center = false) {
       setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
-    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
-    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-    renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
     return;
   }
 
@@ -1009,6 +1012,7 @@ function clearComicDetails() {
   comicCreators.innerHTML = "";
   comicCharacters.innerHTML = "";
   comicUrl.style.display = "none";
+  renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
 }
 
 function unselectComic() {
@@ -1020,7 +1024,6 @@ function unselectComic() {
   document.querySelectorAll("#comics-list li.selected").forEach(
     el => el.className = ""
   );
-  renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
   if (selectedNode)
     clickNode(selectedNode, false, true);
   else clickNode(null, false);
