@@ -1714,7 +1714,7 @@ function readURL() {
       : (selectedNodeType === "creators"
         ? "from"
         : "casting")) + " ";
-  document.querySelector("title").innerHTML = "MARVEL-graphs.net &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
+  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; M" + title + (selectedNode ? selectedNodeLabel : "");
   document.getElementById("title").innerHTML = "Here is a m" + title;
 
   if (reload) {
