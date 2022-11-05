@@ -1,5 +1,4 @@
 /* TODO:
-- fix triple click on select comic
 - make credits a modal to free some space ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - add urlrooting for modal?
@@ -996,16 +995,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         : "No comic-book found.";
       filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
-        const onmouseup = () => {
-          comicLi.onmouseup = () => {
-            comicLi.onmouseup = onmouseup;
-            setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
-          };
-          preventAutoScroll = true;
-          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic, sortComics);
-        };
         comicLi.comic = c;
-        comicLi.onmouseup = onmouseup;
+        comicLi.onmouseup = () => {
+          preventAutoScroll = true;
+          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic === comicLi.comic ? "" : comicLi.comic), sortComics);
+        };
         comicLi.onmouseenter = () => selectComic(c);
       });
       loaderList.style.display = "none";
