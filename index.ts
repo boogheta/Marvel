@@ -1,12 +1,8 @@
 /* TODO:
-- fix triple click on select comic
-- fix "shared with" message in node-details for alternate
-- add explanation on node sizes in alternate
-- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
-- take node title out of node-details
 - make credits a modal to free some space ?
-- if low debit, load comics/pictures only on explore comics click?
+- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - add urlrooting for modal?
+- if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -728,6 +724,8 @@ function clickNode(node, updateURL = true, center = false) {
     selectedNode = null;
     selectedNodeType = null;
     selectedNodeLabel = null;
+    nodeLabel.style.display = "none";
+    resize(true);
     if (updateURL)
       setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
@@ -738,12 +736,14 @@ function clickNode(node, updateURL = true, center = false) {
   }
 
   let relatedNodes = null,
-    comicsRatio = 0;
+    comicsRatio = 0,
+    nodeEntity = entity;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
+    nodeEntity = selectedNodeType;
     data = networks[selectedNodeType].most;
     relatedNodes = crossMap[entity][node] || {};
     comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
-    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes, comicsRatio});
+    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, nodeEntity, relatedNodes, comicsRatio});
   }
 
   if (!data.graph.hasNode(node))
@@ -756,6 +756,7 @@ function clickNode(node, updateURL = true, center = false) {
   const attrs = data.graph.getNodeAttributes(node);
   selectedNode = node;
   selectedNodeLabel = attrs.label;
+  nodeLabel.style.display = "block";
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   if (!sameNode) {
@@ -771,13 +772,24 @@ function clickNode(node, updateURL = true, center = false) {
       modalPlay.style.display = "none";
       modalPause.style.display = "none";
     };
+    resize(true);
+  }
+  nodeExtra.innerHTML = "";
+  if (attrs.description)
+    nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
+  nodeExtra.innerHTML += "<p>" +
+    (nodeEntity === "creators" ? "Credit" : "Account") + "ed " +
+      "in <b>" + attrs.stories + " stories</b> " +
+    (entity === nodeEntity
+      ? "shared&nbsp;with<br/>" +
+        "<b>" + data.graph.degree(node) + " other " + nodeEntity + "</b>"
+      : (entity === "creators" ? "authored&nbsp;by<br/>" : "featuring<br/>") +
+        "<b>" + Object.keys(relatedNodes).length + " " + entity + "</b>"
+    ) + "</p>";
 
-    nodeExtra.innerHTML = "";
-    if (attrs.description)
-      nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
-    nodeExtra.innerHTML += "<p>" + (selectedNodeType === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with<br/><b>" + data.graph.degree(node) + " other " + selectedNodeType + "</b></p>";
+  if (entity === nodeEntity) {
     // Display roles in stories for creators
-    if (selectedNodeType === "creators") {
+    if (entity === "creators") {
       if (attrs.writer === 0 && attrs.artist)
         nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist (' + attrs.artist + ')</b></p>';
       else if (attrs.artist === 0 && attrs.writer)
@@ -787,11 +799,18 @@ function clickNode(node, updateURL = true, center = false) {
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
       nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community<sup class="asterisk">*</sup></p>';
-    if (attrs.url)
-      nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
-    if (comicsReady)
-      addViewComicsButton(node);
-  }
+  } else
+    nodeExtra.innerHTML += '<p>The size of each node reflects how often ' +
+      'each ' + entity.replace(/s$/, '') + ' is ' +
+      (nodeEntity === "creators"
+        ? "featured in stories authored by"
+        : "credited in stories featuring"
+      ) + " " + selectedNodeLabel +
+       " within Marvel API's data.</p>";
+  if (attrs.url)
+    nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
+  if (comicsReady)
+    addViewComicsButton(node);
 
   if (!comicsBarView || !selectedComic) {
     if (relatedNodes === null) {
@@ -976,16 +995,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         : "No comic-book found.";
       filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
-        const onmouseup = () => {
-          comicLi.onmouseup = () => {
-            comicLi.onmouseup = onmouseup;
-            setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
-          };
-          preventAutoScroll = true;
-          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, comicLi.comic, sortComics);
-        };
         comicLi.comic = c;
-        comicLi.onmouseup = onmouseup;
+        comicLi.onmouseup = () => {
+          preventAutoScroll = true;
+          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic === comicLi.comic ? "" : comicLi.comic), sortComics);
+        };
         comicLi.onmouseenter = () => selectComic(c);
       });
       loaderList.style.display = "none";
@@ -1615,12 +1629,12 @@ function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main") - 10;
+    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main");
   explanations.style.opacity = "1"
-  explanations.style.height = freeHeight + "px";
-  explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = (freeHeight + 10) + "px";
-  nodeDetails.style["min-height"] = (freeHeight + 10) + "px";
+  explanations.style.height = (freeHeight - 10) + "px";
+  explanations.style["min-height"] = (freeHeight - 10) + "px";
+  nodeDetails.style.height = freeHeight + "px";
+  nodeDetails.style["min-height"] = freeHeight + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();
