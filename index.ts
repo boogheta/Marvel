@@ -1,12 +1,10 @@
 /* TODO:
 - fix triple click on select comic
-- fix "shared with" message in node-details for alternate
-- add explanation on node sizes in alternate
-- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - take node title out of node-details
 - make credits a modal to free some space ?
-- if low debit, load comics/pictures only on explore comics click?
+- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - add urlrooting for modal?
+- if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -738,12 +736,14 @@ function clickNode(node, updateURL = true, center = false) {
   }
 
   let relatedNodes = null,
-    comicsRatio = 0;
+    comicsRatio = 0,
+    nodeEntity = entity;
   if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
+    nodeEntity = selectedNodeType;
     data = networks[selectedNodeType].most;
     relatedNodes = crossMap[entity][node] || {};
     comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
-    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, relatedNodes, comicsRatio});
+    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, nodeEntity, relatedNodes, comicsRatio});
   }
 
   if (!data.graph.hasNode(node))
@@ -771,13 +771,23 @@ function clickNode(node, updateURL = true, center = false) {
       modalPlay.style.display = "none";
       modalPause.style.display = "none";
     };
+  }
+  nodeExtra.innerHTML = "";
+  if (attrs.description)
+    nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
+  nodeExtra.innerHTML += "<p>" +
+    (nodeEntity === "creators" ? "Credit" : "Account") + "ed " +
+      "in <b>" + attrs.stories + " stories</b> " +
+    (entity === nodeEntity
+      ? "shared&nbsp;with<br/>" +
+        "<b>" + data.graph.degree(node) + " other " + nodeEntity + "</b>"
+      : (entity === "creators" ? "authored&nbsp;by<br/>" : "featuring<br/>") +
+        "<b>" + Object.keys(relatedNodes).length + " " + entity + "</b>"
+    ) + "</p>";
 
-    nodeExtra.innerHTML = "";
-    if (attrs.description)
-      nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
-    nodeExtra.innerHTML += "<p>" + (selectedNodeType === "creators" ? "Credit" : "Account") + "ed in <b>" + attrs.stories + " stories</b> shared with<br/><b>" + data.graph.degree(node) + " other " + selectedNodeType + "</b></p>";
+  if (entity === nodeEntity) {
     // Display roles in stories for creators
-    if (selectedNodeType === "creators") {
+    if (entity === "creators") {
       if (attrs.writer === 0 && attrs.artist)
         nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist (' + attrs.artist + ')</b></p>';
       else if (attrs.artist === 0 && attrs.writer)
@@ -787,11 +797,18 @@ function clickNode(node, updateURL = true, center = false) {
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
       nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community<sup class="asterisk">*</sup></p>';
-    if (attrs.url)
-      nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
-    if (comicsReady)
-      addViewComicsButton(node);
-  }
+  } else
+    nodeExtra.innerHTML += '<p>The size of each node reflects how often ' +
+      'each ' + entity.replace(/s$/, '') + ' is ' +
+      (nodeEntity === "creators"
+        ? "featured in stories authored by"
+        : "credited in stories featuring"
+      ) + " " + selectedNodeLabel +
+       " within Marvel API's data.</p>";
+  if (attrs.url)
+    nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
+  if (comicsReady)
+    addViewComicsButton(node);
 
   if (!comicsBarView || !selectedComic) {
     if (relatedNodes === null) {
