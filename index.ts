@@ -1,6 +1,5 @@
 /* TODO:
 - fix triple click on select comic
-- take node title out of node-details
 - make credits a modal to free some space ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - add urlrooting for modal?
@@ -726,6 +725,8 @@ function clickNode(node, updateURL = true, center = false) {
     selectedNode = null;
     selectedNodeType = null;
     selectedNodeLabel = null;
+    nodeLabel.style.display = "none";
+    resize(true);
     if (updateURL)
       setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
@@ -756,6 +757,7 @@ function clickNode(node, updateURL = true, center = false) {
   const attrs = data.graph.getNodeAttributes(node);
   selectedNode = node;
   selectedNodeLabel = attrs.label;
+  nodeLabel.style.display = "block";
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   if (!sameNode) {
@@ -771,6 +773,7 @@ function clickNode(node, updateURL = true, center = false) {
       modalPlay.style.display = "none";
       modalPause.style.display = "none";
     };
+    resize(true);
   }
   nodeExtra.innerHTML = "";
   if (attrs.description)
@@ -1632,12 +1635,12 @@ function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main") - 10;
+    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main");
   explanations.style.opacity = "1"
-  explanations.style.height = freeHeight + "px";
-  explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = (freeHeight + 10) + "px";
-  nodeDetails.style["min-height"] = (freeHeight + 10) + "px";
+  explanations.style.height = (freeHeight - 10) + "px";
+  explanations.style["min-height"] = (freeHeight - 10) + "px";
+  nodeDetails.style.height = freeHeight + "px";
+  nodeDetails.style["min-height"] = freeHeight + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();

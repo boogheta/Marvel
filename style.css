@@ -251,7 +251,12 @@ h2 {
   max-height: 60%;
   line-height: 13px;
 }
-#node-label, #node-extra {
+#node-label {
+  padding-top: 3px;
+  padding-bottom: 7px;
+  display: none;
+}
+#node-extra {
   margin: 7px 10px;
 }
 #node-histogram, #full-histogram {
