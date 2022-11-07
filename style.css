@@ -47,8 +47,7 @@ html, body {
   color: grey;
   float: left;
   text-align: center;
-  border: 1px solid #333;
-  border-radius: 10px 0 0 10px;
+  border-left: 1px solid #333;
   -webkit-transition: 0.25s ease-in-out;
   -moz-transition: 0.25s ease-in-out;
   -o-transition: 0.25s ease-in-out;
@@ -186,7 +185,7 @@ html, body {
   margin: -2px 2px 4px 2px;
   font-family: monospace;
   font-size: 14px;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
   line-height: 24px;
   padding: 0 10px;
@@ -207,7 +206,7 @@ h1 {
   margin: 0px 0px 10px 0px;
 }
 h2 {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--marvel-red);
   margin: 0;
 }
@@ -370,6 +369,7 @@ h2 {
   bottom: 0px;
   width: 300px;
   line-height: 13px;
+  border-top: 1px dashed #444;
 }
 .footer p {
   font-size: 11px;
@@ -563,7 +563,7 @@ h2 {
   background: #eee;
   display: block;
   line-height: 16px;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
   white-space: nowrap;
   overflow: hidden;
@@ -573,7 +573,7 @@ h2 {
   display: none;
   width: 152px;
   height: 33px;
-  border: 2px solid #111;
+  border: 2px solid #555;
   border-radius: 5px;
 }
 /* -------- Switch Styles ------------*/
@@ -727,23 +727,16 @@ label {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
-    height: calc(100% - 48px);
-    width: 200px;
+    bottom: 35px;
+    height: calc(100% - 84px);
+    width: 235px;
+    border: 1px solid #333;
     border-radius: 0 6px 6px 0;
   }
   #comics-title {
-    width: calc(100% - 36px);
+    width: calc(100% - 39px);
     min-height: 32px;
     padding: 4px 4px 0px 4px!important;
-  }
-  #close-bar {
-    margin: 0;
-    width: 24px;
-    height: 24px;
-  }
-  #close-bar img {
-    width: 16px;
-    margin-top: 2px;
   }
   #controls {
     right: 5px;
@@ -751,18 +744,51 @@ label {
   }
 }
 @media (max-height: 400px) {
+  h2 {
+    font-size: 14px;
+    padding: 0px 2px;
+  }
+  .hide-small-height {
+    display: none;
+  }
   #comic-details {
     height: calc(100% / 3);
   }
+  #comics-title, #comics-list li {
+    font-size: 13px!important;
+  }
+}
+@media (max-height: 400px) and (max-width: 1000px) {
+  h1 {
+    margin-bottom: 8px
+  }
+  h2 {
+    font-size: 12px!important;
+    padding: 0px 2px 2px 0!important;
+  }
+  #title {
+    margin-top: 8px
+  }
+  .network-choice {
+    margin-bottom: 6px;
+  }
+  #explanations {
+    margin-top: 4px;
+  }
 }
 @media (max-height: 600px) {
+  h2 {
+    font-size: 13px;
+    padding: 0px 2px;
+  }
   #search {
     position: fixed;
     bottom: 5px;
     margin-right: 5px;
   }
   .network-choice {
-    height: 20px;
+    height: 22px;
+    margin-bottom: 8px;
   }
   .logo {
     height: 42px;
@@ -781,7 +807,7 @@ label {
     display: none;
   }
   #node-label {
-    padding-top: 5px;
+    padding-top: 3px;
   }
   #comics {
     line-height: 18px;

@@ -1647,7 +1647,7 @@ function resize(fast = false) {
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
     ? divWidth("comics-bar")
-    : 0;
+    : divWidth("sidebar") - divWidth("comics-bar");
   if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
@@ -1723,15 +1723,15 @@ function readURL() {
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
-  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
+  let title = "Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === args[1]
       ? "as"
       : (selectedNodeType === "creators"
         ? "from"
         : "casting")) + " ";
-  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; M" + title + (selectedNodeLabel ? selectedNodeLabel : "");
-  document.getElementById("title").innerHTML = "Here is a m" + title;
+  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; Map of " + title + (selectedNodeLabel ? selectedNodeLabel : "");
+  document.getElementById("title").innerHTML = '<span class="hide-small-height">Here is a map of </span> ' + title;
 
   if (reload) {
     // Hide canvases
