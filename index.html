@@ -86,7 +86,7 @@
         <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="main-details">at least </span><span class="main-details" id="min-stories"></span><span class="most-details">all</span> comic book stories registered into Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
         <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> the top buttons to switch between reduced or complete versions of the networks of characters or creators, using avatar pics or community colors.</p>
         <p>The size of each node reflects how often the <span class="entity"></span> is accounted as participating to stories within Marvel API's data.</p>
-        <p class="characters-details">Colors indicate which <i>family</i><sup class="asterisk">*</sup> each character belongs to (<span id="clusters-legend"></span>, etc.).</p>
+        <p class="characters-details">Colors indicate which <i>family</i> each character belongs to (<span id="clusters-legend"></span>, etc.).</p>
         <p class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
         <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p>
@@ -100,13 +100,15 @@
         <div id="node-histogram"></div>
       </div>
       <div id="credits" class="footer">
-        <p class="characters-details"><sup>*</sup>&nbsp;Communities are computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,<br/>so they are sometimes imprecise</p>
-        <p>Data provided by <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a><br/>© 2022 MARVEL</p>
-        <p>Built by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> using <a href="https://www.sigmajs.org/" target="_blank">Sigma.js</a><br/>Full credits and free open source code<br/>(AGPL v3) available on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a><br/><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
-      </div>
-      <div id="credits-main" class="footer">
-        <p>data from <a href="https://developer.marvel.com/" target="_blank">MARVEL's API</a> ©2022</p>
-        <p>by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a></p>
+        <button id="help" title="Show more info & explanations">
+          <span>?</span>
+        </button>
+        <p>data <span class="large-bar">provided </span>by <a href="https://developer.marvel.com/" target="_blank">MARVEL</a> © 2022</p>
+        <p>
+          <span class="large-bar">built </span>by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a>
+          <b class="large-bar">⋅</b>
+          <span class="large-bar">code </span>on <a href="https://github.com/boogheta/Marvel#readme" target="_blank">GitHub</a>
+        </p>
       </div>
     </div>
     <noscript id="noscript"><p>This app runs with JavaScript.<br/>Please enable it to continue.</p></noscript>
@@ -199,7 +201,7 @@
     </div>
     <div id="loader" class="loader" title="Loading network…"><img src="./images/loader.gif"/></div>
     <div id="loader-comics" class="loader" title="Loading comics…"><img src="./images/loader.gif"/></div>
-    <div id="modal">
+    <div id="modal" class="modal">
       <span id="modal-helper"></span>
       <img id="modal-img"/>
       <div id="modal-actions">
@@ -219,6 +221,33 @@
       <button id="close-modal" class="action-button close-button" title="Close the picture overlay">
         <img src="./images/close.svg" alt="close-picture-modal" />
       </button>
+    </div>
+    <div id="help-modal" class="modal">
+      <div id="help-box">
+        <p><b>MARVEL graphs</b> is an app that displays network maps of Marvel characters or creators where each one is positionned close to those she/he is most linked as registered within <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a>.</p>
+        <p>Data, comic book images and photographs are all provided by Marvel. ©&nbsp;2022&nbsp;<a href="https://https://www.marvel.com/" target="_blank">Marvel</a></p>
+        <br/>
+        <p>All views have their own URL so all views can be shared directly with a link.</p>
+        <p>Since associations between authors and comic book issues are more complete within webpages from the Marvel.com website than within the API, the data was completed accordingly.</p> 
+        <p>The color <i>families</i> of the characters are communities computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,so they can sometimes be imprecise.</p>
+        <br/>
+        <p>This web application is entirely built with Free Libre Open Source Software and released as such under the <a href="https://github.com/boogheta/Marvel/blob/master/LICENSE" target="_blank">AGPL V3 license</a>.</p>
+        <p>The full source code is available on <a href="https://github.com/boogheta/Marvel/" target="_blank">GitHub</a>.</p>
+        <p><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
+        <br/>
+        <p>Data collection and preparation in Python 3 with <a href="https://requests.readthedocs.io/" target="_blank">requests</a> and <a href="https://networkx.org/" target="_blank">NetworkX</a>.</p>
+        <p>Web interface and network visualization in Node.js using <a href="https://graphology.github.io/" target="_blank">graphology</a>, <a href="https://sigmajs.org/" target="_blank">Sigma.js</a>, <a href="http://nodeca.github.io/pako/" target="_blank">pako</a> and <a href="https://www.papaparse.com/" target="_blank">PapaParse</a>, built in TypeScript with <a href="https://www.npmjs.com/package/kotatsu" target="_blank">kotatsu</a>.</p>
+        <p>All icons are used or adapted from SVG creations under CC Zero Public Domain by <a href="https://openclipart.org/detail/191399/smartphone" target="_blank">agomjo</a>, CC Attribution License by <a href="https://github.com/atisawd/boxicons" target="_blank">boxicons</a> and MIT license from <a href="https://github.com/artcoholic/akar-icons" target="_blank">artcoholic</a> &amp; <a href="https://github.com/twbs/icons" target="_blank">Bootstrap</a>.</p>
+        <br/>
+        <p>Thanks to Stan Lee, Jack Kirby and all the great authors who brought us so many great stories and awesome characters of <a href="https://www.marvel.com/" target="_blank">Marvel comics</a>!</p>
+        <p>Thanks to <a href="https://github.com/Yomguithereal" target="_blank">@Yomguithereal</a>, <a href="https://github.com/paulgirard" target="_blank">@paulgirard</a>, <a href="https://github.com/jacomyal" target="_blank">@jacomyal</a> and <a href="https://github.com/jacomyMa" target="_blank">@jacomyMa</a> for their precious help and ideas!</p>
+        <p>And lots of thanks to the 2014 Amsterdam <a href="http://contropedia.net/" target="_blank">Contropedia</a> datasprint where this whole idea germinated before it got buried in my mind and GitHub repositories for 8 long years. :)</p>
+        <br/>
+        <p>Contact me on Mastodon: <a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter: <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or <a href="https://github.com/boogheta">GitHub</a>.</p>
+        <button id="close-help" class="action-button close-button" title="Close the info box">
+          <img src="./images/close.svg" alt="close-help-box" />
+        </button>
+      </div>
     </div>
     <script src="build/bundle.js"></script>
     <!-- Google Analytics -->

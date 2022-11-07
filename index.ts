@@ -1,7 +1,6 @@
 /* TODO:
-- make credits a modal to free some space ?
+- restore asterisk and make it open help modal?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
-- add urlrooting for modal?
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -19,6 +18,7 @@
 - update screenshots
 - auto data updates
 IDEAS:
+- add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
@@ -72,6 +72,7 @@ let entity = "",
   comicsBarView = false,
   shift = 0,
   preventAutoScroll = false,
+  minComicLiHeight = 100,
   hoveredComic = null,
   selectedComic = null,
   networksLoaded = 0,
@@ -112,6 +113,9 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
+  helpButton = document.getElementById("help") as HTMLElement,
+  helpModal = document.getElementById("help-modal") as HTMLElement,
+  helpBox = document.getElementById("help-box") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
   modalNext = document.getElementById("modal-next") as HTMLButtonElement,
@@ -612,7 +616,7 @@ function renderNetwork(shouldComicsBarView) {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
-  logDebug("CENTER ON", {node, neighbors, force});
+  logDebug("CENTER ON", {node, neighbors, force, shift});
   if (animation) clearTimeout(animation);
   if (camera.isAnimated()) {
     camera.animate(camera.getState, {duration: 0});
@@ -798,7 +802,7 @@ function clickNode(node, updateURL = true, center = false) {
     }
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
-      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community<sup class="asterisk">*</sup></p>';
+      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community</p>';
   } else
     nodeExtra.innerHTML += '<p>The size of each node reflects how often ' +
       'each ' + entity.replace(/s$/, '') + ' is ' +
@@ -993,8 +997,10 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
+      minComicLiHeight = 100;
       filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
+        minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
         comicLi.comic = c;
         comicLi.onmouseup = () => {
           preventAutoScroll = true;
@@ -1296,6 +1302,24 @@ function hideViewComicsButton() {
   );
 }
 
+// Help Box
+let preventClick = false;
+helpButton.onclick = () => {
+  helpModal.style.display = "block";
+}
+helpModal.onclick = () => {
+  if (preventClick) {
+    preventClick = false;
+    return;
+  }
+  preventClick = false;
+  helpModal.style.display = "none";
+}
+helpBox.onclick = (e) => {
+  preventClick = true;
+}
+document.getElementById("close-help").onclick = helpModal.onclick;
+
 
 /* -- Comics bar interactions -- */
 
@@ -1305,11 +1329,10 @@ function scrollComicsList() {
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
     if (!offset) return;
-    const offsetHeight = offset.getBoundingClientRect().height,
-      listHeight = divHeight("comics");
-    let diff = listHeight < 4 * offsetHeight
-      ? listHeight + offsetHeight
-      : listHeight / 2 + offsetHeight / 2;
+    const listHeight = divHeight("comics");
+    let diff = listHeight < 5 * minComicLiHeight
+      ? listHeight + minComicLiHeight
+      : listHeight / 2 + minComicLiHeight;
     comicsDiv.scrollTo(0, offset.offsetTop - diff);
   }, 10);
 }
@@ -1357,7 +1380,6 @@ comicsPrev.onclick = () => selectAndScrollSibling("previous", true);
 comicsNext.onclick = () => selectAndScrollSibling("next", true);
 
 // Modal actions
-let preventClick = false;
 modalNext.onclick = () => {
   preventClick = true;
   selectAndScrollSibling("next");
@@ -1629,7 +1651,7 @@ function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits") - divHeight("credits-main");
+    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("credits");
   explanations.style.opacity = "1"
   explanations.style.height = (freeHeight - 10) + "px";
   explanations.style["min-height"] = (freeHeight - 10) + "px";
@@ -1645,7 +1667,7 @@ function resize(fast = false) {
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
     ? divWidth("comics-bar")
-    : 0;
+    : divWidth("sidebar") - divWidth("comics-bar");
   if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
@@ -1721,15 +1743,15 @@ function readURL() {
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
-  let title = "ap of Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
+  let title = "Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === args[1]
       ? "as"
       : (selectedNodeType === "creators"
         ? "from"
         : "casting")) + " ";
-  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; M" + title + (selectedNodeLabel ? selectedNodeLabel : "");
-  document.getElementById("title").innerHTML = "Here is a m" + title;
+  document.querySelector("title").innerHTML = "MARVEL graphs &mdash; Map of " + title + (selectedNodeLabel ? selectedNodeLabel : "");
+  document.getElementById("title").innerHTML = '<span class="hide-small-height">Here is a map of </span> ' + title;
 
   if (reload) {
     // Hide canvases
