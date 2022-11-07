@@ -1,5 +1,4 @@
 /* TODO:
-- restore asterisk and make it open help modal?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
@@ -802,7 +801,7 @@ function clickNode(node, updateURL = true, center = false) {
     }
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
-      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> community</p>';
+      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
   } else
     nodeExtra.innerHTML += '<p>The size of each node reflects how often ' +
       'each ' + entity.replace(/s$/, '') + ' is ' +
@@ -929,7 +928,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
     selectedComic = "";
 
   comicsBarView = true;
-  comicsBar.style.opacity = "1";
+  comicsBar.style.transform = "scaleX(1)";
   comicsBar.style["z-index"] = "1";
   hideViewComicsButton();
   comicsCache.style.display = "none";
@@ -1272,7 +1271,7 @@ function hideComicsBar() {
   }
   comicsCache.style.display = "none";
   comicsBarView = false;
-  comicsBar.style.opacity = "0";
+  comicsBar.style.transform = "scaleX(0)";
   comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
@@ -1306,6 +1305,7 @@ function hideViewComicsButton() {
 let preventClick = false;
 helpButton.onclick = () => {
   helpModal.style.display = "block";
+  setTimeout(() => helpBox.style.transform = "scale(1)", 0);
 }
 helpModal.onclick = () => {
   if (preventClick) {
@@ -1313,7 +1313,8 @@ helpModal.onclick = () => {
     return;
   }
   preventClick = false;
-  helpModal.style.display = "none";
+  helpBox.style.transform = "scale(0)";
+  setTimeout(() => helpModal.style.display = "none", 300);
 }
 helpBox.onclick = (e) => {
   preventClick = true;
