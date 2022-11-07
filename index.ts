@@ -1,7 +1,6 @@
 /* TODO:
 - make credits a modal to free some space ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
-- add urlrooting for modal?
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -19,6 +18,7 @@
 - update screenshots
 - auto data updates
 IDEAS:
+- add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
@@ -72,6 +72,7 @@ let entity = "",
   comicsBarView = false,
   shift = 0,
   preventAutoScroll = false,
+  minComicLiHeight = 100,
   hoveredComic = null,
   selectedComic = null,
   networksLoaded = 0,
@@ -612,7 +613,7 @@ function renderNetwork(shouldComicsBarView) {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
-  logDebug("CENTER ON", {node, neighbors, force});
+  logDebug("CENTER ON", {node, neighbors, force, shift});
   if (animation) clearTimeout(animation);
   if (camera.isAnimated()) {
     camera.animate(camera.getState, {duration: 0});
@@ -993,8 +994,10 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
+      minComicLiHeight = 100;
       filteredList.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
+        minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
         comicLi.comic = c;
         comicLi.onmouseup = () => {
           preventAutoScroll = true;
@@ -1305,11 +1308,10 @@ function scrollComicsList() {
   setTimeout(() => {
     const offset = document.querySelector("#comics-list li.selected") as HTMLElement;
     if (!offset) return;
-    const offsetHeight = offset.getBoundingClientRect().height,
-      listHeight = divHeight("comics");
-    let diff = listHeight < 4 * offsetHeight
-      ? listHeight + offsetHeight
-      : listHeight / 2 + offsetHeight / 2;
+    const listHeight = divHeight("comics");
+    let diff = listHeight < 5 * minComicLiHeight
+      ? listHeight + minComicLiHeight
+      : listHeight / 2 + minComicLiHeight;
     comicsDiv.scrollTo(0, offset.offsetTop - diff);
   }, 10);
 }
