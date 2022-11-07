@@ -10,7 +10,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: sans-serif;
+  font-family: monospace;
   background-color: black;
 }
 ::selection {
@@ -25,7 +25,6 @@ html, body {
   margin: 0;
   margin-right: 2px;
   overflow: hidden;
-  font-family: monospace;
   font-size: 12px;
   background-color: #222;
   color: grey;
@@ -41,7 +40,6 @@ html, body {
   height: calc(100% - 2px);
   margin: 0;
   overflow: hidden;
-  font-family: monospace;
   font-size: 12px;
   background-color: #222;
   color: grey;
@@ -147,7 +145,6 @@ html, body {
   outline: none;
   cursor: pointer;
   font-size: 15px;
-  font-family: monospace;
   font-weight: bold;
   padding: 0;
   margin: 0 2px;
@@ -373,25 +370,32 @@ h2 {
 }
 .footer p {
   font-size: 11px;
-  padding: 2px 0px;
-  border-top: 1px dashed #444;
+  padding: 3px 0px 0 34px;
   margin: 0;
 }
 .footer p:last-child {
-  padding-bottom: 5px;
-}
-.footer p.characters-details {
-  display: none;
+  padding-bottom: 3px;
 }
 #title {
   margin-top: 12px;
   color: grey;
 }
-#credits, #title {
+#title {
   display: block;
 }
-#credits-main {
-  display: none;
+#help {
+  background-color: var(--marvel-red)!important;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  color: white;
+  position: absolute;
+  left: 0;
+  margin: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 20px;
+  border: 1px solid #555;
 }
 #webgl-disclaimer, #noscript {
   z-index: 10;
@@ -425,7 +429,6 @@ h2 {
   position: absolute;
   transform: translate(-50%, -50%);
   text-transform: uppercase;
-  font-family: monospace;
   font-weight: bold;
   font-size: 16px;
   padding: 3px 8px;
@@ -466,7 +469,7 @@ h2 {
   left: 0;
   width: 45px;
 }
-#modal {
+.modal {
   position: absolute;
   top: 0;
   left: 0;
@@ -508,6 +511,40 @@ h2 {
 #modal-pause {
   display: none;
 }
+#help-box {
+  position: absolute;
+  top: 0;
+  left: 25%;
+  width: 50%;
+  height: calc(100% - 60px);
+  z-index: 25;
+  overflow-y: auto;
+  background-color: #444;
+  color: #CCC;
+  text-align: left;
+  padding: 30px;
+  margin: 0;
+  -webkit-transition: 0.5s linear;
+  -moz-transition: 0.5s linear;
+  -o-transition: 0.5s linear;
+  transition: 0.5s linear;
+  cursor: default;
+}
+#help-box p {
+  margin: 4px;
+  font-size: 14px;
+  line-height: 24px;
+}
+#help-box a, #help-box a:visited {
+  color: #af7f7f;
+  text-decoration: none;
+}
+#help-box a:hover, #help-box a:visited:hover {
+  text-decoration: underline;
+}
+#close-help {
+  position: fixed;
+}
 #controls {
   position: absolute;
   top: 10px;
@@ -527,7 +564,6 @@ h2 {
   outline: none;
   cursor: pointer;
   font-size: 15px;
-  font-family: monospace;
   font-weight: bold;
   padding: 0;
   border: 2px solid #555;
@@ -560,9 +596,9 @@ h2 {
   text-align: center;
   font-family: monospace;
   font-size: 14px;
+  line-height: 16px;
   background: #eee;
   display: block;
-  line-height: 16px;
   border: 2px solid #555;
   border-radius: 5px;
   white-space: nowrap;
@@ -628,7 +664,6 @@ label {
 }
 .names > div {
   font-size: 14px;
-  font-family: monospace;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -717,10 +752,7 @@ label {
   #comics-list li {
     padding: 2px;
   }
-  #credits-main {
-    display: block;
-  }
-  #credits, .asterisk {
+  .large-bar {
     display: none;
   }
 }
@@ -799,12 +831,6 @@ label {
   }
   .choices {
     margin: 5px 0 0px 0;
-  }
-  #credits-main {
-    display: block;
-  }
-  #credits, .asterisk, #title {
-    display: none;
   }
   #node-label {
     padding-top: 3px;
@@ -902,7 +928,6 @@ label {
   background-color: var(--marvel-red);
   color: white;
   font-size: 20px;
-  font-family: monospace;
   text-transform: uppercase;
   font-weight: bold;
   padding: 15px 0px;
