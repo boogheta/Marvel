@@ -32,7 +32,6 @@ html, body {
   text-align: center;
 }
 #comics-bar {
-  opacity: 0;
   z-index: -1;
   position: absolute;
   bottom: 0;
@@ -46,10 +45,11 @@ html, body {
   float: left;
   text-align: center;
   border-left: 1px solid #333;
-  -webkit-transition: 0.25s ease-in-out;
-  -moz-transition: 0.25s ease-in-out;
-  -o-transition: 0.25s ease-in-out;
-  transition: 0.25s ease-in-out;
+  transform: scaleX(0);
+  -webkit-transition: 0.3s ease-in-out;
+  -moz-transition: 0.3s ease-in-out;
+  -o-transition: 0.3s ease-in-out;
+  transition: 0.3s ease-in-out;
 }
 #comics, #comic-details {
   padding: 5px;
@@ -514,8 +514,8 @@ h2 {
 #help-box {
   position: absolute;
   top: 0;
-  left: 25%;
-  width: 50%;
+  left: 15%;
+  width: calc(70% - 60px);
   height: calc(100% - 60px);
   z-index: 25;
   overflow-y: auto;
@@ -524,14 +524,15 @@ h2 {
   text-align: left;
   padding: 30px;
   margin: 0;
-  -webkit-transition: 0.5s linear;
-  -moz-transition: 0.5s linear;
-  -o-transition: 0.5s linear;
-  transition: 0.5s linear;
+  transform: scale(0);
+  -webkit-transition: transform .3s linear;
+  -moz-transition: transform .3s linear;
+  -o-transition: transform .3s linear;
+  transition: transform .3s linear;
   cursor: default;
 }
 #help-box p {
-  margin: 4px;
+  margin: 8px;
   font-size: 14px;
   line-height: 24px;
 }
@@ -698,6 +699,7 @@ label {
   }
   #comics-bar {
     right: 0;
+    transform-origin: right;
   }
 }
 @media (min-width: 1001px) {
@@ -759,6 +761,7 @@ label {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
+    transform-origin: left;
     bottom: 35px;
     height: calc(100% - 84px);
     width: 235px;
@@ -893,8 +896,8 @@ label {
 }
 @media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
   #loader-comics {
-    left: 203px;
-    right: unset;
+    bottom: 35px;
+    right: 8px;
     padding: 0;
   }
 }

@@ -140,7 +140,7 @@
         <select id="suggestions-select"><option>Search…</option></select>
       </div>
     </div>
-    <div id="comics-bar" style="opacity: 0">
+    <div id="comics-bar">
       <button id="close-bar" class="action-button close-button" title="Close the list of comics">
         <img src="./images/close.svg" alt="close-comics-list" />
       </button>
@@ -227,23 +227,24 @@
         <p><b>MARVEL graphs</b> is an app that displays network maps of Marvel characters or creators where each one is positionned close to those she/he is most linked as registered within <a href="https://developer.marvel.com/" target="_blank">Marvel's API</a>.</p>
         <p>Data, comic book images and photographs are all provided by Marvel. ©&nbsp;2022&nbsp;<a href="https://https://www.marvel.com/" target="_blank">Marvel</a></p>
         <br/>
-        <p>All views have their own URL so all views can be shared directly with a link.</p>
+        <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
         <p>Since associations between authors and comic book issues are more complete within webpages from the Marvel.com website than within the API, the data was completed accordingly.</p> 
-        <p>The color <i>families</i> of the characters are communities computed automatically using the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a>,so they can sometimes be imprecise.</p>
+        <p>The characters <i>families</i> used for the nodes and links colors are automatically computed communities produced with the <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a> and manually labeled. They can therefore be sometimes a little imprecise.</p>
+        <p>All views have their own URL so each one can be shared directly with a link.</p>
         <br/>
         <p>This web application is entirely built with Free Libre Open Source Software and released as such under the <a href="https://github.com/boogheta/Marvel/blob/master/LICENSE" target="_blank">AGPL V3 license</a>.</p>
         <p>The full source code is available on <a href="https://github.com/boogheta/Marvel/" target="_blank">GitHub</a>.</p>
         <p><a href="https://github.com/boogheta/Marvel/issues" target="_blank">Issues and pull requests</a> welcome!</p>
         <br/>
-        <p>Data collection and preparation in Python 3 with <a href="https://requests.readthedocs.io/" target="_blank">requests</a> and <a href="https://networkx.org/" target="_blank">NetworkX</a>.</p>
+        <p>Data collection and preparation in Python with <a href="https://requests.readthedocs.io/" target="_blank">requests</a> and <a href="https://networkx.org/" target="_blank">NetworkX</a>.</p>
         <p>Web interface and network visualization in Node.js using <a href="https://graphology.github.io/" target="_blank">graphology</a>, <a href="https://sigmajs.org/" target="_blank">Sigma.js</a>, <a href="http://nodeca.github.io/pako/" target="_blank">pako</a> and <a href="https://www.papaparse.com/" target="_blank">PapaParse</a>, built in TypeScript with <a href="https://www.npmjs.com/package/kotatsu" target="_blank">kotatsu</a>.</p>
         <p>All icons are used or adapted from SVG creations under CC Zero Public Domain by <a href="https://openclipart.org/detail/191399/smartphone" target="_blank">agomjo</a>, CC Attribution License by <a href="https://github.com/atisawd/boxicons" target="_blank">boxicons</a> and MIT license from <a href="https://github.com/artcoholic/akar-icons" target="_blank">artcoholic</a> &amp; <a href="https://github.com/twbs/icons" target="_blank">Bootstrap</a>.</p>
         <br/>
-        <p>Thanks to Stan Lee, Jack Kirby and all the great authors who brought us so many great stories and awesome characters of <a href="https://www.marvel.com/" target="_blank">Marvel comics</a>!</p>
+        <p>Thanks to <a href="#/main/creators/colors/?creator=Stan+Lee&comics" onclick="document.getElementById('close-help').onclick()">Stan Lee</a>, <a href="#/main/characters/pictures/?creator=Jack+Kirby&comics" onclick="document.getElementById('close-help').onclick()">Jack Kirby</a> and all the amazing <a href="https://www.marvel.com/" target="_blank">Marvel comics</a> authors who brought us so many incredible stories and uncanny characters over the past decades!</p>
         <p>Thanks to <a href="https://github.com/Yomguithereal" target="_blank">@Yomguithereal</a>, <a href="https://github.com/paulgirard" target="_blank">@paulgirard</a>, <a href="https://github.com/jacomyal" target="_blank">@jacomyal</a> and <a href="https://github.com/jacomyMa" target="_blank">@jacomyMa</a> for their precious help and ideas!</p>
         <p>And lots of thanks to the 2014 Amsterdam <a href="http://contropedia.net/" target="_blank">Contropedia</a> datasprint where this whole idea germinated before it got buried in my mind and GitHub repositories for 8 long years. :)</p>
         <br/>
-        <p>Contact me on Mastodon: <a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter: <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or <a href="https://github.com/boogheta">GitHub</a>.</p>
+        <p>Contact me on Mastodon:&nbsp;<a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter:&nbsp;<a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or&nbsp;<a href="https://github.com/boogheta">GitHub</a>.</p>
         <button id="close-help" class="action-button close-button" title="Close the info box">
           <img src="./images/close.svg" alt="close-help-box" />
         </button>

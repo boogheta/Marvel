@@ -507,7 +507,7 @@ def build_graph(nodes_type, links_type, comics, nodes):
     biggest_component = max(nx.connected_components(G), key=len)
     nx.write_gexf(G.subgraph(biggest_component).copy(), os.path.join("data", "Marvel_%s_by_%s_full.gexf" % (nodes_type, links_type)))
 
-    # Remove less frequent nodes for "small" graph,then keep first connex component again ans save
+    # Remove less frequent nodes for "small" graph, then keep first connex component again ans save
     for node in list(G.nodes):
         if G.nodes[node][links_type] < CONF["min_" + links_type + "_for_" + nodes_type]:
             G.remove_node(node)
