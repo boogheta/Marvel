@@ -1,4 +1,5 @@
 /* TODO:
+- unselectComic broken on some browsers?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
