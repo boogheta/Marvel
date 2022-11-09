@@ -32,7 +32,6 @@ html, body {
   text-align: center;
 }
 #comics-bar {
-  z-index: -1;
   position: absolute;
   bottom: 0;
   width: 298px;
