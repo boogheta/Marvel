@@ -1,5 +1,4 @@
 /* TODO:
-- bug on selected comic click same node
 - when select node if selectedcomic and comic not in list unselect comic
 - comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
@@ -790,8 +789,8 @@ function clickNode(node, updateURL = true, center = false) {
       modalPlay.style.display = "none";
       modalPause.style.display = "none";
     };
-    resize(true);
   }
+  resize(true);
   nodeExtra.innerHTML = "";
   if (attrs.description)
     nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
@@ -910,8 +909,12 @@ function clickNode(node, updateURL = true, center = false) {
     );
   }
 
-  if (comicsBarView && !sameNode)
-    displayComics(node, true);
+  if (comicsBarView) {
+    if (!sameNode)
+      displayComics(node, true);
+    else if (selectedComic)
+      selectComic(selectedComic, true, true);
+  }
   if (!(comicsBarView && selectedComic) && (!updateURL || center))
     setTimeout(() => {
       if (relatedNodes)
