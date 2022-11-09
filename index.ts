@@ -1,5 +1,7 @@
 /* TODO:
+- comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
+- test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
@@ -614,13 +616,21 @@ function renderNetwork(shouldComicsBarView) {
   } else finalizeGraph();
 }
 
+function updateShift() {
+  shift = comicsBarView
+    ? (comicsBar.getBoundingClientRect()["x"]
+      ? divWidth("comics-bar")
+      : divWidth("sidebar") - divWidth("comics-bar")
+    ) : 0;
+}
+
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
   logDebug("CENTER ON", {node, neighbors, force, shift});
   if (animation) clearTimeout(animation);
   if (camera.isAnimated()) {
     camera.animate(camera.getState, {duration: 0});
-    animation = setTimeout(() => centerNode(node, neighbors, force), 100);
+    animation = setTimeout(() => centerNode(node, neighbors, force), 50);
     return;
   }
   const data = networks[entity][networkSize];
@@ -652,13 +662,14 @@ function centerNode(node, neighbors = null, force = true) {
     sigmaDims = container.getBoundingClientRect();
 
   // Handle comicsbar hiding part of the graph
+  updateShift();
   sigmaDims.width -= shift;
   // Evaluate required zoom ratio
   let ratio = Math.min(
-    35 / camera.ratio,
+    50 / camera.ratio,
     Math.max(
-      0.21 / camera.ratio,
-      (sigmaDim < 500 ? 1.55 : 1.35) / Math.min(
+      1.5 * renderer.getSetting("minCameraRatio") / camera.ratio,
+      1.5 / Math.min(
         sigmaDims.width / Math.abs(maxCorner.x - minCorner.x),
         sigmaDims.height / Math.abs(minCorner.y - maxCorner.y)
       )
@@ -776,8 +787,8 @@ function clickNode(node, updateURL = true, center = false) {
       modalPlay.style.display = "none";
       modalPause.style.display = "none";
     };
-    resize(true);
   }
+  resize(true);
   nodeExtra.innerHTML = "";
   if (attrs.description)
     nodeExtra.innerHTML += "<p>" + attrs.description + "</p>";
@@ -896,8 +907,12 @@ function clickNode(node, updateURL = true, center = false) {
     );
   }
 
-  if (comicsBarView && !sameNode)
-    displayComics(node, true);
+  if (comicsBarView) {
+    if (!sameNode)
+      displayComics(node, true);
+    else if (selectedComic)
+      selectComic(selectedComic, true, true);
+  }
   if (!(comicsBarView && selectedComic) && (!updateURL || center))
     setTimeout(() => {
       if (relatedNodes)
@@ -930,7 +945,6 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
 
   comicsBarView = true;
   comicsBar.style.transform = "scaleX(1)";
-  comicsBar.style["z-index"] = "1";
   hideViewComicsButton();
   comicsCache.style.display = "none";
 
@@ -968,8 +982,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
     loaderList.style.display = "block";
 
   selectedComic = allComicsMap[selectedComic] || selectedComic;
-  if (autoReselect)
-    selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
+  if (autoReselect) {
+    if (selectedComic && selectedNode && selectedComic[selectedNodeType].indexOf(selectedNode) === -1)
+      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+    else selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
+  }
 
   setTimeout(() => {
     const fullList = comics
@@ -1273,7 +1290,6 @@ function hideComicsBar() {
   comicsCache.style.display = "none";
   comicsBarView = false;
   comicsBar.style.transform = "scaleX(0)";
-  comicsBar.style["z-index"] = "-1";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
   resize(true);
@@ -1667,9 +1683,7 @@ function resize(fast = false) {
   );
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
-  shift = comicsBar.getBoundingClientRect()["x"] && comicsBarView
-    ? divWidth("comics-bar")
-    : divWidth("sidebar") - divWidth("comics-bar");
+  updateShift();
   if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);

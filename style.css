@@ -32,7 +32,6 @@ html, body {
   text-align: center;
 }
 #comics-bar {
-  z-index: -1;
   position: absolute;
   bottom: 0;
   width: 298px;
@@ -542,9 +541,6 @@ h2 {
 }
 #help-box a:hover, #help-box a:visited:hover {
   text-decoration: underline;
-}
-#close-help {
-  position: fixed;
 }
 #controls {
   position: absolute;
