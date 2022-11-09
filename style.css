@@ -543,9 +543,6 @@ h2 {
 #help-box a:hover, #help-box a:visited:hover {
   text-decoration: underline;
 }
-#close-help {
-  position: fixed;
-}
 #controls {
   position: absolute;
   top: 10px;

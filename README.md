@@ -1,6 +1,6 @@
 ## MARVEL graphs
 
-An app that displays network maps of Marvel characters or creators where each one is positionned close to those he/she is most linked with from within [Marvel's API](https://developer.marvel.com/).
+An app that displays network maps of Marvel characters or creators where each one is positionned close to those he/she is most linked with as registered within [Marvel's API](https://developer.marvel.com/).
 
 Visit it here: [https://marvel-graphs.net/](https://www.marvel-graphs.net/)
 
