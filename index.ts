@@ -2,7 +2,6 @@
 - when select node if selectedcomic and comic not in list unselect comic
 - comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
-- adjust timeout of click comic for phone?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - if low debit, load comics/pictures only on explore comics click?
@@ -632,7 +631,7 @@ function centerNode(node, neighbors = null, force = true) {
   if (animation) clearTimeout(animation);
   if (camera.isAnimated()) {
     camera.animate(camera.getState, {duration: 0});
-    animation = setTimeout(() => centerNode(node, neighbors, force), 100);
+    animation = setTimeout(() => centerNode(node, neighbors, force), 50);
     return;
   }
   const data = networks[entity][networkSize];
