@@ -1,5 +1,4 @@
 /* TODO:
-- when select node if selectedcomic and comic not in list unselect comic
 - comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
 - test title at the top ?
@@ -983,8 +982,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
     loaderList.style.display = "block";
 
   selectedComic = allComicsMap[selectedComic] || selectedComic;
-  if (autoReselect)
-    selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
+  if (autoReselect) {
+    if (selectedComic && selectedNode && selectedComic[selectedNodeType].indexOf(selectedNode) === -1)
+      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+    else selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
+  }
 
   setTimeout(() => {
     const fullList = comics
