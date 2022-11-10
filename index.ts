@@ -1,5 +1,4 @@
 /* TODO:
-- comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
@@ -983,7 +982,8 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
 
   selectedComic = allComicsMap[selectedComic] || selectedComic;
   if (autoReselect) {
-    if (selectedComic && selectedNode && selectedComic[selectedNodeType] && selectedComic[selectedNodeType].indexOf(selectedNode) === -1)
+    const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
+    if (selectedNode && comicEntities && comicEntities.indexOf(selectedNode) === -1)
       setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
     else selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
   }
