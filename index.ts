@@ -1,5 +1,4 @@
 /* TODO:
-- comics button broken after : http://localhost:3000/#/main/characters/pictures/?character=Thunderbolts + click comic + click stage x 2 + click explore comic
 - unselectComic broken on some browsers?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
@@ -381,7 +380,7 @@ function renderNetwork(shouldComicsBarView) {
   if (entity === "creators") {
     Object.keys(creatorsRoles).forEach(k => {
       const role = document.getElementById(k + "-color");
-      role.style.color = creatorsRoles[k];
+      role.style.color = lightenColor(creatorsRoles[k]);
       role.innerHTML = k + " (" + formatNumber(data.counts[k]) + ")";
     })
   } else document.getElementById("clusters-legend").innerHTML = Object.keys(data.clusters)
@@ -697,7 +696,7 @@ function centerNode(node, neighbors = null, force = true) {
   // Zoom on node only if force, if nodes outside full window, if nodes are too close together, or if more than 1 node and outside acceptable window
   if (force ||
     minCorner.x < minWin.x || maxCorner.x > maxWin.x || maxCorner.y < minWin.y || minCorner.y > maxWin.y ||
-    (ratio !== 0 && (ratio < 0.5 || ratio > 1.55)) ||
+    (ratio !== 0 && (ratio < 0.7 || ratio > 1.55)) ||
     (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
   ) {
     viewPortPosition.x += ratio * shift / 2;
@@ -806,10 +805,10 @@ function clickNode(node, updateURL = true, center = false) {
     // Display roles in stories for creators
     if (entity === "creators") {
       if (attrs.writer === 0 && attrs.artist)
-        nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.artist + '">artist (' + attrs.artist + ')</b></p>';
+        nodeExtra.innerHTML += '<p>Always as <b style="color: ' + lightenColor(creatorsRoles.artist) + '">artist (' + attrs.artist + ')</b></p>';
       else if (attrs.artist === 0 && attrs.writer)
-        nodeExtra.innerHTML += '<p>Always as <b style="color: ' + creatorsRoles.writer + '">writer (' + attrs.writer + ')</b></p>';
-      else nodeExtra.innerHTML += '<p>Including <b style="color: ' + creatorsRoles.writer + '">' + attrs.writer + ' as writer</b><br/>and <b style="color: ' + creatorsRoles.artist + '">' + attrs.artist + " as artist</b></p>";
+        nodeExtra.innerHTML += '<p>Always as <b style="color: ' + lightenColor(creatorsRoles.writer) + '">writer (' + attrs.writer + ')</b></p>';
+      else nodeExtra.innerHTML += '<p>Including <b style="color: ' + lightenColor(creatorsRoles.writer) + '">' + attrs.writer + ' as writer</b><br/>and <b style="color: ' + lightenColor(creatorsRoles.artist) + '">' + attrs.artist + " as artist</b></p>";
     }
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
@@ -983,7 +982,8 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
 
   selectedComic = allComicsMap[selectedComic] || selectedComic;
   if (autoReselect) {
-    if (selectedComic && selectedNode && selectedComic[selectedNodeType].indexOf(selectedNode) === -1)
+    const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
+    if (selectedNode && comicEntities && comicEntities.indexOf(selectedNode) === -1)
       setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
     else selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
   }
@@ -1004,14 +1004,14 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       if (selectedNodeLabel) comicsTitle.innerHTML += " " + (selectedNodeType === "creators" ? "by" : "with") + "<br/>" + selectedNodeLabel;
       if (selectedNodeLabel && creatorsComics[selectedNode])
         comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-          .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x], 50) + '">' + x + '</span>')
+          .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
           .join("&nbsp;")
           .replace(/&nbsp;([^&]+)$/, " or $1");
     }
 
     setTimeout(() => {
       comicsList.innerHTML = filteredList.length
-        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role], 50) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
       minComicLiHeight = 100;
@@ -1122,7 +1122,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
       ? '<li id="creator-' + x + '" ' +
         (x !== "-1" ? 'class="entity-link" ' : '') +
         'title="writer" ' +
-        'style="color: ' + lightenColor(creatorsRoles["writer"], 50) + '">' +
+        'style="color: ' + lightenColor(creatorsRoles["writer"]) + '">' +
         allCreators[x] + "</li>"
       : ""
     ).join("");
@@ -1131,7 +1131,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
       ? '<li id="creator-' + x + '" ' +
         (x !== "-1" ? 'class="entity-link" ' : '') +
         'title="artist" ' +
-        'style="color: ' + lightenColor(creatorsRoles["artist"], 50) + '">' +
+        'style="color: ' + lightenColor(creatorsRoles["artist"]) + '">' +
         allCreators[x] + "</li>"
       : ""
     ).join("");
@@ -1792,7 +1792,7 @@ function readURL() {
     if (args[1] === "creators")
       Object.keys(creatorsRoles).forEach(k => {
         const role = document.getElementById(k + "-color");
-        role.style.color = creatorsRoles[k];
+        role.style.color = lightenColor(creatorsRoles[k]);
         role.innerHTML = k + " (...)";
       });
     else document.querySelectorAll("#clusters-legend .color")
