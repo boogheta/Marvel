@@ -16,7 +16,7 @@ function formatMonth(dat) {
 }
 
 // Lighten colors function copied from Chris Coyier https://css-tricks.com/snippets/javascript/lighten-darken-color/
-function lightenColor(col, amt) {
+function lightenColor(col, amt=50) {
   var usePound = false;
   if (col[0] === "#") {
     col = col.slice(1);
