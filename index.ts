@@ -1,5 +1,7 @@
 /* TODO:
+- leftover cases of ?comics added without opening sidebar
 - unselectComic broken on some browsers?
+- make loadComics more async?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
 - if low debit, load comics/pictures only on explore comics click?
