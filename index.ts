@@ -1,6 +1,5 @@
 /* TODO:
-- leftover cases of ?comics added without opening sidebar
-- unselectComic broken on some browsers?
+- leftover cases of ?comics added without opening sidebar? can't reproduce easily...
 - make loadComics more async?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
@@ -1023,7 +1022,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         comicLi.comic = c;
         comicLi.onmouseup = () => {
           preventAutoScroll = true;
-          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic === comicLi.comic ? "" : comicLi.comic), sortComics);
+          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic.id === comicLi.comic.id ? "" : comicLi.comic), sortComics);
         };
         comicLi.onmouseenter = () => selectComic(c);
       });
