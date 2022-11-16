@@ -8,7 +8,7 @@
     "postinstall": "npm run importpako && if [ ! -d sigma.js ]; then git clone -b marvel-branch https://github.com/boogheta/sigma.js.git; else cd sigma.js && git pull && cd -; fi; npm run buildsigma;",
     "buildsigma": "cd sigma.js && npm install && npm run prepare && cd -",
     "build": "npm run importpako && npm run buildsigma && cp node_modules/pako/dist/pako_inflate.min.js . && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
-    "start": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
+    "start": "npm run importpako && kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
     "builddata": "python bin/download_data.py && npm run rebuildgraphs",
     "rebuildgraphs": "npm run savepositions && npm run preparegraphs && npm run aligngraphs",
     "savepositions": "for entity in characters creators; do cp data/Marvel_${entity}_by_stories.json.gz data/Marvel_${entity}_by_stories.json.gz.positions; done",
