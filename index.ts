@@ -1,9 +1,7 @@
 /* TODO:
 - leftover cases of ?comics added without opening sidebar? can't reproduce easily...
-- make loadComics more async?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
-- if low debit, load comics/pictures only on explore comics click?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -28,7 +26,6 @@ IDEAS:
 - test bipartite network between authors and characters filtered by category of author
 */
 
-import pako from "pako";
 import Papa from "papaparse";
 import Graph from "graphology";
 import { Sigma } from "./sigma.js";
@@ -40,7 +37,8 @@ import {
   meanArray,
   divWidth, divHeight,
   webGLSupport,
-  rotatePosition
+  rotatePosition,
+  uncompress
 } from "./utils";
 import {
   startYear, curYear, totalYears,
@@ -202,23 +200,7 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
   networks[ent][siz].loading = true;
   return fetch("./data/Marvel_" + ent + "_by_stories" + (siz === "main" ? "" : "_full") + ".json.gz")
     .then(res => res.arrayBuffer())
-    .then(content => {
-      buildNetwork(content, ent, siz);
-      networks[ent][siz].loaded = true;
-      networksLoaded += 1;
-      if (networksLoaded === 4)
-        loaderComics.style.display = "none";
-      if (callback) {
-        if (waitForComics && !comicsReady) {
-          const waiter = setInterval(() => {
-          if (waitForComics && !comicsReady)
-            return;
-          clearInterval(waiter);
-          return setTimeout(callback, 0);
-          }, 50);
-        } else return setTimeout(callback, 0);
-      }
-    });
+    .then(content => buildNetwork(content, ent, siz, callback, waitForComics));
 }
 
 function computeNodeSize(count) {
@@ -228,69 +210,85 @@ function computeNodeSize(count) {
     * sigmaDim / 1000
 };
 
-function buildNetwork(networkData, ent, siz) {
+function buildNetwork(networkData, ent, siz, callback, waitForComics) {
   logDebug("BUILD GRAPH", {ent, siz});
   const data = networks[ent][siz];
   // Parse pako zipped graphology serialized network JSON
-  data.graph = Graph.from(JSON.parse(pako.inflate(networkData, {to: "string"})));
+  uncompress(networkData, "inflate", graphData => {
+    data.graph = Graph.from(JSON.parse(graphData));
 
-  // Identify community ids of main hardcoded colors
-  data.graph.forEachNode((node, {x, y, label, community}) => {
-    for (var cluster in data.clusters)
-      if (data.clusters[cluster].match.indexOf(label) !== -1) {
-        if (ent === "creators") {
-          data.clusters[cluster].label = cluster;
-          data.clusters[cluster].id = cluster.toLowerCase().replace(/ .*$/, "");
-          if (!data.clusters[cluster].positions)
-            data.clusters[cluster].positions = [{x: x, y: y}];
-          else data.clusters[cluster].positions.push({x: x, y: y});
-        } else {
-          data.clusters[cluster].community = community;
-          data.communities[community] = data.clusters[cluster];
-          data.communities[community].label = cluster.replace(/([a-z&]) ([a-z])/ig, "$1&nbsp;$2");
-          data.communities[community].community = community;
+    // Identify community ids of main hardcoded colors
+    data.graph.forEachNode((node, {x, y, label, community}) => {
+      for (var cluster in data.clusters)
+        if (data.clusters[cluster].match.indexOf(label) !== -1) {
+          if (ent === "creators") {
+            data.clusters[cluster].label = cluster;
+            data.clusters[cluster].id = cluster.toLowerCase().replace(/ .*$/, "");
+            if (!data.clusters[cluster].positions)
+              data.clusters[cluster].positions = [{x: x, y: y}];
+            else data.clusters[cluster].positions.push({x: x, y: y});
+          } else {
+            data.clusters[cluster].community = community;
+            data.communities[community] = data.clusters[cluster];
+            data.communities[community].label = cluster.replace(/([a-z&]) ([a-z])/ig, "$1&nbsp;$2");
+            data.communities[community].community = community;
+          }
         }
-      }
-  });
-
-  // Adjust nodes visual attributes for rendering (size, color, images)
-  data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
-    const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
-      role = artist_ratio !== null
-        ? (artist_ratio > 0.65
-          ? "artist"
-          : (artist_ratio < 0.34
-            ? "writer"
-            : "both"
-          )
-        ) : null,
-      color = (ent === "characters"
-        ? (data.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
-        : creatorsRoles[role]
-      ),
-      key = ent === "characters" ? community : role;
-    if (!data.counts[key])
-      data.counts[key] = 0;
-    data.counts[key]++;
-    data.graph.mergeNodeAttributes(node, {
-      type: "circle",
-      image: /available/i.test(image) ? "" : image,
-      size: computeNodeSize(stories),
-      color: color,
-      hlcolor: lightenColor(color, 35)
     });
-    if (ent === "creators")
-      allCreators[node] = label;
-    else allCharacters[node] = label;
-  });
 
-  if (ent === "creators") {
-    // Calculate positions of ages labels
-    for (const cluster in data.clusters) {
-      data.clusters[cluster].x = meanArray(data.clusters[cluster].positions.map(n => n.x));
-      data.clusters[cluster].y = meanArray(data.clusters[cluster].positions.map(n => n.y));
+    // Adjust nodes visual attributes for rendering (size, color, images)
+    data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
+      const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
+        role = artist_ratio !== null
+          ? (artist_ratio > 0.65
+            ? "artist"
+            : (artist_ratio < 0.34
+              ? "writer"
+              : "both"
+            )
+          ) : null,
+        color = (ent === "characters"
+          ? (data.communities[community] || {color: extraPalette[community % extraPalette.length]}).color
+          : creatorsRoles[role]
+        ),
+        key = ent === "characters" ? community : role;
+      if (!data.counts[key])
+        data.counts[key] = 0;
+      data.counts[key]++;
+      data.graph.mergeNodeAttributes(node, {
+        type: "circle",
+        image: /available/i.test(image) ? "" : image,
+        size: computeNodeSize(stories),
+        color: color,
+        hlcolor: lightenColor(color, 35)
+      });
+      if (ent === "creators")
+        allCreators[node] = label;
+      else allCharacters[node] = label;
+    });
+
+    if (ent === "creators") {
+      // Calculate positions of ages labels
+      for (const cluster in data.clusters) {
+        data.clusters[cluster].x = meanArray(data.clusters[cluster].positions.map(n => n.x));
+        data.clusters[cluster].y = meanArray(data.clusters[cluster].positions.map(n => n.y));
+      }
     }
-  }
+    networks[ent][siz].loaded = true;
+    networksLoaded += 1;
+    if (networksLoaded === 4)
+      loaderComics.style.display = "none";
+    if (callback) {
+      if (waitForComics && !comicsReady) {
+        const waiter = setInterval(() => {
+        if (waitForComics && !comicsReady)
+          return;
+        clearInterval(waiter);
+        return setTimeout(callback, 0);
+        }, 50);
+      } else return setTimeout(callback, 0);
+    }
+  });
 }
 
 function loadComics() {
@@ -298,16 +296,15 @@ function loadComics() {
   logDebug("LOAD COMICS");
   fetch("./data/Marvel_comics.csv.gz")
     .then((res) => res.arrayBuffer())
-    .then(buildComics);
+    .then((data) => uncompress(data, "ungzip", buildComics));
 }
 
 function buildComics(comicsData) {
-  const comicsStr = pako.ungzip(comicsData, {to: "string"});
-  Papa.parse(comicsStr, {
-	worker: true,
+  Papa.parse(comicsData, {
+    worker: true,
     header: true,
     skipEmptyLines: "greedy",
-	step: function(c) {
+    step: function(c) {
       c = c.data;
       allComics.push(c);
       allComicsMap[c.id] = c;
@@ -353,9 +350,8 @@ function buildComics(comicsData) {
           crossMap.characters[cr][ch]++;
         });
       });
-
-	},
-	complete: function() {
+    },
+    complete: function() {
       comicsReady = true;
       viewAllComicsButton.style.display = "block";
       fullHistogram.innerHTML = renderHistogram();

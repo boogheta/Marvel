@@ -62,7 +62,24 @@ function rotatePosition(pos, angle) {
     x: pos.x * Math.cos(-angle) - pos.y * Math.sin(-angle),
     y: pos.y * Math.cos(-angle) + pos.x * Math.sin(-angle)
   };
-}
+};
+
+function uncompress(compressed, method, callback) {
+  const worker_script = `
+    importScripts("${window.location.origin}/pako_inflate.min.js");
+    self.onmessage = async (evt) => {
+      const file = evt.data;
+      //const buf = await file.arrayBuffer();
+      const decompressed = pako.${method}(file, {to: "string"});
+      self.postMessage(decompressed);
+    };
+  `;
+  const worker_blob = new Blob([worker_script], { type: "application/javascript" });
+  const worker_url = URL.createObjectURL(worker_blob);
+  const worker = new Worker(worker_url);
+  worker.onmessage = ({ data }) => callback(data);
+  worker.postMessage(compressed);
+};
 
 export {
   logDebug,
@@ -71,5 +88,6 @@ export {
   meanArray,
   divWidth, divHeight,
   webGLSupport,
-  rotatePosition
+  rotatePosition,
+  uncompress
 };

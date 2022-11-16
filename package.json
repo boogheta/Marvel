@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "postinstall": "if [ ! -d sigma.js ]; then git clone -b marvel-branch https://github.com/boogheta/sigma.js.git; else cd sigma.js && git pull && cd -; fi; npm run buildsigma;",
+    "importpako": "cp node_modules/pako/dist/pako_inflate.min.js .",
+    "postinstall": "npm run importpako && if [ ! -d sigma.js ]; then git clone -b marvel-branch https://github.com/boogheta/sigma.js.git; else cd sigma.js && git pull && cd -; fi; npm run buildsigma;",
     "buildsigma": "cd sigma.js && npm install && npm run prepare && cd -",
-    "build": "npm run buildsigma && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
+    "build": "npm run importpako && npm run buildsigma && cp node_modules/pako/dist/pako_inflate.min.js . && kotatsu build client --config ./webpack.config.js --typescript index.ts --production -o build/bundle.js",
     "start": "kotatsu serve --config ./webpack.config.js --typescript index.ts --public / ./",
     "builddata": "python bin/download_data.py && npm run rebuildgraphs",
     "rebuildgraphs": "npm run savepositions && npm run preparegraphs && npm run aligngraphs",
