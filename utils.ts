@@ -69,7 +69,6 @@ function uncompress(compressed, method, callback) {
     importScripts("${window.location.origin}/pako_inflate.min.js");
     self.onmessage = async (evt) => {
       const file = evt.data;
-      //const buf = await file.arrayBuffer();
       const decompressed = pako.${method}(file, {to: "string"});
       self.postMessage(decompressed);
     };
@@ -77,7 +76,10 @@ function uncompress(compressed, method, callback) {
   const worker_blob = new Blob([worker_script], { type: "application/javascript" });
   const worker_url = URL.createObjectURL(worker_blob);
   const worker = new Worker(worker_url);
-  worker.onmessage = ({ data }) => callback(data);
+  worker.onmessage = ({ data }) => {
+    callback(data);
+    worker.terminate();
+  };
   worker.postMessage(compressed);
 };
 
