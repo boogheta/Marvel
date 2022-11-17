@@ -49,6 +49,7 @@ html, body {
   -moz-transition: 0.3s ease-in-out;
   -o-transition: 0.3s ease-in-out;
   transition: 0.3s ease-in-out;
+  z-index: 6;
 }
 #comics, #comic-details {
   padding: 5px;
@@ -437,7 +438,7 @@ h2 {
 }
 .loader {
   position: absolute;
-  z-index: 10;
+  z-index: 5;
   display: none;
   opacity: 0.85;
   -webkit-transition: opacity 0.25s ease-in-out;
