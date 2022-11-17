@@ -1,4 +1,5 @@
 /* TODO:
+- brief cligning labels on select node from search while comic selected
 - leftover cases of ?comics added without opening sidebar? can't reproduce easily...
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters"
@@ -622,13 +623,18 @@ function updateShift() {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
-  logDebug("CENTER ON", {node, neighbors, force, shift});
-  if (animation) clearTimeout(animation);
+  logDebug("CENTER ON", {node, neighbors, force, shift, animation, animated: camera.isAnimated()});
+  if (animation) {
+    clearTimeout(animation);
+    animation = null;
+  }
   if (camera.isAnimated()) {
-    camera.animate(camera.getState, {duration: 0});
-    animation = setTimeout(() => centerNode(node, neighbors, force), 50);
+    animation = setTimeout(() => {
+      camera.animate(camera.getState, {duration: 0}, () => centerNode(node, neighbors, force));
+    }, 50);
     return;
   }
+
   const data = networks[entity][networkSize];
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
@@ -697,14 +703,13 @@ function centerNode(node, neighbors = null, force = true) {
     (neighbors.length > 1 && (minCorner.x < minPos.x || maxCorner.x > maxPos.x || maxCorner.y < minPos.y || minCorner.y > maxPos.y))
   ) {
     viewPortPosition.x += ratio * shift / 2;
-    camera.animate(
-      {
-        ...renderer.viewportToFramedGraph(viewPortPosition),
-        ratio: camera.ratio * ratio
-      },
+    const newCam = renderer.viewportToFramedGraph(viewPortPosition);
+    newCam["ratio"] = camera.ratio * ratio;
+    animation = setTimeout(() => camera.animate(
+      newCam,
       {duration: 300},
       hideLoader
-    );
+    ), 0);
   } else hideLoader();
 }
 
