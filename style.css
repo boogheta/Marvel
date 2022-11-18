@@ -5,8 +5,12 @@
 }
 
 @font-face {
-  font-family: "Impact";
+  font-family: "ImpactLoad";
   src: url(./impact.ttf) format("truetype");
+}
+@font-face {
+  font-family: "DejaVuSansMono";
+  src: url(./LiberationMono-Regular.ttf) format("truetype");
 }
 
 html, body {
@@ -15,7 +19,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   background-color: black;
 }
 ::selection {
@@ -185,7 +189,7 @@ html, body {
 #filter-input {
   width: calc(100% - 4px);
   margin: -2px 2px 4px 2px;
-  font-family: monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   font-size: 14px;
   border: 2px solid #555;
   border-radius: 5px;
@@ -208,7 +212,7 @@ h1 {
   margin: 0px 0px 10px 0px;
 }
 .marvel {
-  font-family: "Impact", monospace;
+  font-family: "Impact", "ImpactLoad", monospace;
   font-weight: normal;
   font-size: 36px;
   letter-spacing: -1px;
@@ -411,6 +415,10 @@ h2 {
   font-weight: bold;
   border-radius: 20px;
   border: 1px solid #555;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
 }
 #webgl-disclaimer, #noscript {
   z-index: 10;
@@ -607,7 +615,7 @@ h2 {
   width: 100%;
   padding: 7px 5px 7px 7px;
   text-align: center;
-  font-family: monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   font-size: 14px;
   line-height: 16px;
   background: #eee;
