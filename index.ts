@@ -552,6 +552,7 @@ function renderNetwork(shouldComicsBarView) {
         selectComic(selectedComic, true, true);
       } else unselectComic();
     }
+    hideLoader();
   }
 
   const sigmaWidth = divWidth("sigma-container");
@@ -581,7 +582,6 @@ function renderNetwork(shouldComicsBarView) {
       );
       clickNode(null, false, true);
       conditionalOpenComicsBar();
-      hideLoader();
     }
   }
 
@@ -623,7 +623,6 @@ function updateShift() {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
-  logDebug("CENTER ON", {node, neighbors, force, shift, animation, animated: camera.isAnimated()});
   // cancel pending centering
   if (animation)
     clearTimeout(animation);
@@ -637,6 +636,7 @@ function centerNode(node, neighbors = null, force = true) {
 }
 
 function runCentering(node, neighbors = null, force = true) {
+  logDebug("CENTER ON", {node, neighbors, force, shift, animation, animated: camera.isAnimated()});
   const data = networks[entity][networkSize];
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
