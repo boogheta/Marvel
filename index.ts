@@ -1,8 +1,8 @@
 /* TODO:
-- brief cligning labels on select node from search while comic selected
+- handle mobile darkmodes diffs?
 - leftover cases of ?comics added without opening sidebar? can't reproduce easily...
 - test title at the top ?
-- add button switchEntity to node-details in alternate "View credited authors/View featured characters"
+- add button switchEntity to node-details in alternate "View credited authors/View featured characters" ?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -830,7 +830,9 @@ function clickNode(node, updateURL = true, center = false) {
   if (comicsReady)
     addViewComicsButton(node);
 
-  if (!comicsBarView || !selectedComic) {
+    const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
+  if (!comicsBarView || !(selectedComic && comicEntities && comicEntities.indexOf(node) !== -1)) {
+    renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     if (relatedNodes === null) {
       // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
       data.graph.setNodeAttribute(node, "highlighted", true);
