@@ -1,6 +1,6 @@
 /* TODO:
 - handle mobile darkmodes diffs?
-- leftover cases of ?comics added without opening sidebar? can't reproduce easily...
+- leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters" ?
 - check bad data marvel :
