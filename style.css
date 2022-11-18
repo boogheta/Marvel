@@ -4,6 +4,11 @@
   --marvel-red-dark: #ba0000;
 }
 
+@font-face {
+  font-family: "Impact";
+  src: url(./impact.ttf) format("truetype");
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -196,11 +201,21 @@ html, body {
   height: 47px;
 }
 h1 {
-  font-size: 28px;
+  font-size: 32px;
   background-color: var(--marvel-red);
   color: white;
-  padding: 10px 0;
+  padding: 5px 0;
   margin: 0px 0px 10px 0px;
+}
+.marvel {
+  font-family: "Impact", monospace;
+  font-weight: normal;
+  font-size: 36px;
+  letter-spacing: -1px;
+  transform: scaleY(1.3);
+  display: inline-block;
+  padding-right: 10px;
+  vertical-align: top;
 }
 h2 {
   font-size: 16px;
@@ -721,8 +736,13 @@ label {
     height: 42px;
   }
   h1 {
-    font-size: 18px!important;
-    padding: 13px 0!important;
+    font-size: 20px!important;
+    padding: 10px 0!important;
+  }
+  .marvel {
+    font-size: 22px!important;
+    padding-right: 7px!important;
+    letter-spacing: -0.5px!important;
   }
   .choices {
     margin: 5px 0 0px 0;
@@ -827,7 +847,10 @@ label {
   }
   h1 {
     font-size: 28px;
-    padding: 7px 0;
+    padding: 4px 0;
+  }
+  .marvel {
+    font-size: 32px;
   }
   .choices {
     margin: 5px 0 0px 0;
@@ -908,9 +931,16 @@ label {
   background-color: rgba(0, 0, 0, 0.85);
   text-align: center;
 }
-#rotate-modal h1 {
-  font-size: 30px!important;
-  padding: 10px 0!important;
+#rotate-modal h2 {
+  background-color: var(--marvel-red);
+  color: white;
+  font-size: 34px!important;
+  padding: 5px 0!important;
+  margin: 0px 0px 10px 0px;
+}
+#rotate-modal .marvel {
+  font-size: 36px!important;
+  padding-right: 15px!important;
 }
 #rotate-modal-img {
   position: relative;
@@ -943,10 +973,10 @@ label {
   #rotate-modal {
     z-index: -1;
     opacity: 0;
-    -webkit-transition: 0.5s linear;
-    -moz-transition: 0.5s linear;
-    -o-transition: 0.5s linear;
-    transition: 0.5s linear;
+    -webkit-transition: opacity 0.5s linear;
+    -moz-transition: opacity 0.5s linear;
+    -o-transition: opacity 0.5s linear;
+    transition: opacity 0.5s linear;
   }
   #rotate-modal p, #rotate-modal-img {
     height: 0;

@@ -552,6 +552,7 @@ function renderNetwork(shouldComicsBarView) {
         selectComic(selectedComic, true, true);
       } else unselectComic();
     }
+    hideLoader();
   }
 
   const sigmaWidth = divWidth("sigma-container");
@@ -581,7 +582,6 @@ function renderNetwork(shouldComicsBarView) {
       );
       clickNode(null, false, true);
       conditionalOpenComicsBar();
-      hideLoader();
     }
   }
 
@@ -623,18 +623,20 @@ function updateShift() {
 
 // Center the camera on the selected node and its neighbors or a selected list of nodes
 function centerNode(node, neighbors = null, force = true) {
-  logDebug("CENTER ON", {node, neighbors, force, shift, animation, animated: camera.isAnimated()});
-  if (animation) {
+  // cancel pending centering
+  if (animation)
     clearTimeout(animation);
-    animation = null;
-  }
-  if (camera.isAnimated()) {
-    animation = setTimeout(() => {
-      camera.animate(camera.getState, {duration: 0}, () => centerNode(node, neighbors, force));
-    }, 50);
-    return;
-  }
+  // stop already running centering by requesting an idle animation
+  camera.animate(camera.getState, {duration: 0},
+    // then only compute positions to run new centering after a delay to filter out too close calls
+    () => {
+      animation = setTimeout(() => runCentering(node, neighbors, force), 50);
+    }
+  );
+}
 
+function runCentering(node, neighbors = null, force = true) {
+  logDebug("CENTER ON", {node, neighbors, force, shift, animation, animated: camera.isAnimated()});
   const data = networks[entity][networkSize];
   if (!camera || (!node && !neighbors)) return;
   if (!neighbors && data.graph.hasNode(node))
@@ -705,11 +707,11 @@ function centerNode(node, neighbors = null, force = true) {
     viewPortPosition.x += ratio * shift / 2;
     const newCam = renderer.viewportToFramedGraph(viewPortPosition);
     newCam["ratio"] = camera.ratio * ratio;
-    animation = setTimeout(() => camera.animate(
+    camera.animate(
       newCam,
       {duration: 300},
       hideLoader
-    ), 0);
+    );
   } else hideLoader();
 }
 
@@ -914,13 +916,11 @@ function clickNode(node, updateURL = true, center = false) {
     else if (selectedComic)
       selectComic(selectedComic, true, true);
   }
-  if (!(comicsBarView && selectedComic) && (!updateURL || center))
-    setTimeout(() => {
-      if (relatedNodes)
-        centerNode(null, Object.keys(relatedNodes));
-      else centerNode(node);
-    }, 50);
-  else hideLoader();
+  if (!(comicsBarView && selectedComic) && (!updateURL || center)) {
+    if (relatedNodes)
+      centerNode(null, Object.keys(relatedNodes));
+    else centerNode(node);
+  } else hideLoader();
 
   if (!sameNode)
     comicsDiv.scrollTo(0, 0);
@@ -1191,10 +1191,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
     scrollComicsList();
   preventAutoScroll = false;
 
-  setTimeout(() => {
-    centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
-    hideLoader();
-  }, 50);
+  centerNode(null, comic[entity].filter(n => graph.hasNode(n)), false);
 }
 
 // Random node button
