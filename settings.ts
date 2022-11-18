@@ -97,7 +97,7 @@ const startYear = 1939,
   sigmaSettings = {
     maxCameraRatio: 75,
     defaultEdgeColor: '#2A2A2A',
-    labelFont: '"DejaVu Sans Mono", "DejaVuSansMono", monospace',
+    labelFont: '"DejaVu Sans Mono", monospace',
     labelWeight: 'bold',
     labelGridCellSize: 200,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
