@@ -1,4 +1,14 @@
 /* TODO:
+- reorga dossiers
+- Robin:
+  Sur la colonne de gauche :
+    petit historique en bas : lui mettre un titre, peut-être ajouter un tooltip sur les barres pour expliquer ?
+    je mettrai les toggle après le texte, peut-être ferrés en bas de la colonne
+    pour les toggle je pense qu'il faudrait une explication sur ce qu'ils signifient (p-e avec des tooltips ?)
+  Réseau au centre :
+    pas grand chose à dire, c'est très propre - il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
+  Idée d'évolution :
+    et si l'histogramme était brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - handle mobile darkmodes diffs?
 - leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
 - test title at the top ?
@@ -12,6 +22,7 @@
   - select good creators fields
   - take from scraping good image url if /clean within (example https://www.marvel.com/comics/issue/51567/captain_britain_and_the_mighty_defenders_2015_1)
   - handle missing dates?
+  - rebuild characters network from comics instead of stories, ex: Silk
   - rebuild creators network from cleaned comics instead
   - filter imprint marvel
   - add cover artist in comics list, not in links used

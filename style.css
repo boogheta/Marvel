@@ -32,7 +32,7 @@ html, body {
   overflow: hidden;
   font-size: 12px;
   background-color: #222;
-  color: grey;
+  color: #AAA;
   float: left;
   text-align: center;
 }
@@ -45,7 +45,7 @@ html, body {
   overflow: hidden;
   font-size: 12px;
   background-color: #222;
-  color: grey;
+  color: #AAA;
   float: left;
   text-align: center;
   border-left: 1px solid #333;
@@ -69,6 +69,11 @@ html, body {
 #comic-details {
   height: calc(100% / 2);
   border-top: 1px solid #444;
+}
+#comic-desc {
+  line-height: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .action-button {
   width: 35px;
@@ -228,7 +233,7 @@ h2 {
   padding: 0;
   margin-top: 10px;
   overflow-y: auto;
-  line-height: 13px;
+  line-height: 15px;
   opacity: 0;
   -webkit-transition: opacity 0.5s ease-in-out;
   -moz-transition: opacity 0.5s ease-in-out;
@@ -236,7 +241,7 @@ h2 {
   transition: opacity 0.5s ease-in-out;
 }
 #explanations p {
-  margin: 7px 10px;
+  margin: 7px 13px;
 }
 #explanations p:first-of-type {
   margin-top: 0;
@@ -249,10 +254,10 @@ h2 {
   white-space: nowrap;
 }
 #explanations p.characters-details {
-  margin: -5px 10px;
+  margin: -5px 13px;
 }
  #explanations p.creators-details {
-  margin: 0 10px;
+  margin: 0 13px;
 }
 #node-details {
   clear: both;
@@ -260,7 +265,10 @@ h2 {
   text-align: center;
   overflow-y: auto;
   max-height: 60%;
-  line-height: 13px;
+  line-height: 16px;
+}
+#node-details p {
+  margin: 7px 13px;
 }
 #node-label {
   padding-top: 3px;
@@ -268,7 +276,7 @@ h2 {
   display: none;
 }
 #node-extra {
-  margin: 7px 10px;
+  margin: 7px 13px;
 }
 #node-histogram, #full-histogram {
   margin: 10px 0;
@@ -393,7 +401,7 @@ h2 {
 }
 #title {
   margin-top: 12px;
-  color: grey;
+  color: #AAA;
 }
 #title {
   display: block;
