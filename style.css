@@ -217,7 +217,7 @@ h1 {
   font-weight: normal;
   font-size: 36px;
   letter-spacing: -1px;
-  transform: scaleY(1.3);
+  transform: scaleY(1.2);
   display: inline-block;
   padding-right: 10px;
   vertical-align: top;
@@ -267,9 +267,6 @@ h2 {
   max-height: 60%;
   line-height: 16px;
 }
-#node-details p {
-  margin: 7px 13px;
-}
 #node-label {
   padding-top: 3px;
   padding-bottom: 7px;
@@ -281,7 +278,12 @@ h2 {
 #node-histogram, #full-histogram {
   margin: 10px 0;
 }
-#histogram {
+#histogram-title {
+  font-size: 14px;
+  font-weight: bold;
+  padding-bottom: 5px;
+}
+#histogram, #histogram-hover {
   display: flex;
   align-items: flex-end;
   border-bottom: 1px solid var(--marvel-red);
@@ -293,8 +295,22 @@ h2 {
   background-color: var(--marvel-red);
   box-shadow: 0px 0px 2px var(--marvel-red);
 }
+#histogram-hover {
+  margin-top: -25px;
+  cursor: cell;
+}
+.histobar-hover {
+  height: 27px;
+  background-color: white;
+  opacity: 0;
+}
+.histobar-hover:hover {
+  background-color: white;
+  opacity: 0.25;
+}
 #histo-legend {
   font-size: 10px;
+  font-weight: bold;
   color: #AAA;
   padding: 4px 0 4px 2px;
   text-align: left;
@@ -303,6 +319,17 @@ h2 {
   position: relative;
   display: inline-block;
   width: 0;
+}
+#histogram-tooltip {
+  display: none;
+  position: absolute;
+  background-color: #555;
+  border-radius: 8px;
+  padding: 2px 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  z-index: 1;
 }
 #node-img, #comic-img {
   max-width: 75%;
@@ -384,19 +411,21 @@ h2 {
 #sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
   color: #af4f4f;
 }
-.footer {
+#credits {
   position: absolute;
   bottom: 0px;
   width: 300px;
   line-height: 13px;
   border-top: 1px dashed #444;
+  background-color: #222;
+  z-index: 2;
 }
-.footer p {
+#credits p {
   font-size: 11px;
   padding: 3px 0px 0 34px;
   margin: 0;
 }
-.footer p:last-child {
+#credits p:last-child {
   padding-bottom: 3px;
 }
 #title {
@@ -732,7 +761,7 @@ label {
   }
 }
 @media (max-width: 1000px) {
-  #sidebar, .footer, #comics-bar {
+  #sidebar, #credits, #comics-bar {
     width: 198px;
   }
   #histo-legend .hidable {

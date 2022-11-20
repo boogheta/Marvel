@@ -1,14 +1,13 @@
 /* TODO:
 - reorga dossiers
+- edges are aliased again?
+- check why total comics different in histogram and comicsbar (examples : Wolverine, Iron Man, all)
 - Robin:
   Sur la colonne de gauche :
-    petit historique en bas : lui mettre un titre, peut-être ajouter un tooltip sur les barres pour expliquer ?
     je mettrai les toggle après le texte, peut-être ferrés en bas de la colonne
     pour les toggle je pense qu'il faudrait une explication sur ce qu'ils signifient (p-e avec des tooltips ?)
   Réseau au centre :
     pas grand chose à dire, c'est très propre - il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
-  Idée d'évolution :
-    et si l'histogramme était brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - handle mobile darkmodes diffs?
 - leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
 - test title at the top ?
@@ -30,6 +29,7 @@
 - update screenshots
 - auto data updates
 IDEAS:
+- make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
@@ -366,7 +366,7 @@ function buildComics(comicsData) {
     complete: function() {
       comicsReady = true;
       viewAllComicsButton.style.display = "block";
-      fullHistogram.innerHTML = renderHistogram();
+      renderHistogram(fullHistogram);
       resize(true);
       if (selectedNode)
         addViewComicsButton(selectedNode);
@@ -1012,7 +1012,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       : fullList;
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
 
-    (selectedNode ? nodeHistogram : fullHistogram).innerHTML = renderHistogram(selectedNode, filteredList);
+    renderHistogram(
+      selectedNode ? nodeHistogram : fullHistogram,
+      selectedNode,
+      filteredList
+    );
 
     if (filteredList.length) {
       comicsTitle.innerHTML = formatNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
@@ -1291,13 +1295,21 @@ function defaultSidebar() {
   nodeDetails.style.display = "none";
   modal.style.display = "none";
   modalImg.src = "";
+  if (comicsReady)
+    renderHistogram(
+      selectedNode ? nodeHistogram : fullHistogram,
+      selectedNode
+    );
 }
 
 function hideComicsBar() {
   if (filterComics.className === "selected") {
     filterComics.className = "";
     filterSearch.style.display = "none";
-    (selectedNode ? nodeHistogram : fullHistogram).innerHTML = renderHistogram(selectedNode);
+    renderHistogram(
+      selectedNode ? nodeHistogram : fullHistogram,
+      selectedNode
+    );
   }
   comicsCache.style.display = "none";
   comicsBarView = false;
@@ -1315,7 +1327,7 @@ function hideComicsBar() {
 function addViewComicsButton(node) {
   nodeExtra.innerHTML += '<p id="view-comics"' + (comicsBarView ? ' class="view-comics-selected"': '') + '><span>Explore comics</span></p>';
   document.getElementById('view-comics').onclick = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
-  nodeHistogram.innerHTML = renderHistogram(node);
+  renderHistogram(nodeHistogram, node);
 }
 
 function showViewComicsButton() {
@@ -1627,18 +1639,22 @@ function buildLegendItem(year, ref = "") {
 function buildHistogram(comics) {
   const histo = {
     values: new Array(totalYears).fill(0),
-    start: curYear
+    start: curYear,
+    end: startYear,
+    sum: 0
   };
   comics.forEach(c => {
     const comicYear = (new Date(c.date)).getFullYear();
     if (!comicYear) return;
     histo.values[comicYear - startYear] += 1;
     histo.start = Math.min(histo.start, comicYear);
+    histo.end = Math.max(histo.end, comicYear);
+    histo.sum += 1
   });
   return histo;
 }
 
-function renderHistogram(node = null, comics = null) {
+function renderHistogram(element, node = null, comics = null) {
   const histogram = comics === null && histograms[entity][node]
     ? histograms[entity][node]
     : buildHistogram(comics || getNodeComics(node));
@@ -1647,15 +1663,28 @@ function renderHistogram(node = null, comics = null) {
 
   const heightRatio = 25 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * divWidth("node-extra") / totalYears) / 1000;
-  let histogramDiv = '<div id="histogram">';
+
+  fullHistogram.innerHTML = "";
+  nodeHistogram.innerHTML = "";
+  let histogramDiv = '<div id="histogram-title">' + formatNumber(histogram.sum) + " comics between " + histogram.start + "&nsbp;&amp;&nbsp;" + histogram.end + '</div>';
+
+  histogramDiv += '<div id="histogram">';
   histogram.values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar" ' +
-      'title="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' +
       'style="width: calc(100% / ' + totalYears + '); ' +
         'height: ' + Math.round(y * heightRatio) + 'px">' +
     '</span>'
   );
-  histogramDiv += '</div><div id="histo-legend">';
+
+  histogramDiv += '</div><div id="histogram-hover">';
+  histogram.values.forEach((y, idx) => histogramDiv +=
+    '<span class="histobar-hover" ' +
+      (y ? 'tooltip="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' : '') +
+      'style="width: calc(100% / ' + totalYears + ')">' +
+    '</span>'
+  );
+
+  histogramDiv += '</div><div id="histogram-tooltip"></div><div id="histo-legend">';
 
   const legendYears = [startYear, 1960, 1980, 2000, curYear];
   if (legendYears.indexOf(histogram.start) === -1)
@@ -1669,8 +1698,34 @@ function renderHistogram(node = null, comics = null) {
       histogramDiv += buildLegendItem(histogram.start, "start");
   });
   histogramDiv += '</div>';
-  return histogramDiv;
+  element.innerHTML = histogramDiv;
+
+  const maxWidth = divWidth("sidebar"),
+    histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
+  (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
+    bar.onmouseenter = (e) => {
+      const tooltip = bar.getAttribute("tooltip");
+      if (!tooltip)
+        return clearTooltip();
+      histoTooltip.innerHTML = bar.getAttribute("tooltip");
+      const dims = bar.getBoundingClientRect();
+      histoTooltip.style.top = (document.getElementById("histo-legend").getBoundingClientRect().top + 3) + "px";
+      histoTooltip.style.left = Math.min(maxWidth - 148, Math.max(0, e.clientX - 65)) + "px";
+      histoTooltip.style.display = "block";
+    };
+    bar.ontouchstart = (e) => bar.onmouseenter;
+  });
+  document.getElementById("histogram-hover").onmouseleave = clearTooltip;
+  document.getElementById("histogram-hover").ontouchend = clearTooltip;
 }
+
+function clearTooltip() {
+  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
+  histoTooltip.innerHTML = "";
+  histoTooltip.style.display = "none";
+};
+
+
 
 
 /* -- Responsiveness handling -- */
