@@ -6,7 +6,7 @@
     pour les toggle je pense qu'il faudrait une explication sur ce qu'ils signifient (p-e avec des tooltips ?)
   Réseau au centre :
     pas grand chose à dire, c'est très propre - il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
-- handle mobile darkmodes diffs?
+- handle mobile darkmodes diffs? cf branch nightmode
 - leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
 - test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters" ?
@@ -765,12 +765,16 @@ function clickNode(node, updateURL = true, center = false) {
   let relatedNodes = null,
     comicsRatio = 0,
     nodeEntity = entity;
-  if (selectedNodeType && selectedNodeType !== entity && !data.graph.hasNode(node)) {
-    nodeEntity = selectedNodeType;
-    data = networks[selectedNodeType].most;
-    relatedNodes = crossMap[entity][node] || {};
-    comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
-    logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, nodeEntity, relatedNodes, comicsRatio});
+  if (selectedNodeType && selectedNodeType !== entity) {
+    if (data.graph.hasNode(node))
+      selectedNodeType = entity;
+    else {
+      nodeEntity = selectedNodeType;
+      data = networks[selectedNodeType].most;
+      relatedNodes = crossMap[entity][node] || {};
+      comicsRatio = allComics.length / (3 * (Object.values(relatedNodes).reduce((sum: number, cur: number) => sum + cur, 0) as number));
+      logDebug("KEEP NODE", {selectedNode, selectedNodeType, selectedNodeLabel, node, nodeEntity, relatedNodes, comicsRatio});
+    }
   }
 
   if (!data.graph.hasNode(node))
