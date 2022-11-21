@@ -286,9 +286,11 @@ h2 {
 #histogram, #histogram-hover {
   display: flex;
   align-items: flex-end;
-  border-bottom: 1px solid var(--marvel-red);
   margin: 0 10px;
   height: 25px;
+}
+#histogram {
+  border-bottom: 1px solid var(--marvel-red);
 }
 .histobar {
   display: block;
@@ -300,8 +302,8 @@ h2 {
   cursor: cell;
 }
 .histobar-hover {
-  height: 27px;
-  background-color: white;
+  height: 26px;
+  background-color: #555;
   opacity: 0;
 }
 .histobar-hover:hover {
