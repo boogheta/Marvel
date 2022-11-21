@@ -1,7 +1,6 @@
 /* TODO:
 - reorga dossiers
 - edges are aliased again?
-- check why total comics different in histogram and comicsbar (examples : Wolverine, Iron Man, all)
 - Robin:
   Sur la colonne de gauche :
     je mettrai les toggle après le texte, peut-être ferrés en bas de la colonne
@@ -1008,8 +1007,9 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
       : [];
     const filteredList = filterComics.className === "selected" && filterInput.value
-      ? fullList.filter(c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
-      : fullList;
+      ? fullList.filter(c => (new Date(c.date)).getFullYear() &&
+        c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
+      : fullList.filter(c => (new Date(c.date)).getFullYear());
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
 
     renderHistogram(
