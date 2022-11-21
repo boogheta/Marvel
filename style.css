@@ -99,14 +99,11 @@ html, body {
 #comics-bar h3 {
   margin: 0;
   font-size: 16px;
-  padding: 0px 4px 4px 4px;
+  padding: 0 4px;
 }
 #comics-title {
   color: var(--marvel-red);
   font-weight: bold;
-  width: calc(100% - 50px);
-  padding: 4px 4px 0px 4px!important;
-  min-height: 38px;
 }
 #comics-list {
   display: contents;
@@ -146,18 +143,18 @@ html, body {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-between;
-  margin: 2px 0 0 0;
+  margin: 0;
 }
 #comics-actions button {
-  width: 35px;
-  height: 35px;
+  width: 38px;
+  height: 38px;
   background: #eee;
   outline: none;
   cursor: pointer;
   font-size: 15px;
   font-weight: bold;
   padding: 0;
-  margin: 0 2px;
+  margin: 0;
   border: 2px solid #555;
   border-radius: 5px;
 }
@@ -210,7 +207,7 @@ h1 {
   background-color: var(--marvel-red);
   color: white;
   padding: 5px 0;
-  margin: 0px 0px 10px 0px;
+  margin: 0;
 }
 .marvel {
   font-family: "Impact", "ImpactLoad", monospace;
@@ -231,9 +228,10 @@ h2 {
   clear: both;
   display: none;
   padding: 0;
-  margin-top: 10px;
+  margin-top: 5px;
   overflow-y: auto;
   line-height: 15px;
+  border-top: 1px dashed #444;
   opacity: 0;
   -webkit-transition: opacity 0.5s ease-in-out;
   -moz-transition: opacity 0.5s ease-in-out;
@@ -242,9 +240,6 @@ h2 {
 }
 #explanations p {
   margin: 7px 13px;
-}
-#explanations p:first-of-type {
-  margin-top: 0;
 }
 #order {
   min-width: 20px;
@@ -269,7 +264,7 @@ h2 {
 }
 #node-label {
   padding-top: 3px;
-  padding-bottom: 7px;
+  padding-bottom: 5px;
   display: none;
 }
 #node-extra {
@@ -277,6 +272,9 @@ h2 {
 }
 #node-histogram, #full-histogram {
   margin: 10px 0;
+}
+#comics-histogram {
+  margin: 4px 0 1px 0;
 }
 #histogram-title {
   font-size: 14px;
@@ -431,11 +429,9 @@ h2 {
   padding-bottom: 3px;
 }
 #title {
-  margin-top: 12px;
   color: #AAA;
-}
-#title {
   display: block;
+  margin-top: 5px;
 }
 #help {
   background-color: var(--marvel-red)!important;
@@ -669,14 +665,16 @@ h2 {
   border-radius: 5px;
 }
 /* -------- Switch Styles ------------*/
-.choices .network-choice:last-child {
+#choices .network-choice:last-child {
   margin-bottom: 0;
 }
-.choices .network-choice:first-child {
+#choices .network-choice:first-child {
   margin-top: 0;
 }
-.choices {
-  margin: 15px 0 0px 0;
+#choices {
+  margin: 0;
+  padding: 8px;
+  border-top: 1px dashed #444;
 }
 .network-choice {
   display: flex;
@@ -766,6 +764,10 @@ label {
   #sidebar, #credits, #comics-bar {
     width: 198px;
   }
+  #comics-actions button {
+    width: 33px;
+    height: 33px;
+  }
   #histo-legend .hidable {
     display: none;
   }
@@ -787,9 +789,6 @@ label {
     padding-right: 7px!important;
     letter-spacing: -0.5px!important;
   }
-  .choices {
-    margin: 5px 0 0px 0;
-  }
   label {
     width: 180px;
   }
@@ -805,9 +804,6 @@ label {
   #comics-bar h3 {
     font-size: 14px;
   }
-  #comics-title {
-    padding: 8px 2px 0px 2px!important
-  }
   #comics-subtitle-extra {
     display: none!important;
   }
@@ -819,6 +815,9 @@ label {
   }
 }
 @media (max-width: 700px) {
+  .hide-small-height {
+    display: none;
+  }
   #comics-bar {
     left: 0;
     transform-origin: left;
@@ -828,10 +827,9 @@ label {
     border: 1px solid #333;
     border-radius: 0 6px 6px 0;
   }
-  #comics-title {
-    width: calc(100% - 39px);
-    min-height: 32px;
-    padding: 4px 4px 0px 4px!important;
+  #comics-actions button {
+    width: 38px;
+    height: 38px;
   }
   #controls {
     right: 5px;
@@ -843,26 +841,17 @@ label {
     font-size: 14px;
     padding: 0px 2px;
   }
-  .hide-small-height {
-    display: none;
-  }
   #comic-details {
     height: calc(100% / 3);
   }
-  #comics-title, #comics-list li {
+  #comics-bar h3, #comics-list li {
     font-size: 13px!important;
   }
 }
 @media (max-height: 400px) and (max-width: 1000px) {
-  h1 {
-    margin-bottom: 8px
-  }
   h2 {
     font-size: 12px!important;
     padding: 0px 2px 2px 0!important;
-  }
-  #title {
-    margin-top: 8px
   }
   .network-choice {
     margin-bottom: 6px;
@@ -872,6 +861,9 @@ label {
   }
 }
 @media (max-height: 600px) {
+  .hide-small-height {
+    display: none;
+  }
   h2 {
     font-size: 13px;
     padding: 0px 2px;
@@ -885,6 +877,9 @@ label {
     height: 22px;
     margin-bottom: 8px;
   }
+  #choices {
+    padding: 6px;
+  }
   .logo {
     height: 42px;
   }
@@ -894,12 +889,6 @@ label {
   }
   .marvel {
     font-size: 32px;
-  }
-  .choices {
-    margin: 5px 0 0px 0;
-  }
-  #node-label {
-    padding-top: 3px;
   }
   #comics {
     line-height: 18px;

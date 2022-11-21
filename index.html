@@ -49,38 +49,6 @@
       <div id="header">
         <img class="logo" src="./images/logo.png"/>
         <h1><span class="marvel">MARVEL </span>graphs</h1>
-        <div class="choices">
-          <div class="network-choice">
-            <input type="checkbox" id="node-filter-switch" />
-            <label id="switch-filter" class="network-switch-label" for="node-filter-switch">
-              <div class="toggle"></div>
-              <div class="names">
-                <div class="left">main</div>
-                <div class="right">most</div>
-              </div>
-            </label>
-          </div>
-          <div class="network-choice">
-            <input type="checkbox" id="node-type-switch" />
-            <label id="switch-type" class="network-switch-label" for="node-type-switch">
-              <div class="toggle"></div>
-              <div class="names">
-                <div class="left">characters</div>
-                <div class="right">creators</div>
-              </div>
-            </label>
-          </div>
-          <div class="network-choice">
-            <input type="checkbox" id="node-view-switch" />
-            <label id="switch-view" class="network-switch-label" for="node-view-switch">
-              <div class="toggle"></div>
-              <div class="names">
-                <div class="left">pictures</div>
-                <div class="right">colors</div>
-              </div>
-            </label>
-          </div>
-        </div>
         <h2 id="title"></h2>
         <h2 id="node-label"></h2>
       </div>
@@ -101,6 +69,38 @@
         <img id="node-img"/>
         <div id="node-extra"></div>
         <div id="node-histogram"></div>
+      </div>
+      <div id="choices">
+        <div class="network-choice">
+          <input type="checkbox" id="node-filter-switch" />
+          <label id="switch-filter" class="network-switch-label" for="node-filter-switch">
+            <div class="toggle"></div>
+            <div class="names">
+              <div class="left">main</div>
+              <div class="right">most</div>
+            </div>
+          </label>
+        </div>
+        <div class="network-choice">
+          <input type="checkbox" id="node-type-switch" />
+          <label id="switch-type" class="network-switch-label" for="node-type-switch">
+            <div class="toggle"></div>
+            <div class="names">
+              <div class="left">characters</div>
+              <div class="right">creators</div>
+            </div>
+          </label>
+        </div>
+        <div class="network-choice">
+          <input type="checkbox" id="node-view-switch" />
+          <label id="switch-view" class="network-switch-label" for="node-view-switch">
+            <div class="toggle"></div>
+            <div class="names">
+              <div class="left">pictures</div>
+              <div class="right">colors</div>
+            </div>
+          </label>
+        </div>
       </div>
       <div id="credits">
         <button id="help" title="Show more info & explanations">
@@ -144,15 +144,7 @@
       </div>
     </div>
     <div id="comics-bar">
-      <button id="close-bar" class="action-button close-button" title="Close the list of comics">
-        <img src="./images/close.svg" alt="close-comics-list" />
-      </button>
       <div id="comics-header">
-        <h3 id="comics-title"></h3>
-        <h3 id="comics-subtitle">
-          <span id="comics-subtitle-extra">as </span>
-          <span id="comics-subtitle-list"></span>
-        </h3>
         <div id="comics-actions">
           <button id="comics-filter" title="Filter comics">
             <img src="./images/search.svg" alt="filter comics" />
@@ -175,10 +167,19 @@
           <button id="comics-next" title="Next comic">
             <img src="./images/right.svg" alt="previous-picture" />
           </button>
+          <button id="close-bar" title="Close the list of comics">
+            <img src="./images/close.svg" alt="close-comics-list" />
+          </button>
         </div>
         <div id="filter-comics" title="Filter comics by title">
           <input type="search" id="filter-input" placeholder="Search…" />
         </div>
+        <h3 id="comics-title"></h3>
+        <h3 id="comics-subtitle">
+          <span id="comics-subtitle-extra">as </span>
+          <span id="comics-subtitle-list"></span>
+        </h3>
+        <div id="comics-histogram"></div>
       </div>
       <div id="comics">
         <ul id="comics-list"></ul>
