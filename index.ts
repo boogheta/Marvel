@@ -1,6 +1,5 @@
 /* TODO:
 - reorga dossiers
-- edges are aliased again?
 - Robin:
   Sur la colonne de gauche :
     je mettrai les toggle après le texte, peut-être ferrés en bas de la colonne
@@ -875,7 +874,7 @@ function clickNode(node, updateURL = true, center = false) {
             ? { ...attrs,
                 zIndex: 0,
                 color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-                size: Math.max(1, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
+                size: Math.max(2, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
               }
             : { ...attrs,
                 zIndex: 0,
