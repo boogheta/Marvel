@@ -68,7 +68,7 @@ html, body {
 }
 #comic-details {
   height: calc(100% / 2);
-  border-top: 1px solid #444;
+  border-top: 1px dashed #444;
 }
 #comic-desc {
   line-height: 16px;
