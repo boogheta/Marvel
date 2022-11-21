@@ -83,8 +83,9 @@ html, body {
   outline: none;
   cursor: pointer;
   padding: 0;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
+  filter: invert(0.8) hue-rotate(180deg);
 }
 .action-button img {
   width: 18px;
@@ -147,6 +148,7 @@ html, body {
   flex-wrap: nowrap;
   justify-content: space-between;
   margin: 2px 0 0 0;
+  filter: invert(0.8) hue-rotate(180deg);
 }
 #comics-actions button {
   width: 35px;
@@ -158,7 +160,7 @@ html, body {
   font-weight: bold;
   padding: 0;
   margin: 0 2px;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
 }
 #comics-actions button img {
@@ -174,17 +176,22 @@ html, body {
 #comics-actions button:disabled {
   opacity: 0.2;
   cursor: default;
-  border: 2px solid #222;
+  border: 2px solid #DDD;
 }
 #comics-actions button.sort-button:disabled {
   opacity: 1;
-  background: var(--marvel-red-light);
+  filter: invert(1) hue-rotate(180deg);
 }
-#comics-actions button.selected, #modal-actions button.selected {
-  background: var(--marvel-red-light);
-  border: 2px solid #222;
+#comics-actions button.selected {
+  filter: invert(1) hue-rotate(180deg);
+  border: 2px solid #DDD;
+}
+#modal-actions button.selected {
+  filter: invert(0.2) hue-rotate(180deg);
+  border: 2px solid #DDD;
 }
 #filter-comics {
+  filter: invert(0.8) hue-rotate(180deg);
   display: none;
 }
 #filter-input {
@@ -192,7 +199,7 @@ html, body {
   margin: -2px 2px 4px 2px;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
   line-height: 24px;
   padding: 0 10px;
@@ -610,6 +617,7 @@ h2 {
 #sigma-buttons {
   display: flex;
   vertical-align: middle;
+  filter: invert(0.8) hue-rotate(180deg);
 }
 #sigma-buttons button {
   flex: auto;
@@ -622,7 +630,7 @@ h2 {
   font-size: 15px;
   font-weight: bold;
   padding: 0;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
 }
 #sigma-buttons button img {
@@ -645,6 +653,7 @@ h2 {
 }
 #search {
   margin: 2px;
+  filter: invert(0.8) hue-rotate(180deg);
 }
 #search input {
   width: 100%;
@@ -655,7 +664,7 @@ h2 {
   line-height: 16px;
   background: #eee;
   display: block;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
   white-space: nowrap;
   overflow: hidden;
@@ -665,7 +674,7 @@ h2 {
   display: none;
   width: 152px;
   height: 33px;
-  border: 2px solid #555;
+  border: 2px solid #AAA;
   border-radius: 5px;
 }
 /* -------- Switch Styles ------------*/
