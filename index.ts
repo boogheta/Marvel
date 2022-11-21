@@ -1,7 +1,6 @@
 /* TODO:
 - reorga dossiers
 - edges are aliased again?
-- check why total comics different in histogram and comicsbar (examples : Wolverine, Iron Man, all)
 - Robin:
   Sur la colonne de gauche :
     je mettrai les toggle après le texte, peut-être ferrés en bas de la colonne
@@ -1008,8 +1007,9 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
       : [];
     const filteredList = filterComics.className === "selected" && filterInput.value
-      ? fullList.filter(c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
-      : fullList;
+      ? fullList.filter(c => (new Date(c.date)).getFullYear() &&
+        c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
+      : fullList.filter(c => (new Date(c.date)).getFullYear());
       //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
 
     renderHistogram(
@@ -1666,7 +1666,7 @@ function renderHistogram(element, node = null, comics = null) {
 
   fullHistogram.innerHTML = "";
   nodeHistogram.innerHTML = "";
-  let histogramDiv = '<div id="histogram-title">' + formatNumber(histogram.sum) + " comics between " + histogram.start + "&nsbp;&amp;&nbsp;" + histogram.end + '</div>';
+  let histogramDiv = '<div id="histogram-title">' + formatNumber(histogram.sum) + " comics between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end + '</div>';
 
   histogramDiv += '<div id="histogram">';
   histogram.values.forEach((y, idx) => histogramDiv +=
@@ -1678,13 +1678,13 @@ function renderHistogram(element, node = null, comics = null) {
 
   histogramDiv += '</div><div id="histogram-hover">';
   histogram.values.forEach((y, idx) => histogramDiv +=
-    '<span class="histobar-hover" ' +
-      (y ? 'tooltip="' + y + ' comic' + (y > 1 ? 's' : '') + ' in ' + (startYear + idx) + '" ' : '') +
+    '<span class="histobar-hover" tooltip="' +
+      (y ? y + ' comic' + (y > 1 ? 's' : '') + ' in ' : '') + (startYear + idx) + '" ' +
       'style="width: calc(100% / ' + totalYears + ')">' +
     '</span>'
   );
 
-  histogramDiv += '</div><div id="histogram-tooltip"></div><div id="histo-legend">';
+  histogramDiv += '</div><div id="histo-legend">';
 
   const legendYears = [startYear, 1960, 1980, 2000, curYear];
   if (legendYears.indexOf(histogram.start) === -1)
@@ -1697,7 +1697,7 @@ function renderHistogram(element, node = null, comics = null) {
     else if (y === histogram.start)
       histogramDiv += buildLegendItem(histogram.start, "start");
   });
-  histogramDiv += '</div>';
+  histogramDiv += '</div><div id="histogram-tooltip">';
   element.innerHTML = histogramDiv;
 
   const maxWidth = divWidth("sidebar"),
@@ -1708,10 +1708,11 @@ function renderHistogram(element, node = null, comics = null) {
       if (!tooltip)
         return clearTooltip();
       histoTooltip.innerHTML = bar.getAttribute("tooltip");
-      const dims = bar.getBoundingClientRect();
-      histoTooltip.style.top = (document.getElementById("histo-legend").getBoundingClientRect().top + 3) + "px";
-      histoTooltip.style.left = Math.min(maxWidth - 148, Math.max(0, e.clientX - 65)) + "px";
       histoTooltip.style.display = "block";
+      const dims = bar.getBoundingClientRect(),
+        tooltipWidth = divWidth("histogram-tooltip");
+      histoTooltip.style.top = (document.getElementById("histo-legend").getBoundingClientRect().top + 3) + "px";
+      histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, e.clientX - tooltipWidth / 2)) + "px";
     };
     bar.ontouchstart = (e) => bar.onmouseenter;
   });
