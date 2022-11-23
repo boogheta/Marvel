@@ -24,17 +24,72 @@ html, body {
 ::-moz-selection {
   background-color: black;
 }
+
+#header {
+  padding-bottom: 10px;
+}
+h1 {
+  font-size: 32px;
+  background-color: var(--marvel-red);
+  color: white;
+  padding: 5px 0;
+  margin: 0 0 10px 0;
+}
+.marvel {
+  font-family: "Impact", "ImpactLoad", monospace;
+  font-weight: normal;
+  font-size: 36px;
+  letter-spacing: -1px;
+  transform: scaleY(1.2);
+  display: inline-block;
+  padding-right: 10px;
+  vertical-align: top;
+}
+.logo {
+  float: left;
+  padding: 3px 0 0 4px;
+  height: 47px;
+}
+
+h2 {
+  color: #AAA;
+  font-size: 16px;
+  margin: 0 10px;
+}
+#title {
+  display: inline;
+}
+.red {
+  color: var(--marvel-red);
+}
+#node-label {
+  display: none;
+}
+
+h5 {
+  font-size: 15px;
+  margin: 0;
+  margin-bottom: 8px;
+}
+
+.shifted {
+  margin-right: 5px;
+}
+
 #sidebar {
   width: 300px;
   height: 100%;
   margin: 0;
   margin-right: 2px;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 13px;
   background-color: #222;
   color: #AAA;
   float: left;
   text-align: center;
+}
+#sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
+  color: #af4f4f;
 }
 #comics-bar {
   position: absolute;
@@ -197,49 +252,25 @@ html, body {
 #comics-pause {
   display: none;
 }
-.logo {
-  float: left;
-  padding: 3px 0 0 4px;
-  height: 47px;
-}
-h1 {
-  font-size: 32px;
-  background-color: var(--marvel-red);
-  color: white;
-  padding: 5px 0;
-  margin: 0;
-}
-.marvel {
-  font-family: "Impact", "ImpactLoad", monospace;
-  font-weight: normal;
-  font-size: 36px;
-  letter-spacing: -1px;
-  transform: scaleY(1.2);
-  display: inline-block;
-  padding-right: 10px;
-  vertical-align: top;
-}
-h2 {
-  font-size: 16px;
-  color: var(--marvel-red);
-  margin: 0;
-}
-#explanations {
+
+.sidebar-text {
   clear: both;
   display: none;
+  margin: 0;
   padding: 0;
-  margin-top: 5px;
   overflow-y: auto;
-  line-height: 15px;
+  line-height: 16px;
+}
+#explanations {
   border-top: 1px dashed #444;
   opacity: 0;
-  -webkit-transition: opacity 0.5s ease-in-out;
-  -moz-transition: opacity 0.5s ease-in-out;
-  -o-transition: opacity 0.5s ease-in-out;
-  transition: opacity 0.5s ease-in-out;
+  -webkit-transition: opacity 0.75s ease-in-out;
+  -moz-transition: opacity 0.75s ease-in-out;
+  -o-transition: opacity 0.75s ease-in-out;
+  transition: opacity 0.75s ease-in-out;
 }
 #explanations p {
-  margin: 7px 13px;
+  margin: 7px 25px;
 }
 #order {
   min-width: 20px;
@@ -248,30 +279,31 @@ h2 {
 #clusters-legend b span {
   white-space: nowrap;
 }
-#explanations p.characters-details {
-  margin: -5px 13px;
-}
- #explanations p.creators-details {
-  margin: 0 13px;
-}
-#node-details {
+
+.sidebar-text {
   clear: both;
+  display: none;
+  margin: 0;
   padding: 0;
-  text-align: center;
   overflow-y: auto;
-  max-height: 60%;
   line-height: 16px;
 }
-#node-label {
-  padding-top: 3px;
-  padding-bottom: 5px;
-  display: none;
+#node-details {
+  text-align: center;
+  max-height: 60%;
+  padding-top: 1px;
+}
+#node-img, #comic-img {
+  max-width: 75%;
+  max-height: 400px;
+  cursor: pointer;
 }
 #node-extra {
-  margin: 7px 13px;
+  margin: 7px 25px;
 }
+
 #node-histogram, #full-histogram {
-  margin: 10px 0;
+  margin-top: 10px;
 }
 #comics-histogram {
   margin: 4px 0 1px 0;
@@ -330,11 +362,6 @@ h2 {
   font-weight: bold;
   color: white;
   z-index: 1;
-}
-#node-img, #comic-img {
-  max-width: 75%;
-  max-height: 400px;
-  cursor: pointer;
 }
 #comic-title {
   margin: 0;
@@ -408,9 +435,6 @@ h2 {
   border-radius: 5px;
   padding: 5px;
 }
-#sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
-  color: #af4f4f;
-}
 #credits {
   position: absolute;
   bottom: 0px;
@@ -427,11 +451,6 @@ h2 {
 }
 #credits p:last-child {
   padding-bottom: 3px;
-}
-#title {
-  color: #AAA;
-  display: block;
-  margin-top: 5px;
 }
 #help {
   background-color: var(--marvel-red)!important;
@@ -609,9 +628,9 @@ h2 {
 }
 #sigma-buttons button {
   flex: auto;
-  width: 35px;
-  height: 35px;
-  margin: 2px;
+  width: 38px;
+  height: 38px;
+  margin: 1px;
   background: #eee;
   outline: none;
   cursor: pointer;
@@ -672,8 +691,11 @@ h2 {
   margin-top: 0;
 }
 #choices {
+  position: absolute;
+  bottom: 36px;
+  width: 300px;
+  padding: 8px 0 10px 0;
   margin: 0;
-  padding: 8px;
   border-top: 1px dashed #444;
 }
 .network-choice {
@@ -690,7 +712,7 @@ label, .toggle {
 }
 label {
   display: block;
-  width: 210px;
+  width: 236px;
   background-color: white;
   border-radius: 100px;
   position: relative;
@@ -698,7 +720,7 @@ label {
 }
 .toggle {
   position: absolute;
-  width: 103px;
+  width: 116px;
   background-color: var(--marvel-red);
   transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   margin: -2px 0 0 -2px;
@@ -746,6 +768,9 @@ label {
 }
 
 /* Responsiveness */
+.show-middle {
+  display: none;
+}
 @media (min-width: 700px) {
   #controls {
     left: 203px;
@@ -759,10 +784,39 @@ label {
   #controls {
     left: 310px;
   }
+  .large-bar {
+    display: inline;
+  }
+  .small-bar {
+    display: none;
+  }
+}
+@media (min-width: 1001px) and (max-height: 600px) {
+  .hide-small {
+    display: none!important;
+  }
+}
+@media (max-width: 1000px) and (max-height: 400px) {
+  .show-middle {
+    display: none!important;
+  }
 }
 @media (max-width: 1000px) {
-  #sidebar, #credits, #comics-bar {
+  .hide-small {
+    display: none;
+  }
+  .show-middle {
+    display: inline;
+  }
+  #sidebar, #choices, #credits, #comics-bar {
     width: 198px;
+  }
+  h5 {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  #explanations p, #node-extra {
+    margin: 7px 8px;
   }
   #comics-actions button {
     width: 33px;
@@ -813,11 +867,11 @@ label {
   .large-bar {
     display: none;
   }
+  .small-bar {
+    display: inline;
+  }
 }
 @media (max-width: 700px) {
-  .hide-small-height {
-    display: none;
-  }
   #comics-bar {
     left: 0;
     transform-origin: left;
@@ -838,7 +892,7 @@ label {
 }
 @media (max-height: 400px) {
   h2 {
-    font-size: 14px;
+    font-size: 14.6px;
     padding: 0px 2px;
   }
   #comic-details {
@@ -856,17 +910,14 @@ label {
   .network-choice {
     margin-bottom: 6px;
   }
-  #explanations {
-    margin-top: 4px;
-  }
 }
 @media (max-height: 600px) {
-  .hide-small-height {
-    display: none;
-  }
   h2 {
-    font-size: 13px;
+    font-size: 14.6px;
     padding: 0px 2px;
+  }
+  #header {
+    padding-bottom: 5px;
   }
   #search {
     position: fixed;
@@ -878,7 +929,11 @@ label {
     margin-bottom: 8px;
   }
   #choices {
-    padding: 6px;
+    padding: 4px 0 6px 0
+  }
+  h5 {
+    font-size: 14px;
+    margin-bottom: 6px;
   }
   .logo {
     height: 42px;
@@ -886,6 +941,7 @@ label {
   h1 {
     font-size: 28px;
     padding: 4px 0;
+    margin: 0 0 5px 0;
   }
   .marvel {
     font-size: 32px;

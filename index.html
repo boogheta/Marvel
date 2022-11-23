@@ -9,7 +9,7 @@
     <title>MARVEL graphs — Networks of comics characters & creators</title>
     <meta name="title" content="MARVEL graphs — Networks of comics characters & creators" />
     <meta name="application-name" content="MARVEL graphs">
-    <meta name="description" content="Visualize network maps of Marvel characters and creators featured together within same comics stories as registered within Marvel's API. By @boogheta" />
+    <meta name="description" content="Visualize network maps of Marvel characters and creators featured together within same comics as registered within Marvel's API. By @boogheta" />
     <meta name="language" content="en" />
     <meta name="robots" content="index, follow" />
 
@@ -24,7 +24,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MARVEL-graphs.net" />
     <meta property="og:url" content="https://www.marvel-graphs.net/" />
-    <meta property="og:description" content="Visualize network maps of Marvel characters and creators featured together within same comics stories as registered within Marvel's API. By @boogheta" />
+    <meta property="og:description" content="Visualize network maps of Marvel characters and creators featured together within same comics as registered within Marvel's API. By @boogheta" />
     <meta property="og:image" content="https://www.marvel-graphs.net/images/screenshot.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:locale" content="en_US" />
@@ -33,13 +33,13 @@
     <meta name="twitter:site" content="@boogheta" />
     <meta name="twitter:creator" content="@boogheta" />
     <meta name="twitter:title" content="MARVEL graphs" />
-    <meta name="twitter:description" content="Visualize network maps of Marvel characters and creators featured together within same comics stories as registered within Marvel's API. By @boogheta" />
+    <meta name="twitter:description" content="Visualize network maps of Marvel characters and creators featured together within same comics as registered within Marvel's API. By @boogheta" />
     <meta name="twitter:image" content="https://www.marvel-graphs.net/images/screenshot.png" />
   </head>
   <body>
     <div id="rotate-modal">
       <img class="logo" src="./images/logo.png"/>
-      <h2><span class="marvel">MARVEL </span>graphs</h1>
+      <h2><span class="marvel">MARVEL </span>graphs</h2>
       <img id="rotate-modal-img" src="./images/smartphone.png" />
       <p>Please rotate!<br/>
         <small>Note this app works on mobiles but is way nicer on bigger screens</small>
@@ -49,35 +49,39 @@
       <div id="header">
         <img class="logo" src="./images/logo.png"/>
         <h1><span class="marvel">MARVEL </span>graphs</h1>
-        <h2 id="title"></h2>
-        <h2 id="node-label"></h2>
+        <h2>
+          <span class="hide-small">Here is a map of</span>
+          <span class="show-middle">Map of</span>
+          <span id="title"></span>
+          <span id="node-label" class="red"></span>
+        </h2>
       </div>
-      <div id="explanations">
+      <div id="explanations" class="sidebar-text">
         <p>This graph shows a map of <b id="order"></b> Marvel <span class="entity"></span> positionned close to those they are the most linked with.</p>
-        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="main-details">at least </span><span class="main-details" id="min-stories"></span><span class="most-details">all</span> comic book stories registered into Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
-        <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> the top buttons to switch between reduced or complete versions of the networks of characters or creators, using avatar pics or community colors.</p>
-        <p>The size of each node reflects how often the <span class="entity"></span> is accounted as participating to stories within Marvel API's data.</p>
-        <p class="characters-details">Colors indicate which <i>family</i> each character belongs to (<span id="clusters-legend"></span>, etc.).</p>
-        <p class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</p>
+        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="main-details">at least </span><span class="main-details" id="min-stories"></span><span class="most-details">all</span> comics registered into Marvel's API (stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored; a few isolated sets of <span class="entity"></span> from the others were removed).</p>
+        <p>The size of each node reflects how often the <span class="entity"></span> is accounted as participating to comics in Marvel API's data.</p>
+        <p><span class="characters-details">Colors indicate which <i>family</i> each character belongs to (<span id="clusters-legend"></span>, etc.).</span></p>
+        <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
-        <p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p>
+        <!--<p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p> -->
         <p id="view-node"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
         <p id="view-all-comics"><span>Explore all comics</span></p>
         <div id="full-histogram"></div>
       </div>
-      <div id="node-details">
+      <div id="node-details" class="sidebar-text">
         <img id="node-img"/>
         <div id="node-extra"></div>
         <div id="node-histogram"></div>
       </div>
       <div id="choices">
+        <h5>Explore <span class="large-bar">alternative</span><span class="small-bar">other</span> graphs</h5>
         <div class="network-choice">
           <input type="checkbox" id="node-filter-switch" />
           <label id="switch-filter" class="network-switch-label" for="node-filter-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left">main</div>
-              <div class="right">most</div>
+              <div class="left" title="Switch to the reduced version of the network">main</div>
+              <div class="right" title="Switch to the complete version of the network">most</div>
             </div>
           </label>
         </div>
@@ -86,8 +90,8 @@
           <label id="switch-type" class="network-switch-label" for="node-type-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left">characters</div>
-              <div class="right">creators</div>
+              <div class="left" title="Switch to the network of characters">characters</div>
+              <div class="right" title="Switch to the network of creators">creators</div>
             </div>
           </label>
         </div>
@@ -96,8 +100,8 @@
           <label id="switch-view" class="network-switch-label" for="node-view-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left">pictures</div>
-              <div class="right">colors</div>
+              <div class="left" title="Switch the nodes aspect to avatar pictures">pictures</div>
+              <div class="right" title="Switch the nodes aspect to community colors">colors</div>
             </div>
           </label>
         </div>
@@ -188,7 +192,7 @@
       <div id="comics-cache"></div>
       <div id="comic-details">
         <img id="comic-img"/>
-        <h4 id="comic-title"></h2>
+        <h4 id="comic-title"></h4>
         <div>
           <p id="comic-desc"></p>
           <a id="comic-url" target="_blank">More on Marvel.com…</a><br/>

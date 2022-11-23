@@ -6,7 +6,7 @@ function logDebug(action, vars = {}) {
 }
 function formatNumber(x) {
   return (x + "")
-    .replace(/(.)(.{3})$/, "$1&nbsp;$2");
+    .replace(/(.)(.{3})$/, '<span class="shifted">$1</span>$2');
 }
 
 const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];

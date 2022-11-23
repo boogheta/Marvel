@@ -42,13 +42,13 @@ const startYear = 1939,
         match: ["Spider-Man (Peter Parker)"],
         color: "#822e23"
       },
-      "Fantastic Four & Cosmic heroes": {
-        match: ["Fantastic Four"],
-        color: "#234fac"
-      },
       "Ultimate Universe": {
         match: ["Ultimates"],
         color: "#57b23d"
+      },
+      "Fantastic Four & Cosmic heroes": {
+        match: ["Fantastic Four"],
+        color: "#234fac"
       },
       "Alpha Flight": {
         match: ["Alpha Flight"],
