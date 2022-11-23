@@ -1,12 +1,11 @@
 /* TODO:
 - reorga dossiers
+- update histogram on search filter
+- make real tooltips on toggles?
 - uniformize class action buttons/sigma
-- Robin:
-  Toggles je pense qu'il faudrait une explication sur ce qu'ils signifient (p-e avec des tooltips ?)
-  Réseau au centre il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
+- Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - handle mobile darkmodes diffs? cf branch nightmode
 - leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
-- test title at the top ?
 - add button switchEntity to node-details in alternate "View credited authors/View featured characters" ?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -786,7 +785,7 @@ function clickNode(node, updateURL = true, center = false) {
   const attrs = data.graph.getNodeAttributes(node);
   selectedNode = node;
   selectedNodeLabel = attrs.label;
-  nodeLabel.style.display = "block";
+  nodeLabel.style.display = "inline";
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   if (!sameNode) {
@@ -1630,7 +1629,7 @@ switchViewLabel.ontouchend = e => {
 function buildLegendItem(year, ref = "") {
   let className = '',
     color = '';
-  if (ref !== "start" && year !== startYear && year !== curYear)
+  if (ref !== "start" && year !== startYear && year !== curYear && year !== 1980)
     className = ' class="hidable"';
   if (ref === "start")
     color = '; color: var(--marvel-red-light)';
@@ -1640,14 +1639,16 @@ function buildLegendItem(year, ref = "") {
     color + '"' + className + '>' + year + '</div>';
 }
 
-function buildHistogram(comics) {
+function buildHistogram(node, comics) {
+  if (histograms[entity][node])
+    return histograms[entity][node];
   const histo = {
     values: new Array(totalYears).fill(0),
     start: curYear,
     end: startYear,
     sum: 0
   };
-  comics.forEach(c => {
+  (comics || getNodeComics(node)).forEach(c => {
     const comicYear = (new Date(c.date)).getFullYear();
     if (!comicYear) return;
     histo.values[comicYear - startYear] += 1;
@@ -1655,15 +1656,12 @@ function buildHistogram(comics) {
     histo.end = Math.max(histo.end, comicYear);
     histo.sum += 1
   });
+  histograms[entity][node] = histo;
   return histo;
 }
 
 function renderHistogram(element, node = null, comics = null) {
-  const histogram = comics === null && histograms[entity][node]
-    ? histograms[entity][node]
-    : buildHistogram(comics || getNodeComics(node));
-  if (comics === null && !histograms[entity][node])
-    histograms[entity][node] = histogram;
+  const histogram = buildHistogram(node, comics);
 
   const maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar"),
     heightRatio = 25 / Math.max.apply(Math, histogram.values),
@@ -1702,7 +1700,7 @@ function renderHistogram(element, node = null, comics = null) {
     else if (y - 12 > histogram.start)
       histogramDiv += buildLegendItem(y);
     else if (y === histogram.start)
-      histogramDiv += buildLegendItem(histogram.start, "start");
+      histogramDiv += buildLegendItem(histogram.start, node === null ? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
   (comicsBarView ? comicsHistogram : element).innerHTML = histogramDiv;
@@ -1744,10 +1742,10 @@ function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("choices") - divHeight("credits");
+    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("choices") - divHeight("credits") - 1;
   explanations.style.opacity = "1"
-  explanations.style.height = (freeHeight - 6) + "px";
-  explanations.style["min-height"] = (freeHeight - 6) + "px";
+  explanations.style.height = freeHeight + "px";
+  explanations.style["min-height"] = freeHeight + "px";
   nodeDetails.style.height = freeHeight + "px";
   nodeDetails.style["min-height"] = freeHeight + "px";
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
@@ -1834,7 +1832,8 @@ function readURL() {
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
-  let title = "Marvel's " + args[0] + " " + args[1] + " featured together within same&nbsp;comics";
+  const combo = args[0] + " " + args[1];
+  let title = "Marvel's " + combo + " featured together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === args[1]
       ? "as"
@@ -1842,7 +1841,10 @@ function readURL() {
         ? "from"
         : "casting")) + " ";
   document.querySelector("title").innerHTML = "MARVEL graphs &mdash; Map of " + title + (selectedNodeLabel ? selectedNodeLabel : "");
-  document.getElementById("title").innerHTML = '<span class="hide-small-height">Here is a map of </span> ' + title;
+  document.getElementById("title").innerHTML = title.replace(combo, '<span class="red">' + combo + '</span>');
+  nodeLabel.style.display = (selectedNodeLabel ? "inline" : "none");
+  nodeLabel.innerHTML = selectedNodeLabel;
+  resize(true);
 
   if (reload) {
     // Hide canvases
@@ -1884,8 +1886,8 @@ function readURL() {
   switchNodeType.checked = args[1] === "creators";
   entity = args[1];
   entitySpans.forEach(span => span.innerHTML = entity);
-  charactersDetailsSpans.forEach(span => span.style.display = (entity === "characters" ? "inline-block" : "none"));
-  creatorsDetailsSpans.forEach(span => span.style.display = (entity === "creators" ? "inline-block" : "none"));
+  charactersDetailsSpans.forEach(span => span.style.display = (entity === "characters" ? "inline" : "none"));
+  creatorsDetailsSpans.forEach(span => span.style.display = (entity === "creators" ? "inline" : "none"));
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + entity];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
 
