@@ -1,7 +1,6 @@
 /* TODO:
 - reorga dossiers
 - better handle touch on histogram
-- fix histo tooltips sometimes bad posisioned including on touch
 - make real tooltips on toggles?
 - uniformize class action buttons/sigma
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
@@ -315,6 +314,9 @@ function buildComics(comicsData) {
     skipEmptyLines: "greedy",
     step: function(c) {
       c = c.data;
+      // Filter comics with missing date
+      if (!(new Date(c.date)).getFullYear())
+        return;
       allComics.push(c);
       allComicsMap[c.id] = c;
 
@@ -941,13 +943,14 @@ function clickNode(node, updateURL = true, center = false) {
 };
 
 function getNodeComics(node) {
-  const filtered = filterComics.className === "selected" && filterInput.value;
-  return (node === null
+  const comicsList = node === null
     ? allComics
-    : charactersComics[node] || creatorsComics[node] || []
-  ).filter(c => (new Date(c.date)).getFullYear()
-    && (!filtered || c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
-  );
+    : charactersComics[node] || creatorsComics[node] || [];
+  if (filterComics.className === "selected" && filterInput.value)
+    return comicsList.filter(
+      c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1
+    );
+  return comicsList;
   //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
 }
 
@@ -1699,13 +1702,13 @@ function renderHistogram(element, node = null, comics = null) {
     else if (y - 12 > histogram.start)
       histogramDiv += buildLegendItem(y);
     else if (y === histogram.start)
-      histogramDiv += buildLegendItem(histogram.start, node === null ? "" : "start");
+      histogramDiv += buildLegendItem(histogram.start,
+        node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
   (comicsBarView ? comicsHistogram : element).innerHTML = histogramDiv;
 
-  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement,
-    leftPos = (comicsBarView ? comicsHistogram : element).getBoundingClientRect().x;
+  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
     bar.onmouseenter = (e) => {
       const tooltip = bar.getAttribute("tooltip");
@@ -1714,7 +1717,9 @@ function renderHistogram(element, node = null, comics = null) {
       histoTooltip.innerHTML = bar.getAttribute("tooltip");
       histoTooltip.style.display = "inline-block";
       const dims = bar.getBoundingClientRect(),
-        tooltipWidth = divWidth("histogram-tooltip");
+        tooltipWidth = divWidth("histogram-tooltip"),
+        leftPos = (comicsBarView ? comicsHistogram : element).getBoundingClientRect().x,
+        maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar");
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
     };
