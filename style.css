@@ -19,10 +19,16 @@ html, body {
   background-color: black;
 }
 ::selection {
-  background-color: black;
+  background-color: #000;
 }
 ::-moz-selection {
-  background-color: black;
+  background-color: #000;
+}
+input[type="search"]::selection {
+  background-color: #AAA;
+}
+input[type="search"]::-moz-selection {
+  background-color: #AAA;
 }
 
 #header {
