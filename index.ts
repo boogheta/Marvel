@@ -1,6 +1,6 @@
 /* TODO:
 - reorga dossiers
-- update histogram on search filter
+- better handle touch on histogram
 - make real tooltips on toggles?
 - uniformize class action buttons/sigma
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
@@ -314,6 +314,9 @@ function buildComics(comicsData) {
     skipEmptyLines: "greedy",
     step: function(c) {
       c = c.data;
+      // Filter comics with missing date
+      if (!(new Date(c.date)).getFullYear())
+        return;
       allComics.push(c);
       allComicsMap[c.id] = c;
 
@@ -940,9 +943,15 @@ function clickNode(node, updateURL = true, center = false) {
 };
 
 function getNodeComics(node) {
-  return node === null
+  const comicsList = node === null
     ? allComics
     : charactersComics[node] || creatorsComics[node] || [];
+  if (filterComics.className === "selected" && filterInput.value)
+    return comicsList.filter(
+      c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1
+    );
+  return comicsList;
+  //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
 }
 
 function displayComics(node = null, autoReselect = false, resetTitle = true) {
@@ -984,7 +993,8 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
 
 function actuallyDisplayComics(node = null, autoReselect = false) {
   const graph = networks[entity][networkSize].graph,
-    comics = getNodeComics(node);
+    comics = getNodeComics(node)
+      .sort(sortComics === "date" ? sortByDate : sortByTitle);
 
   if (!comics)
     comicsTitle.innerHTML = "";
@@ -1004,23 +1014,14 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   }
 
   setTimeout(() => {
-    const fullList = comics
-      ? comics.sort(sortComics === "date" ? sortByDate : sortByTitle)
-      : [];
-    const filteredList = filterComics.className === "selected" && filterInput.value
-      ? fullList.filter(c => (new Date(c.date)).getFullYear() &&
-        c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1)
-      : fullList.filter(c => (new Date(c.date)).getFullYear());
-      //.filter(c => (entity === "characters" && c.characters.length) || (entity === "creators" && c.creators.length));
-
     renderHistogram(
       selectedNode ? nodeHistogram : fullHistogram,
       selectedNode,
-      filteredList
+      comics
     );
 
-    if (filteredList.length) {
-      comicsTitle.innerHTML = formatNumber(filteredList.length) + " comic" + (filteredList.length > 1 ? "s" : "");
+    if (comics.length) {
+      comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
       if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
       comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
 
@@ -1032,12 +1033,12 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
     }
 
     setTimeout(() => {
-      comicsList.innerHTML = filteredList.length
-        ? filteredList.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
+      comicsList.innerHTML = comics.length
+        ? comics.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
         : "No comic-book found.";
       minComicLiHeight = 100;
-      filteredList.forEach(c => {
+      comics.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
         minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
         comicLi.comic = c;
@@ -1640,7 +1641,7 @@ function buildLegendItem(year, ref = "") {
 }
 
 function buildHistogram(node, comics) {
-  if (histograms[entity][node])
+  if (histograms[entity][node] && !comics)
     return histograms[entity][node];
   const histo = {
     values: new Array(totalYears).fill(0),
@@ -1650,13 +1651,13 @@ function buildHistogram(node, comics) {
   };
   (comics || getNodeComics(node)).forEach(c => {
     const comicYear = (new Date(c.date)).getFullYear();
-    if (!comicYear) return;
     histo.values[comicYear - startYear] += 1;
     histo.start = Math.min(histo.start, comicYear);
     histo.end = Math.max(histo.end, comicYear);
     histo.sum += 1
   });
-  histograms[entity][node] = histo;
+  if (!comics)
+    histograms[entity][node] = histo;
   return histo;
 }
 
@@ -1669,6 +1670,7 @@ function renderHistogram(element, node = null, comics = null) {
 
   fullHistogram.innerHTML = "";
   nodeHistogram.innerHTML = "";
+  comicsHistogram.innerHTML = "";
   let histogramDiv = '';
   if (!comicsBarView)
     histogramDiv += '<div id="histogram-title">' + formatNumber(histogram.sum) + " comics between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end + '</div>';
@@ -1700,13 +1702,13 @@ function renderHistogram(element, node = null, comics = null) {
     else if (y - 12 > histogram.start)
       histogramDiv += buildLegendItem(y);
     else if (y === histogram.start)
-      histogramDiv += buildLegendItem(histogram.start, node === null ? "" : "start");
+      histogramDiv += buildLegendItem(histogram.start,
+        node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
   (comicsBarView ? comicsHistogram : element).innerHTML = histogramDiv;
 
-  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement,
-    leftPos = (comicsBarView ? comicsHistogram : element).getBoundingClientRect().x;
+  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
     bar.onmouseenter = (e) => {
       const tooltip = bar.getAttribute("tooltip");
@@ -1715,7 +1717,9 @@ function renderHistogram(element, node = null, comics = null) {
       histoTooltip.innerHTML = bar.getAttribute("tooltip");
       histoTooltip.style.display = "inline-block";
       const dims = bar.getBoundingClientRect(),
-        tooltipWidth = divWidth("histogram-tooltip");
+        tooltipWidth = divWidth("histogram-tooltip"),
+        leftPos = (comicsBarView ? comicsHistogram : element).getBoundingClientRect().x,
+        maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar");
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
     };
