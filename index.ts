@@ -2,8 +2,7 @@
 - reorga dossiers
 - better tooltips toggles:
   - use debounce
-  - adjust text search a character/creator
-  - change tooltip on selected toggle
+  - change tooltip on selected toggle and selected search
 - add talk marvel to helptext
 - test large histogram
 - better handle touch on histogram
@@ -1312,7 +1311,8 @@ switchNodeView.onchange = (event) => {
       ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
       (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
     ) return clearTooltip(e);
-    globalTooltip.innerHTML = tooltip.replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
+    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity)
+      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
     globalTooltip.style.display = "inline-block";
     const dims = globalTooltip.getBoundingClientRect();
     globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
