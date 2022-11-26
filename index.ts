@@ -1,7 +1,12 @@
 /* TODO:
 - reorga dossiers
+- better tooltips toggles:
+  - use debounce
+  - adjust text search a character/creator
+  - change tooltip on selected toggle
+- add talk marvel to helptext
+- test large histogram
 - better handle touch on histogram
-- make real tooltips on toggles?
 - uniformize class action buttons/sigma
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - handle mobile darkmodes diffs? cf branch nightmode
@@ -39,6 +44,8 @@ import { Sigma } from "./sigma.js";
 import { Coordinates } from "./sigma.js/types";
 import {
   logDebug,
+  hasClass, addClass, rmClass, switchClass,
+  clearTooltip,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
@@ -140,6 +147,8 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   sortDate = document.getElementById("comics-sort-date") as HTMLButtonElement,
   sideBar = document.getElementById("sidebar") as HTMLImageElement,
   explanations = document.getElementById("explanations") as HTMLElement,
+  viewNodeButton = document.getElementById("view-node") as HTMLElement,
+  viewComicsButton = document.getElementById("view-comics") as HTMLElement,
   viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
   orderSpan = document.getElementById("order") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
@@ -172,6 +181,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   switchFilterLabel = document.getElementById("switch-filter") as HTMLInputElement,
   switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
   switchViewLabel = document.getElementById("switch-view") as HTMLInputElement,
+  globalTooltip = document.getElementById("tooltip") as HTMLElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
@@ -364,11 +374,13 @@ function buildComics(comicsData) {
     },
     complete: function() {
       comicsReady = true;
-      viewAllComicsButton.style.display = "block";
-      renderHistogram(fullHistogram);
-      resize(true);
       if (selectedNode)
-        addViewComicsButton(selectedNode);
+        setViewComicsButton(selectedNode);
+      else {
+        renderHistogram(fullHistogram);
+        showViewComicsButton();
+      }
+      resize(true);
       ["creators", "characters"].forEach(e =>
         ["main", "most"].forEach(s => loadNetwork(e, s))
       );
@@ -563,20 +575,19 @@ function renderNetwork(shouldComicsBarView) {
       } else unselectComic();
     }
     hideLoader();
+    enableSwitchButtons();
   }
 
   const sigmaWidth = divWidth("sigma-container");
   function finalizeGraph() {
     renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
     // If a node is selected we refocus it
-    if (selectedNodeLabel && selectedNodeType !== entity) {
-      loadNetwork(selectedNodeType, "most", () => {
+    if (selectedNodeLabel && selectedNodeType !== entity)
+      return loadNetwork(selectedNodeType, "most", () => {
         showCanvases();
         clickNode(networks[selectedNodeType].most.graph.findNode((n, {label}) => label === selectedNodeLabel), false, true);
         conditionalOpenComicsBar();
       }, true);
-      return;
-    }
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
       : null;
@@ -588,7 +599,7 @@ function renderNetwork(shouldComicsBarView) {
       showCanvases();
       camera.animate(
         {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
-        {duration: 50}
+        {duration: 0}
       );
       clickNode(null, false, true);
       conditionalOpenComicsBar();
@@ -612,10 +623,7 @@ function renderNetwork(shouldComicsBarView) {
         // Load comics data after first network rendered
         if (comicsReady === null) {
           comicsReady = false;
-          setTimeout(
-            loadComics,
-            comicsBarView || (selectedNodeLabel && selectedNodeType !== entity) ? 50 : 2000
-          );
+          setTimeout(loadComics, 50);
         }
       }
     ), 50);
@@ -842,7 +850,7 @@ function clickNode(node, updateURL = true, center = false) {
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
   if (comicsReady)
-    addViewComicsButton(node);
+    setViewComicsButton(node);
 
     const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
   if (!comicsBarView || !(selectedComic && comicEntities && comicEntities.indexOf(node) !== -1)) {
@@ -946,7 +954,7 @@ function getNodeComics(node) {
   const comicsList = node === null
     ? allComics
     : charactersComics[node] || creatorsComics[node] || [];
-  if (filterComics.className === "selected" && filterInput.value)
+  if (hasClass(filterComics, "selected") && filterInput.value)
     return comicsList.filter(
       c => c.title.toLowerCase().indexOf(filterInput.value.toLowerCase()) !== -1
     );
@@ -1036,7 +1044,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       comicsList.innerHTML = comics.length
         ? comics.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")
-        : "No comic-book found.";
+        : "<b>no comic-book found</b>";
       minComicLiHeight = 100;
       comics.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
@@ -1058,8 +1066,11 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   }, 200);
 }
 
-viewAllComicsButton.onclick =
-  () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+viewAllComicsButton.onclick = () => {
+  addClass(viewAllComicsButton, "hidden");
+  fullHistogram.style.display = "none";
+  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+};
 document.getElementById("close-bar").onclick =
   () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
 
@@ -1081,7 +1092,7 @@ function unselectComic() {
   selectComic("", true);
   clearComicDetails();
   document.querySelectorAll("#comics-list li.selected").forEach(
-    el => el.className = ""
+    el => rmClass(el, "selected")
   );
   if (selectedNode)
     clickNode(selectedNode, false, true);
@@ -1100,11 +1111,11 @@ function selectComic(comic, keep = false, autoReselect = false) {
   if (keep) {
     selectedComic = comic;
     document.querySelectorAll("#comics-list li.selected").forEach(
-      el => el.className = ""
+      el => rmClass(el, "selected")
     );
     const comicLi = document.getElementById("comic-" + (comic ? comic.id : ""));
     if (comicLi) {
-      comicLi.className = "selected";
+      addClass(comicLi, "selected");
       comicsCache.style.display = "block";
       modalPrev.style.opacity = comicLi.previousElementSibling === null ? "0" : "1";
       modalNext.style.opacity = comicLi.nextElementSibling === null ? "0" : "1";
@@ -1216,7 +1227,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
 }
 
 // Random node button
-document.getElementById("view-node").onclick = () => {
+viewNodeButton.onclick = () => {
   const graph = networks[entity][networkSize].graph;
   if (!graph || !renderer)
     return;
@@ -1256,23 +1267,61 @@ regScreenBtn.onclick = () => {
 };
 
 // Network switch buttons
+function disableSwitchButtons() {
+  switchNodeType.disabled = true;
+  switchNodeFilter.disabled = true;
+  switchNodeView.disabled = true;
+  (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+    el => addClass(el, "selected")
+  );
+}
+
+function enableSwitchButtons() {
+  switchNodeType.disabled = false;
+  switchNodeFilter.disabled = false;
+  switchNodeView.disabled = false;
+  (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+    el => rmClass(el, "selected")
+  );
+}
+
 switchNodeType.onchange = (event) => {
+  disableSwitchButtons();
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
   setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeFilter.onchange = (event) => {
+  disableSwitchButtons();
   const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
   setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeView.onchange = (event) => {
+  disableSwitchButtons();
   const target = event.target as HTMLInputElement;
   setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
+(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
+  element.onmouseenter = e => {
+    const tooltip = element.getAttribute("tooltip");
+    if (!tooltip ||
+      ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
+      (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
+    ) return clearTooltip(e);
+    globalTooltip.innerHTML = tooltip.replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
+    globalTooltip.style.display = "inline-block";
+    const dims = globalTooltip.getBoundingClientRect();
+    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
+    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
+  };
+  element.onmousemove = element.onmouseenter;
+  element.onmouseleave = clearTooltip;
+});
+document.onclick = clearTooltip;
 
 /* -- Interface display -- */
 
@@ -1307,8 +1356,9 @@ function defaultSidebar() {
 }
 
 function hideComicsBar() {
-  if (filterComics.className === "selected") {
-    filterComics.className = "";
+  if (hasClass(filterComics, "selected")) {
+    rmClass(filterComics, "selected");
+    filterComics.setAttribute("tooltip", "Search comics")
     filterSearch.style.display = "none";
     renderHistogram(
       selectedNode ? nodeHistogram : fullHistogram,
@@ -1320,30 +1370,41 @@ function hideComicsBar() {
   comicsBar.style.transform = "scaleX(0)";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
-  resize(true);
   showViewComicsButton();
+  rmClass(viewComicsButton, "hidden");
+  rmClass(viewAllComicsButton, "hidden");
   unselectComic();
   selectedComic = null;
   if (entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
 }
 
-function addViewComicsButton(node) {
-  nodeExtra.innerHTML += '<p id="view-comics"' + (comicsBarView ? ' class="view-comics-selected"': '') + '><span>Explore comics</span></p>';
-  document.getElementById('view-comics').onclick = () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+function setViewComicsButton(node) {
+  switchClass(viewComicsButton, "hidden", comicsBarView);
+  viewComicsButton.onclick = () => {
+    addClass(viewComicsButton, "hidden");
+    nodeHistogram.style.display = "none";
+    setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+  };
   renderHistogram(nodeHistogram, node);
 }
 
 function showViewComicsButton() {
-  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
-    el => el.className = ""
-  );
+  switchClass(viewComicsButton, "hidden", !comicsReady || comicsBarView);
+  switchClass(viewAllComicsButton, "hidden", !comicsReady || comicsBarView);
+  if (!comicsBarView) {
+    nodeHistogram.style.display = "block";
+    fullHistogram.style.display = "block";
+  }
+  resize(true);
 }
 
 function hideViewComicsButton() {
-  (document.querySelectorAll('#view-comics, #view-all-comics') as NodeListOf<HTMLElement>).forEach(
-    el => el.className = "view-comics-selected"
-  );
+  addClass(viewComicsButton, "hidden");
+  addClass(viewAllComicsButton, "hidden");
+  nodeHistogram.style.display = "none";
+  fullHistogram.style.display = "none";
+  resize(true);
 }
 
 // Help Box
@@ -1488,12 +1549,14 @@ function refreshFilter() {
 }
 
 filterComics.onclick = () => {
-  if (filterComics.className === "selected") {
-    filterComics.className = "";
+  if (hasClass(filterComics, "selected")) {
+    rmClass(filterComics, "selected");
+    filterComics.setAttribute("tooltip", "Search comics");
     filterSearch.style.display = "none";
   } else {
+    addClass(filterComics, "selected");
+    filterComics.setAttribute("tooltip", "Clear comics filter");
     filterSearch.style.display = "block";
-    filterComics.className = "selected";
   }
   resize(true);
   if (filterInput.value)
@@ -1710,11 +1773,11 @@ function renderHistogram(element, node = null, comics = null) {
 
   const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
-    bar.onmouseenter = (e) => {
+    bar.onmouseenter = e => {
       const tooltip = bar.getAttribute("tooltip");
       if (!tooltip)
-        return clearTooltip();
-      histoTooltip.innerHTML = bar.getAttribute("tooltip");
+        return clearTooltip(e, "histogram-tooltip");
+      histoTooltip.innerHTML = tooltip;
       histoTooltip.style.display = "inline-block";
       const dims = bar.getBoundingClientRect(),
         tooltipWidth = divWidth("histogram-tooltip"),
@@ -1723,19 +1786,9 @@ function renderHistogram(element, node = null, comics = null) {
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
     };
-    bar.ontouchstart = (e) => bar.onmouseenter;
   });
-  document.getElementById("histogram-hover").onmouseleave = clearTooltip;
-  document.getElementById("histogram-hover").ontouchend = clearTooltip;
+  document.getElementById("histogram-hover").onmouseleave = e => clearTooltip(e, "histogram-tooltip");
 }
-
-function clearTooltip() {
-  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
-  histoTooltip.innerHTML = "";
-  histoTooltip.style.display = "none";
-};
-
-
 
 
 /* -- Responsiveness handling -- */
@@ -1746,12 +1799,12 @@ function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
   const graph = entity ? networks[entity][networkSize].graph : null,
-    freeHeight = divHeight("sidebar") - divHeight("header") - divHeight("choices") - divHeight("credits") - 1;
+    freeHeight = (divHeight("sidebar") - divHeight("header") - divHeight("choices") - divHeight("credits") - 1) + "px";
   explanations.style.opacity = "1"
-  explanations.style.height = freeHeight + "px";
-  explanations.style["min-height"] = freeHeight + "px";
-  nodeDetails.style.height = freeHeight + "px";
-  nodeDetails.style["min-height"] = freeHeight + "px";
+  explanations.style.height = freeHeight;
+  explanations.style["min-height"] = freeHeight;
+  nodeDetails.style.height = freeHeight;
+  nodeDetails.style["min-height"] = freeHeight;
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
   const comicsDims = comicsDiv.getBoundingClientRect();
@@ -1782,7 +1835,7 @@ window.onresize = () => {
 
 function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = "date") {
   const opts = [];
-  if (sel !== null && !(ent === selType && !networks[ent][siz].graph.findNode((node, {label}) => label === sel)))
+  if (sel !== null && !(ent === selType && !(networks[ent][siz].graph && networks[ent][siz].graph.findNode((node, {label}) => label === sel))))
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
   if (comics !== null) {
     opts.push("comics" + (comics ? "=" + comics.id : ""));
@@ -1829,8 +1882,15 @@ function readURL() {
     shouldComicsBarView = opts["comics"] !== undefined;
   selectedComic = shouldComicsBarView ? allComicsMap[opts["comics"]] || opts["comics"] || "" : null;
   sortComics = opts["sort"] || "date";
-  sortDate.disabled = sortComics === "date";
-  sortAlpha.disabled = sortComics === "alpha";
+  switchClass(sortDate, "selected", sortComics === "date");
+  switchClass(sortAlpha, "selected", sortComics === "alpha");
+  if (sortComics === "date") {
+    sortDate.setAttribute("tooltip", "Comics are ordered by 'publication date'");
+    sortAlpha.setAttribute("tooltip", "Sort comics by 'title&nbsp;&amp;&nbsp;issue number'");
+  } else {
+    sortDate.setAttribute("tooltip", "Sort comics by 'publication date'");
+    sortAlpha.setAttribute("tooltip", "Comics are ordered by 'title and issue number'");
+  }
   const dispc = selectedComic !== oldComic || sortComics !== oldSort;
 
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
@@ -1923,6 +1983,7 @@ function readURL() {
         else if (graph && selectedNode)
           clickNode(selectedNode, false);
         else hideLoader();
+        enableSwitchButtons();
       }, 10);
     }
   } else if (clickn) {
@@ -1948,6 +2009,7 @@ function readURL() {
 /* -- Init app -- */
 
 // Collect algo's metadata to feed explanations
+disableSwitchButtons();
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confData) => {

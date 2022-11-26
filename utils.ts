@@ -4,6 +4,40 @@ function logDebug(action, vars = {}) {
   if (DEBUG)
     console.log(" -> " + action, vars);
 }
+
+function hasClass(element, clss) {
+  const classes = new Set(element.className.split(/\s+/));
+  return classes.has(clss);
+}
+
+function addClass(element, clss) {
+  const classes = new Set(element.className.split(/\s+/));
+  classes.add(clss);
+  element.className = Array.from(classes).join(" ");
+}
+
+function rmClass(element, clss) {
+  const classes = new Set(element.className.split(/\s+/));
+  if (classes.has(clss))
+    classes.delete(clss);
+  element.className = Array.from(classes).join(" ");
+}
+
+function switchClass(element, clss, condition) {
+  const classes = new Set(element.className.split(/\s+/));
+  if (classes.has(clss))
+    classes.delete(clss);
+  if (condition)
+    classes.add(clss);
+  element.className = Array.from(classes).join(" ");
+}
+
+function clearTooltip(e, tooltipId="tooltip") {
+  const tooltip = document.getElementById(tooltipId) as HTMLElement;
+  tooltip.innerHTML = "";
+  tooltip.style.display = "none";
+};
+
 function formatNumber(x) {
   return (x + "")
     .replace(/(.)(.{3})$/, '<span class="shifted">$1</span>$2');
@@ -85,6 +119,8 @@ function uncompress(compressed, method, callback) {
 
 export {
   logDebug,
+  hasClass, addClass, rmClass, switchClass,
+  clearTooltip,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,

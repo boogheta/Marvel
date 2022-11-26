@@ -3,6 +3,15 @@
   --marvel-red-light: #ff4f56;
   --marvel-red-dark: #ba0000;
 }
+.red {
+  color: var(--marvel-red);
+}
+.lightred {
+  color: var(--marvel-red-light);
+}
+.hidden {
+  display: none!important;
+}
 
 @font-face {
   font-family: "ImpactLoad";
@@ -29,6 +38,22 @@ input[type="search"]::selection {
 }
 input[type="search"]::-moz-selection {
   background-color: #AAA;
+}
+
+#tooltip {
+  display: none;
+  position: fixed;
+  background-color: #555;
+  border: 1px solid #777;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  z-index: 25;
+  min-width: 100px;
+  max-width: 170px;
+  text-align: center;
 }
 
 #header {
@@ -65,9 +90,6 @@ h2 {
 #title {
   display: inline;
 }
-.red {
-  color: var(--marvel-red);
-}
 #node-label {
   display: none;
 }
@@ -96,6 +118,17 @@ h5 {
 }
 #sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
   color: #af4f4f;
+}
+#sidebar .selected {
+  opacity: 0.35;
+  cursor: progress;
+  -webkit-transition: 0.35s ease-in-out;
+  -moz-transition: 0.35s ease-in-out;
+  -o-transition: 0.35s ease-in-out;
+  transition: 0.35s ease-in-out;
+}
+#sidebar .selected.left, #sidebar .selected.right {
+  opacity: 1;
 }
 #comics-bar {
   position: absolute;
@@ -219,6 +252,13 @@ h5 {
   border: 2px solid #555;
   border-radius: 5px;
 }
+#comics-actions button.selected, #modal-actions button.selected {
+  background: var(--marvel-red-light);
+  border: 2px solid #222;
+}
+#comics-actions button.sort-button.selected {
+  cursor: default;
+}
 #comics-actions button img {
   width: 24px;
   height: 24px;
@@ -228,19 +268,6 @@ h5 {
   width: 26px;
   height: 26px;
   margin: 2px 0px 0px 1px;
-}
-#comics-actions button:disabled {
-  opacity: 0.2;
-  cursor: default;
-  border: 2px solid #222;
-}
-#comics-actions button.sort-button:disabled {
-  opacity: 1;
-  background: var(--marvel-red-light);
-}
-#comics-actions button.selected, #modal-actions button.selected {
-  background: var(--marvel-red-light);
-  border: 2px solid #222;
 }
 #filter-comics {
   display: none;
@@ -420,18 +447,9 @@ h5 {
   margin: 20px 0 20px 0!important;
   text-transform: uppercase;
   line-height: 20px;
-  -webkit-transition: 0.25s ease-in-out;
-  -moz-transition: 0.25s ease-in-out;
-  -o-transition: 0.25s ease-in-out;
-  transition: 0.25s ease-in-out;
 }
 #view-all-comics {
-  display: none;
   padding-top: 5px;
-}
-.view-comics-selected {
-  opacity: 0.15;
-  cursor: default!important;
 }
 #view-comics > span, #view-node > span, #view-all-comics span {
   width: 170px;
@@ -748,6 +766,10 @@ label {
   font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .left, .right{
   width: 50%;
@@ -755,6 +777,9 @@ label {
 }
 [type="checkbox"] {
   display: none;
+}
+[type="checkbox"]:disabled+label {
+  cursor: progress;
 }
 /* Toggle */
 [type="checkbox"]:checked + .network-switch-label .toggle {
