@@ -839,8 +839,8 @@ function clickNode(node, updateURL = true, center = false) {
     else if (data.communities[attrs.community])
       nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
   } else
-    nodeExtra.innerHTML += '<p>The size of each node reflects how often ' +
-      'each ' + entity.replace(/s$/, '') + ' is ' +
+    nodeExtra.innerHTML += '<p>The size of the node reflects how often ' +
+      'the ' + entity + ' are ' +
       (nodeEntity === "creators"
         ? "featured in stories authored by"
         : "credited in stories featuring"
@@ -1311,7 +1311,7 @@ switchNodeView.onchange = (event) => {
       ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
       (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
     ) return clearTooltip(e);
-    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity)
+    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
       .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
     globalTooltip.style.display = "inline-block";
     const dims = globalTooltip.getBoundingClientRect();
