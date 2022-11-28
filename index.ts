@@ -1297,14 +1297,16 @@ switchNodeView.onchange = (event) => {
 
 /* -- Interface display -- */
 
-(document.querySelectorAll(".reset-graph") as NodeListOf<HTMLElement>).forEach(
-  el => el.onclick = () => {
+(document.querySelectorAll(".reset-graph") as NodeListOf<HTMLElement>).forEach(el => {
+  el.setAttribute("tooltip", "Reset graph");
+  addClass(el, "tooltip");
+  el.onclick = () => {
     if (!renderer) return;
     hideComicsBar();
     setURL(entity, networkSize, view);
     setTimeout(() => camera.animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 250}), 100);
   }
-);
+});
 
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
