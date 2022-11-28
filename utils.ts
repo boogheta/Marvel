@@ -32,12 +32,6 @@ function switchClass(element, clss, condition) {
   element.className = Array.from(classes).join(" ");
 }
 
-function clearTooltip(e, tooltipId="tooltip") {
-  const tooltip = document.getElementById(tooltipId) as HTMLElement;
-  tooltip.innerHTML = "";
-  tooltip.style.display = "none";
-};
-
 function formatNumber(x) {
   return (x + "")
     .replace(/(.)(.{3})$/, '<span class="shifted">$1</span>$2');
@@ -120,7 +114,6 @@ function uncompress(compressed, method, callback) {
 export {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
-  clearTooltip,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
