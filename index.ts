@@ -1,7 +1,5 @@
 /* TODO:
 - reorga dossiers
-- fix cligning on first load
-- fix empty graph when load on comic with missing info http://localhost:3000/#/main/creators/pictures/?comics=16758
 - better tooltips toggles:
   - use debounce
   - change tooltip on selected toggle and selected search
@@ -416,7 +414,6 @@ function renderNetwork(shouldComicsBarView) {
   sigmaSettings["labelRenderedSizeThreshold"] = ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000;
   sigmaSettings["labelColor"] = view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'};
 
-  container.style.display = "block";
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   if (!renderer) {
@@ -567,7 +564,6 @@ function renderNetwork(shouldComicsBarView) {
   // If a comic is selected we reload the list with it within it
   function conditionalOpenComicsBar() {
     if (shouldComicsBarView) {
-      showCanvases();
       if (!comicsBarView)
         displayComics(selectedNode, true, true);
       else if (selectedComic) {
@@ -592,19 +588,9 @@ function renderNetwork(shouldComicsBarView) {
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
       : null;
-    if (node) {
-      showCanvases();
-      clickNode(node, false, true);
-      conditionalOpenComicsBar();
-    } else {
-      showCanvases();
-      camera.animate(
-        {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
-        {duration: 0}
-      );
-      clickNode(null, false, true);
-      conditionalOpenComicsBar();
-    }
+    showCanvases();
+    clickNode(node, false, true);
+    conditionalOpenComicsBar();
   }
 
   loader.style.opacity = "0.5";
@@ -646,12 +632,14 @@ function centerNode(node, neighbors = null, force = true) {
   if (animation)
     clearTimeout(animation);
   // stop already running centering by requesting an idle animation
-  camera.animate(camera.getState, {duration: 0},
+  if (camera.isAnimated())
+    camera.animate(
+      camera.getState,
+      {duration: 0},
     // then only compute positions to run new centering after a delay to filter out too close calls
-    () => {
-      animation = setTimeout(() => runCentering(node, neighbors, force), 50);
-    }
-  );
+      () => animation = setTimeout(() => runCentering(node, neighbors, force), 50)
+    );
+  else animation = setTimeout(() => runCentering(node, neighbors, force), 0);
 }
 
 function runCentering(node, neighbors = null, force = true) {
