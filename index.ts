@@ -1013,17 +1013,15 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       comics
     );
 
-    if (comics.length) {
-      comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
-      if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
-      comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
+    comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
+    if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
+    comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
 
-      if (selectedNodeLabel && creatorsComics[selectedNode])
-        comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-          .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
-          .join("&nbsp;")
-          .replace(/&nbsp;([^&]+)$/, " or $1");
-    }
+    if (selectedNodeLabel && creatorsComics[selectedNode])
+      comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
+        .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
+        .join("&nbsp;")
+        .replace(/&nbsp;([^&]+)$/, " or $1");
 
     setTimeout(() => {
       comicsList.innerHTML = comics.length
