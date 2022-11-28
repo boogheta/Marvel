@@ -414,7 +414,6 @@ function renderNetwork(shouldComicsBarView) {
   sigmaSettings["labelRenderedSizeThreshold"] = ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000;
   sigmaSettings["labelColor"] = view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'};
 
-  container.style.display = "block";
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   if (!renderer) {
@@ -565,7 +564,6 @@ function renderNetwork(shouldComicsBarView) {
   // If a comic is selected we reload the list with it within it
   function conditionalOpenComicsBar() {
     if (shouldComicsBarView) {
-      showCanvases();
       if (!comicsBarView)
         displayComics(selectedNode, true, true);
       else if (selectedComic) {
@@ -590,19 +588,9 @@ function renderNetwork(shouldComicsBarView) {
     const node = selectedNodeLabel
       ? data.graph.findNode((n, {label}) => label === selectedNodeLabel)
       : null;
-    if (node) {
-      showCanvases();
-      clickNode(node, false, true);
-      conditionalOpenComicsBar();
-    } else {
-      showCanvases();
-      camera.animate(
-        {x: 0.5 + (shift / (2 * sigmaWidth)), y: 0.5, ratio: sigmaWidth / (sigmaWidth - shift)},
-        {duration: 0}
-      );
-      clickNode(null, false, true);
-      conditionalOpenComicsBar();
-    }
+    showCanvases();
+    clickNode(node, false, true);
+    conditionalOpenComicsBar();
   }
 
   loader.style.opacity = "0.5";
@@ -644,12 +632,14 @@ function centerNode(node, neighbors = null, force = true) {
   if (animation)
     clearTimeout(animation);
   // stop already running centering by requesting an idle animation
-  camera.animate(camera.getState, {duration: 0},
+  if (camera.isAnimated())
+    camera.animate(
+      camera.getState,
+      {duration: 0},
     // then only compute positions to run new centering after a delay to filter out too close calls
-    () => {
-      animation = setTimeout(() => runCentering(node, neighbors, force), 50);
-    }
-  );
+      () => animation = setTimeout(() => runCentering(node, neighbors, force), 50)
+    );
+  else animation = setTimeout(() => runCentering(node, neighbors, force), 0);
 }
 
 function runCentering(node, neighbors = null, force = true) {
@@ -1304,26 +1294,17 @@ switchNodeView.onchange = (event) => {
   setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
-(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
-  element.onmouseenter = e => {
-    const tooltip = element.getAttribute("tooltip");
-    if (!tooltip ||
-      ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
-      (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
-    ) return clearTooltip(e);
-    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
-      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
-    globalTooltip.style.display = "inline-block";
-    const dims = globalTooltip.getBoundingClientRect();
-    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
-    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
-  };
-  element.onmousemove = element.onmouseenter;
-  element.onmouseleave = clearTooltip;
-});
-document.onclick = clearTooltip;
 
 /* -- Interface display -- */
+
+(document.querySelectorAll(".reset-graph") as NodeListOf<HTMLElement>).forEach(
+  el => el.onclick = () => {
+    if (!renderer) return;
+    hideComicsBar();
+    setURL(entity, networkSize, view);
+    setTimeout(() => camera.animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 250}), 100);
+  }
+);
 
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
@@ -1426,6 +1407,26 @@ helpBox.onclick = (e) => {
   preventClick = true;
 }
 document.getElementById("close-help").onclick = helpModal.onclick;
+
+// Handle tooltips
+(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
+  element.onmouseenter = e => {
+    const tooltip = element.getAttribute("tooltip");
+    if (!tooltip ||
+      ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
+      (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
+    ) return clearTooltip(e);
+    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
+      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
+    globalTooltip.style.display = "inline-block";
+    const dims = globalTooltip.getBoundingClientRect();
+    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
+    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
+  };
+  element.onmousemove = element.onmouseenter;
+  element.onmouseleave = clearTooltip;
+});
+document.onclick = clearTooltip;
 
 
 /* -- Comics bar interactions -- */
