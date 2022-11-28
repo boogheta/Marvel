@@ -46,14 +46,17 @@ input[type="search"]::-moz-selection {
   background-color: #555;
   border: 1px solid #777;
   border-radius: 4px;
-  padding: 2px 5px;
+  padding: 4px 6px;
   font-size: 12px;
   font-weight: bold;
   color: white;
   z-index: 25;
-  min-width: 100px;
-  max-width: 170px;
+  min-width: 80px;
+  max-width: 200px;
   text-align: center;
+}
+#tooltip span {
+  display: inline-block;
 }
 
 #header {
@@ -441,10 +444,11 @@ h5 {
   background: #2F2F2F;
 }
 #view-comics, #view-node, #view-all-comics {
+  display: inline-block;
   cursor: pointer;
   font-weight: bold;
   font-size: 16px;
-  margin: 20px 0 20px 0!important;
+  margin: 10px 0 10px 0!important;
   text-transform: uppercase;
   line-height: 20px;
 }

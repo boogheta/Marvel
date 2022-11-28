@@ -1,16 +1,10 @@
 /* TODO:
-- reorga dossiers
-- better tooltips toggles:
-  - use debounce
-  - change tooltip on selected toggle and selected search
-- add talk marvel to helptext
-- test large histogram
-- better handle touch on histogram
-- uniformize class action buttons/sigma
+- check touch on histogram & tooltips
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
+- add talk marvel to helptext
+- uniformize class action buttons/sigma
 - handle mobile darkmodes diffs? cf branch nightmode
-- leftover cases of ?comics added without opening sidebar? can't reproduce anymore?
-- add button switchEntity to node-details in alternate "View credited authors/View featured characters" ?
+- reorga dossiers
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -28,13 +22,16 @@
 - update screenshots
 - auto data updates
 IDEAS:
+- test large histogram
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
+- remove most/main switch and only propose most?
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
 - handle alternate phone browsers where sigma does not work, ex Samsung Internet on Android 8
 - test bipartite network between authors and characters filtered by category of author
+- build data on movies and add a switch
 */
 
 import Papa from "papaparse";
@@ -44,7 +41,6 @@ import { Coordinates } from "./sigma.js/types";
 import {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
-  clearTooltip,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
@@ -510,7 +506,7 @@ function renderNetwork(shouldComicsBarView) {
   feedAllSuggestions();
 
   // Feed all nodes to select for touchscreens
-  selectSuggestions.innerHTML = "<option>Search…</option>" + allSuggestions
+  selectSuggestions.innerHTML = "<option>search…</option>" + allSuggestions
     .map((node) => "<option>" + node.label + "</option>")
     .join("\n");
   selectSuggestions.onchange = () => {
@@ -1017,17 +1013,15 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       comics
     );
 
-    if (comics.length) {
-      comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
-      if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
-      comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
+    comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
+    if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
+    comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
 
-      if (selectedNodeLabel && creatorsComics[selectedNode])
-        comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-          .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
-          .join("&nbsp;")
-          .replace(/&nbsp;([^&]+)$/, " or $1");
-    }
+    if (selectedNodeLabel && creatorsComics[selectedNode])
+      comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
+        .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
+        .join("&nbsp;")
+        .replace(/&nbsp;([^&]+)$/, " or $1");
 
     setTimeout(() => {
       comicsList.innerHTML = comics.length
@@ -1143,7 +1137,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
   comicCreators.innerHTML = (comic.writers.length ? comic.writers : ["-1"])
     .map(x => allCreators[x]
       ? '<li id="creator-' + x + '" ' +
-        (x !== "-1" ? 'class="entity-link" ' : '') +
+        (x !== "-1" ? `class="entity-link tooltip" tooltip="explore the comics authored by '` + allCreators[x] + `'"` : '') +
         'title="writer" ' +
         'style="color: ' + lightenColor(creatorsRoles["writer"]) + '">' +
         allCreators[x] + "</li>"
@@ -1152,7 +1146,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
   comicCreators.innerHTML += (comic.artists.length ? comic.artists : ["-1"])
     .map(x => allCreators[x]
       ? '<li id="creator-' + x + '" ' +
-        (x !== "-1" ? 'class="entity-link" ' : '') +
+        (x !== "-1" ? `class="entity-link tooltip" tooltip="explore the comics authored by '` + allCreators[x] + `'"` : '') +
         'title="artist" ' +
         'style="color: ' + lightenColor(creatorsRoles["artist"]) + '">' +
         allCreators[x] + "</li>"
@@ -1161,7 +1155,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
   comicCharacters.innerHTML = (comic.characters.length ? comic.characters : ["-1"])
     .map(x => allCharacters[x]
       ? '<li id="character-' + x + '" ' +
-        (x !== "-1" ? 'class="entity-link" ' : '') + '>' +
+        (x !== "-1" ? `class="entity-link tooltip" tooltip="explore the comics featuring '` + allCharacters[x] + `'"` : '') + '>' +
         allCharacters[x] + "</li>"
       : ""
     ).join("");
@@ -1176,6 +1170,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
     entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters", selectedComic, sortComics);
   });
+  (document.querySelectorAll(".entity-link") as NodeListOf<HTMLElement>).forEach(element => setupTooltip(element));
 
   renderer.setSetting(
     "nodeReducer", (n, attrs) => comic[entity].indexOf(n) !== -1
@@ -1298,7 +1293,7 @@ switchNodeView.onchange = (event) => {
 /* -- Interface display -- */
 
 (document.querySelectorAll(".reset-graph") as NodeListOf<HTMLElement>).forEach(el => {
-  el.setAttribute("tooltip", "Reset graph");
+  el.setAttribute("tooltip", "reset graph");
   addClass(el, "tooltip");
   el.onclick = () => {
     if (!renderer) return;
@@ -1341,7 +1336,7 @@ function defaultSidebar() {
 function hideComicsBar() {
   if (hasClass(filterComics, "selected")) {
     rmClass(filterComics, "selected");
-    filterComics.setAttribute("tooltip", "Search comics")
+    filterComics.setAttribute("tooltip", "search comics")
     filterSearch.style.display = "none";
     renderHistogram(
       selectedNode ? nodeHistogram : fullHistogram,
@@ -1411,7 +1406,13 @@ helpBox.onclick = (e) => {
 document.getElementById("close-help").onclick = helpModal.onclick;
 
 // Handle tooltips
-(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
+function clearTooltip(e, tooltipId="tooltip") {
+  const tooltip = document.getElementById(tooltipId) as HTMLElement;
+  tooltip.innerHTML = "";
+  tooltip.style.display = "none";
+};
+
+function setupTooltip(element) {
   element.onmouseenter = e => {
     const tooltip = element.getAttribute("tooltip");
     if (!tooltip ||
@@ -1420,15 +1421,18 @@ document.getElementById("close-help").onclick = helpModal.onclick;
       (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
     ) return clearTooltip(e);
     globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
-      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
-    globalTooltip.style.display = "inline-block";
+      .replace(/'([^']+)'/g, (g0, g1) => '<span class="lightred">' + g1.replace(/ /g, '&nbsp;') + '</span>')
+      .replace('in the graph', 'in&nbsp;the&nbsp;graph');
+    globalTooltip.style.display = "block";
     const dims = globalTooltip.getBoundingClientRect();
     globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
     globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
   };
   element.onmousemove = element.onmouseenter;
   element.onmouseleave = clearTooltip;
-});
+}
+
+(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => setupTooltip(element));
 document.onclick = clearTooltip;
 
 
@@ -1555,11 +1559,11 @@ function refreshFilter() {
 filterComics.onclick = () => {
   if (hasClass(filterComics, "selected")) {
     rmClass(filterComics, "selected");
-    filterComics.setAttribute("tooltip", "Search comics");
+    filterComics.setAttribute("tooltip", "search comics");
     filterSearch.style.display = "none";
   } else {
     addClass(filterComics, "selected");
-    filterComics.setAttribute("tooltip", "Clear comics filter");
+    filterComics.setAttribute("tooltip", "clear comics filter");
     filterSearch.style.display = "block";
   }
   resize(true);
@@ -1888,20 +1892,14 @@ function readURL() {
   sortComics = opts["sort"] || "date";
   switchClass(sortDate, "selected", sortComics === "date");
   switchClass(sortAlpha, "selected", sortComics === "alpha");
-  if (sortComics === "date") {
-    sortDate.setAttribute("tooltip", "Comics are ordered by 'publication date'");
-    sortAlpha.setAttribute("tooltip", "Sort comics by 'title&nbsp;&amp;&nbsp;issue number'");
-  } else {
-    sortDate.setAttribute("tooltip", "Sort comics by 'publication date'");
-    sortAlpha.setAttribute("tooltip", "Comics are ordered by 'title and issue number'");
-  }
+
   const dispc = selectedComic !== oldComic || sortComics !== oldSort;
 
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
   const combo = args[0] + " " + args[1];
-  let title = "Marvel's " + combo + " featured together within same&nbsp;comics";
+  let title = "Marvel's " + combo + " " + (args[1] === "creators" ? "credited" : "featured") + " together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === args[1]
       ? "as"
@@ -1964,6 +1962,43 @@ function readURL() {
   view = args[2];
   colorsDetailsSpans.forEach(span => span.style.display = (view === "colors" ? "inline" : "none"));
   picturesDetailsSpans.forEach(span => span.style.display = (view === "pictures" ? "inline" : "none"));
+
+  // Update tooltips
+  viewComicsButton.setAttribute("tooltip",
+    "browse the list of comics listed as " +
+    (selectedNodeLabel === "creators" ? "authored by" : "featuring") +
+    " '" + selectedNodeLabel + "'"
+  );
+  searchInput.setAttribute("tooltip", (selectedNodeLabel
+    ? "change focused 'entity'"
+    : "search a specific 'entity' in the graph")
+  );
+  switchFilterLabel.setAttribute("tooltip", "switch to the '" +
+    (networkSize === "main" ? "complete" : "reduced") +
+    "' version of the network with " +
+    (networkSize === "main" ? "'most" : "only the 'main") +
+    " " + entity + "'"
+  );
+  switchTypeLabel.setAttribute("tooltip", "switch to the network of '" +
+    (entity === "creators" ? "characters" : "creators") + "'" +
+    (!selectedNodeLabel ? "" : " " +
+      (entity === "creators" ? "featured" : "credited") +
+      " in comics " +
+      (selectedNodeType === "creators" ? "from" : "with") +
+      " '" + selectedNodeLabel + "'")
+  );
+  switchViewLabel.setAttribute("tooltip", "switch the " + entity + " aspect to '" +
+    (view === "colors" ? "avatar images" :
+      (entity === "creators" ? "vocation" : "community") + " colors"
+    ) + "'"
+  );
+  if (sortComics === "date") {
+    sortDate.setAttribute("tooltip", "comics are ordered by 'publication date'");
+    sortAlpha.setAttribute("tooltip", "sort comics by 'title &amp; issue number'");
+  } else {
+    sortDate.setAttribute("tooltip", "sort comics by 'publication date'");
+    sortAlpha.setAttribute("tooltip", "comics are ordered by 'title and issue number'");
+  }
 
   const graph = networks[entity][networkSize].graph;
   if (reload) setTimeout(() => {

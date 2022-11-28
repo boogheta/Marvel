@@ -65,51 +65,51 @@
         <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
         <!--<p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p> -->
-        <p id="view-node" class="tooltip" tooltip="Focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
-        <p id="view-all-comics" class="tooltip hidden" tooltip="View all comics and associated creators & characters"><span>Explore all comics</span></p>
+        <p id="view-node" class="tooltip" tooltip="focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
+        <p id="view-all-comics" class="tooltip hidden" tooltip="browse the list of all comics and their associated creators & characters"><span>Explore all comics</span></p>
         <div id="full-histogram"></div>
       </div>
       <div id="node-details" class="sidebar-text">
         <img id="node-img"/>
         <div id="node-extra"></div>
-        <p id="view-comics" class="tooltip hidden" tooltip="View all associated comics"><span>Explore comics</span></p>
+        <p id="view-comics" class="tooltip hidden"><span>Explore comics</span></p>
         <div id="node-histogram"></div>
       </div>
       <div id="choices" class="selected">
         <h5>Explore <span class="large-bar">alternative</span><span class="small-bar">other</span> graphs</h5>
         <div class="network-choice">
           <input type="checkbox" id="node-filter-switch" />
-          <label id="switch-filter" class="network-switch-label" for="node-filter-switch">
+          <label id="switch-filter" class="network-switch-label tooltip" for="node-filter-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left tooltip" tooltip="Switch to the 'reduced' version of the network">main</div>
-              <div class="right tooltip" tooltip="Switch to the 'complete' version of the network">most</div>
+              <div id="size-main" class="left">main</div>
+              <div id="size-most" class="right">most</div>
             </div>
           </label>
         </div>
         <div class="network-choice">
           <input type="checkbox" id="node-type-switch" />
-          <label id="switch-type" class="network-switch-label" for="node-type-switch">
+          <label id="switch-type" class="network-switch-label tooltip" for="node-type-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left tooltip" tooltip="Switch to the network of 'characters'">characters</div>
-              <div class="right tooltip" tooltip="Switch to the network of 'creators'">creators</div>
+              <div id="type-characters" class="left">characters</div>
+              <div id="type-creators" class="right">creators</div>
             </div>
           </label>
         </div>
         <div class="network-choice">
           <input type="checkbox" id="node-view-switch" />
-          <label id="switch-view" class="network-switch-label" for="node-view-switch">
+          <label id="switch-view" class="network-switch-label tooltip" for="node-view-switch">
             <div class="toggle"></div>
             <div class="names">
-              <div class="left tooltip" tooltip="Switch the nodes aspect to 'avatar pictures'">pictures</div>
-              <div class="right tooltip" tooltip="Switch the nodes aspect to 'community colors'">colors</div>
+              <div id="view-pictures" class="left">pictures</div>
+              <div id="view-colors" class="right">colors</div>
             </div>
           </label>
         </div>
       </div>
       <div id="credits">
-        <button id="help" class="tooltip" tooltip="Read more info &amp;&nbsp;explanations">
+        <button id="help" class="tooltip" tooltip="read more info &amp;&nbsp;explanations">
           <span>?</span>
         </button>
         <p>data <span class="large-bar">provided </span>by <a href="https://developer.marvel.com/" target="_blank">MARVEL</a> © 2022</p>
@@ -127,32 +127,32 @@
     <div id="sigma-container" class="sigma-container"></div>
     <div id="controls">
       <div id="sigma-buttons">
-        <button id="regscreen" class="tooltip" tooltip="Reduce to window">
+        <button id="regscreen" class="tooltip" tooltip="reduce to window">
           <img src="./images/exit-fullscreen.svg" alt="exit-fullscreen" />
         </button>
-        <button id="fullscreen" class="tooltip" tooltip="Maximize to full screen">
+        <button id="fullscreen" class="tooltip" tooltip="maximize to full screen">
           <img src="./images/fullscreen.svg" alt="fullscreen" />
         </button>
-        <button id="zoom-out" class="tooltip" tooltip="Zoom out">
+        <button id="zoom-out" class="tooltip" tooltip="zoom out">
           <img src="./images/zoom-out.svg" alt="zoom out" />
         </button>
-        <button id="zoom-in" class="tooltip" tooltip="Zoom in">
+        <button id="zoom-in" class="tooltip" tooltip="zoom in">
           <img src="./images/zoom-in.svg" alt="zoom in" />
         </button>
-        <button id="zoom-reset" class="tooltip" tooltip="Recenter &amp; reset zoom">
+        <button id="zoom-reset" class="tooltip" tooltip="recenter &amp; reset zoom">
           <img src="./images/reset-zoom.svg" alt="reset-zoom" />
         </button>
       </div>
       <div id="search">
-        <input type="search" id="search-input" list="suggestions" placeholder="Search…" class="tooltip" tooltip="Search a specific 'entity' in the graph" />
+        <input type="search" id="search-input" list="suggestions" placeholder="search…" class="tooltip" tooltip="search a specific 'entity' in the graph" />
         <datalist id="suggestions"><option>&nbsp;</option></datalist>
-        <select id="suggestions-select"><option>Search…</option></select>
+        <select id="suggestions-select"><option>search…</option></select>
       </div>
     </div>
     <div id="comics-bar">
       <div id="comics-header">
         <div id="comics-actions">
-          <button id="comics-filter" class="tooltip" tooltip="Search comics">
+          <button id="comics-filter" class="tooltip" tooltip="search comics">
             <img src="./images/search.svg" alt="filter comics" />
           </button>
           <button id="comics-sort-date" class="sort-button tooltip selected">
@@ -161,24 +161,24 @@
           <button id="comics-sort-alpha" class="sort-button tooltip">
             <img src="./images/sort-alpha.svg" alt="sort alphabetically" />
           </button>
-          <button id="comics-prev" class="tooltip" tooltip="Previous comic">
+          <button id="comics-prev" class="tooltip" tooltip="previous comic">
             <img src="./images/left.svg" alt="previous-picture" />
           </button>
-          <button id="comics-play" class="tooltip" tooltip="Start scrolling comics">
+          <button id="comics-play" class="tooltip" tooltip="start scrolling comics">
             <img src="./images/play.svg" alt="play" />
           </button>
-          <button id="comics-pause" class="selected tooltip" tooltip="Stop scrolling comics">
+          <button id="comics-pause" class="selected tooltip" tooltip="stop scrolling comics">
             <img src="./images/pause.svg" alt="pause" />
           </button>
-          <button id="comics-next" class="tooltip" tooltip="Next comic">
+          <button id="comics-next" class="tooltip" tooltip="next comic">
             <img src="./images/right.svg" alt="previous-picture" />
           </button>
-          <button id="close-bar" class="tooltip" tooltip="Close list of&nbsp;comics">
+          <button id="close-bar" class="tooltip" tooltip="close list of&nbsp;comics">
             <img src="./images/close.svg" alt="close-comics-list" />
           </button>
         </div>
         <form id="filter-comics" autocomplete="off">
-          <input type="search" id="filter-input" placeholder="Search…" class="tooltip" tooltip="Filter comics by title" />
+          <input type="search" id="filter-input" placeholder="search…" class="tooltip" tooltip="filter comics by title" />
         </form>
         <h3 id="comics-title"></h3>
         <h3 id="comics-subtitle">
@@ -189,7 +189,7 @@
       </div>
       <div id="comics">
         <ul id="comics-list"></ul>
-        <div id="loader-list" class="tooltip" tooltip="Loading list of comics…"><img src="./images/loader.gif"/></div>
+        <div id="loader-list" class="tooltip" tooltip="loading list of comics…"><img src="./images/loader.gif"/></div>
       </div>
       <div id="comics-cache"></div>
       <div id="comic-details">
@@ -209,26 +209,26 @@
         </div>
       </div>
     </div>
-    <div id="loader" class="loader tooltip" tooltip="Loading network…"><img src="./images/loader.gif"/></div>
-    <div id="loader-comics" class="loader tooltip" tooltip="Loading comics…"><img src="./images/loader.gif"/></div>
+    <div id="loader" class="loader tooltip" tooltip="loading network…"><img src="./images/loader.gif"/></div>
+    <div id="loader-comics" class="loader tooltip" tooltip="loading comics…"><img src="./images/loader.gif"/></div>
     <div id="modal" class="modal">
       <span id="modal-helper"></span>
       <img id="modal-img"/>
       <div id="modal-actions">
-        <button id="modal-previous" class="action-button tooltip" tooltip="Previous comic">
+        <button id="modal-previous" class="action-button tooltip" tooltip="previous comic">
           <img src="./images/left.svg" alt="previous-picture" />
         </button>
-        <button id="modal-play" class="action-button tooltip" tooltip="Start scrolling comics">
+        <button id="modal-play" class="action-button tooltip" tooltip="start scrolling comics">
           <img src="./images/play.svg" alt="play" />
         </button>
-        <button id="modal-pause" class="action-button selected tooltip" tooltip="Stop scrolling comics">
+        <button id="modal-pause" class="action-button selected tooltip" tooltip="stop scrolling comics">
           <img src="./images/pause.svg" alt="pause" />
         </button>
-        <button id="modal-next" class="action-button tooltip" tooltip="Next comic">
+        <button id="modal-next" class="action-button tooltip" tooltip="next comic">
           <img src="./images/right.svg" alt="previous-picture" />
         </button>
       </div>
-      <button id="close-modal" class="action-button close-button tooltip" tooltip="Close picture overlay">
+      <button id="close-modal" class="action-button close-button tooltip" tooltip="close picture overlay">
         <img src="./images/close.svg" alt="close-picture-modal" />
       </button>
     </div>
@@ -261,7 +261,7 @@
         <br/>
         <p>You can find me on Mastodon:&nbsp;<a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter:&nbsp;<a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or&nbsp;<a href="https://github.com/boogheta">GitHub</a>.</p>
       </div>
-      <button id="close-help" class="action-button close-button tooltip" tooltip="Close info box">
+      <button id="close-help" class="action-button close-button tooltip" tooltip="close info box">
         <img src="./images/close.svg" alt="close-help-box" />
       </button>
     </div>
