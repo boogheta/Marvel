@@ -1,5 +1,7 @@
 /* TODO:
 - reorga dossiers
+- fix cligning on first load
+- fix empty graph when load on comic with missing info http://localhost:3000/#/main/creators/pictures/?comics=16758
 - better tooltips toggles:
   - use debounce
   - change tooltip on selected toggle and selected search
@@ -1304,26 +1306,17 @@ switchNodeView.onchange = (event) => {
   setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
-(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
-  element.onmouseenter = e => {
-    const tooltip = element.getAttribute("tooltip");
-    if (!tooltip ||
-      ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
-      (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
-    ) return clearTooltip(e);
-    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
-      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
-    globalTooltip.style.display = "inline-block";
-    const dims = globalTooltip.getBoundingClientRect();
-    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
-    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
-  };
-  element.onmousemove = element.onmouseenter;
-  element.onmouseleave = clearTooltip;
-});
-document.onclick = clearTooltip;
 
 /* -- Interface display -- */
+
+(document.querySelectorAll(".reset-graph") as NodeListOf<HTMLElement>).forEach(
+  el => el.onclick = () => {
+    if (!renderer) return;
+    hideComicsBar();
+    setURL(entity, networkSize, view);
+    setTimeout(() => camera.animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 250}), 100);
+  }
+);
 
 function showCanvases(showClustersLayer = true) {
   (document.querySelectorAll(".sigma-container canvas") as NodeListOf<HTMLElement>).forEach(canvas => canvas.style.display = "block");
@@ -1426,6 +1419,26 @@ helpBox.onclick = (e) => {
   preventClick = true;
 }
 document.getElementById("close-help").onclick = helpModal.onclick;
+
+// Handle tooltips
+(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => {
+  element.onmouseenter = e => {
+    const tooltip = element.getAttribute("tooltip");
+    if (!tooltip ||
+      ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
+      (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
+    ) return clearTooltip(e);
+    globalTooltip.innerHTML = tooltip.replace(/'entity'/g, entity.replace(/s$/, ''))
+      .replace(/'([^']+)'/g, '<span class="lightred">$1</span>');
+    globalTooltip.style.display = "inline-block";
+    const dims = globalTooltip.getBoundingClientRect();
+    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
+    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
+  };
+  element.onmousemove = element.onmouseenter;
+  element.onmouseleave = clearTooltip;
+});
+document.onclick = clearTooltip;
 
 
 /* -- Comics bar interactions -- */
