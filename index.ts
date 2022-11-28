@@ -1415,6 +1415,7 @@ document.getElementById("close-help").onclick = helpModal.onclick;
   element.onmouseenter = e => {
     const tooltip = element.getAttribute("tooltip");
     if (!tooltip ||
+      (hasClass(element, "reset-graph") && !(selectedNode || selectedComic)) ||
       ((element.attributes["type"] || {}).value === "search" && element === document.activeElement) ||
       (hasClass(element, "selected") && element.id.indexOf("comics") !== 0)
     ) return clearTooltip(e);
