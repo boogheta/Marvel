@@ -1,5 +1,5 @@
 /* TODO:
-- check touch on histogram & tooltips
+- handle touch slide on histogram
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - add talk marvel to helptext
 - uniformize class action buttons/sigma
@@ -732,6 +732,7 @@ function clickNode(node, updateURL = true, center = false) {
     if (data.graph.hasNode(selectedNode))
       data.graph.setNodeAttribute(selectedNode, "highlighted", false)
   }
+  stopPlayComics();
 
   if (!node || !sameNode) {
     nodeImg.src = "";
@@ -2003,6 +2004,7 @@ function readURL() {
   const graph = networks[entity][networkSize].graph;
   if (reload) setTimeout(() => {
     // If graph already loaded, just render it
+    stopPlayComics();
     if (graph)
       renderNetwork(shouldComicsBarView);
     // Otherwise load network file
@@ -2026,6 +2028,7 @@ function readURL() {
       }, 10);
     }
   } else if (clickn) {
+    stopPlayComics();
     let network = networks[entity][networkSize];
     if (selectedNodeType !== entity) {
       loadNetwork(selectedNodeType, "most", () => {
