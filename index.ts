@@ -1,6 +1,5 @@
 /* TODO:
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
-- add talk marvel to helptext
 - uniformize class action buttons/sigma
 - handle mobile darkmodes diffs? cf branch nightmode
 - reorga dossiers
