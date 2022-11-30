@@ -1,5 +1,4 @@
 /* TODO:
-- handle touch slide on histogram
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - add talk marvel to helptext
 - uniformize class action buttons/sigma
@@ -26,6 +25,7 @@ IDEAS:
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
 - remove most/main switch and only propose most?
+- remove colors/avatars switch and use node borders with sigma3 instead?
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
@@ -1425,16 +1425,26 @@ function setupTooltip(element) {
       .replace(/'([^']+)'/g, (g0, g1) => '<span class="lightred">' + g1.replace(/ /g, '&nbsp;') + '</span>')
       .replace('in the graph', 'in&nbsp;the&nbsp;graph');
     globalTooltip.style.display = "block";
-    const dims = globalTooltip.getBoundingClientRect();
-    globalTooltip.style.top = e.clientY + (e.clientY < 100 ? 25 : -dims.height - 15) + "px";
-    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, e.clientX - dims.width / 2)) + "px";
+    const dims = globalTooltip.getBoundingClientRect(),
+      clientX = e.touches ? e.touches[0].clientX : e.clientX,
+      clientY = e.touches ? e.touches[0].clientY : e.clientY,
+      pos = {
+        x: e.touches && clientY < 100 ?
+          clientX + (clientX > 250 ? -dims.width - 50 : 50) :
+          clientX - dims.width / 2,
+        y: clientY + (clientY < 100 ? (e.touches ? -dims.height / -dims.height / 2 : 25) : -dims.height - (e.touches ? 40 : 15))
+      };
+    globalTooltip.style.top = pos.y + "px";
+    globalTooltip.style.left = Math.min(window.innerWidth - dims.width, Math.max(0, pos.x)) + "px";
   };
   element.onmousemove = element.onmouseenter;
   element.onmouseleave = clearTooltip;
+  element.ontouchstart = element.onmouseenter;
 }
 
 (document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => setupTooltip(element));
 document.onclick = clearTooltip;
+document.ontouchend = clearTooltip;
 
 
 /* -- Comics bar interactions -- */
@@ -1631,11 +1641,18 @@ function touchStart(e) {
   touches.x[0] = e.changedTouches[0].screenX;
   touches.y[0] = e.changedTouches[0].screenY;
 };
+function addTouchStart(el) {
+  const existing = el.ontouchstart;
+  el.ontouchstart(e => {
+    existing && existing(e);
+    touchStart(e);
+  });
+}
 modal.ontouchstart = touchStart;
 comicImg.ontouchstart = touchStart;
-switchTypeLabel.ontouchstart = touchStart;
-switchViewLabel.ontouchstart = touchStart;
-switchFilterLabel.ontouchstart = touchStart;
+addTouchStart(switchTypeLabel);
+addTouchStart(switchViewLabel);
+addTouchStart(switchFilterLabel);
 
 function touchEnd(e, threshold = 100) {
   touches.x[1] = e.changedTouches[0].screenX;
@@ -1795,8 +1812,28 @@ function renderHistogram(element, node = null, comics = null) {
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
     };
+    bar.ontouchstart = e => {
+      e.preventDefault();
+      document.querySelectorAll(".histobar-hover.highlighted").forEach(b => rmClass(b, "highlighted"));
+      const touch = e.touches[0];
+      if (!touch) return;
+      const x = touch.clientX,
+        y = touch.clientY;
+      (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(b => {
+        const bDims = b.getBoundingClientRect();
+        if (
+          x >= bDims.left && x <= bDims.right &&
+          y >= bDims.top  && y <= bDims.bottom
+        ) {
+          addClass(b, "highlighted");
+          b.onmouseenter(e as any);
+        }
+      });
+    };
+    bar.ontouchmove = bar.ontouchstart;
   });
   document.getElementById("histogram-hover").onmouseleave = e => clearTooltip(e, "histogram-tooltip");
+  sideBar.ontouchstart = e => clearTooltip(e, "histogram-tooltip");
 }
 
 
