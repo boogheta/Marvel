@@ -1,6 +1,11 @@
 /* TODO:
+- mobiles fix:
+  - forbid text selection
+  - multiple clicks on toggles when touch
+  - touchmove should follow across tooltips like histogram's
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
+- reorder css
 - handle mobile darkmodes diffs? cf branch nightmode
 - reorga dossiers
 - check bad data marvel :
@@ -11,7 +16,7 @@
  => scraper comics as counter-truth? :
   - select good creators fields
   - take from scraping good image url if /clean within (example https://www.marvel.com/comics/issue/51567/captain_britain_and_the_mighty_defenders_2015_1)
-  - handle missing dates?
+  - handle or drop missing dates?
   - rebuild characters network from comics instead of stories, ex: Silk
   - rebuild creators network from cleaned comics instead
   - filter imprint marvel
@@ -20,11 +25,11 @@
 - update screenshots
 - auto data updates
 IDEAS:
+- remove most/main switch and only propose most?
+- remove colors/avatars switch and use node borders with sigma3 instead?
 - test large histogram
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
-- remove most/main switch and only propose most?
-- remove colors/avatars switch and use node borders with sigma3 instead?
 - install app button?
 - swipe images with actual slide effect?
 - handle old browsers where nodeImages are full black (ex: old iPad)
@@ -44,7 +49,7 @@ import {
   lightenColor,
   meanArray,
   divWidth, divHeight,
-  webGLSupport,
+  isTouchDevice, webGLSupport,
   rotatePosition,
   uncompress
 } from "./utils";
@@ -1414,6 +1419,7 @@ function clearTooltip(e, tooltipId="tooltip") {
 
 function setupTooltip(element) {
   element.onmouseenter = e => {
+    if (isTouchDevice() && !e.touches) return;
     const tooltip = element.getAttribute("tooltip");
     if (!tooltip ||
       (hasClass(element, "reset-graph") && !(selectedNode || selectedComic)) ||

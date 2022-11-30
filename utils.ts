@@ -75,6 +75,12 @@ function divHeight(divId) {
   return document.getElementById(divId).getBoundingClientRect().height;
 }
 
+function isTouchDevice() {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0) ||
+     (navigator["msMaxTouchPoints"] > 0));
+}
+
 function webGLSupport() {
   try {
    var canvas = document.createElement('canvas');
@@ -118,7 +124,7 @@ export {
   lightenColor,
   meanArray,
   divWidth, divHeight,
-  webGLSupport,
+  isTouchDevice, webGLSupport,
   rotatePosition,
   uncompress
 };
