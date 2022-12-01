@@ -1,6 +1,6 @@
 /* TODO:
 - mobiles fix:
-  - forbid text selection
+  - simple touch on histogram does not trigger
   - multiple clicks on toggles when touch
   - touchmove should follow across tooltips like histogram's
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
