@@ -1,6 +1,5 @@
 /* TODO:
 - mobiles fix:
-  - simple touch on histogram does not trigger
   - multiple clicks on toggles when touch
   - touchmove should follow across tooltips like histogram's
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
@@ -1175,7 +1174,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
     entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters", selectedComic, sortComics);
   });
-  (document.querySelectorAll(".entity-link") as NodeListOf<HTMLElement>).forEach(element => setupTooltip(element));
+  (document.querySelectorAll(".entity-link") as NodeListOf<HTMLElement>).forEach(setupTooltip);
 
   renderer.setSetting(
     "nodeReducer", (n, attrs) => comic[entity].indexOf(n) !== -1
@@ -1447,7 +1446,7 @@ function setupTooltip(element) {
   element.ontouchstart = element.onmouseenter;
 }
 
-(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(element => setupTooltip(element));
+(document.querySelectorAll(".tooltip") as NodeListOf<HTMLElement>).forEach(setupTooltip);
 document.onclick = clearTooltip;
 document.ontouchend = clearTooltip;
 
@@ -1649,8 +1648,8 @@ function touchStart(e) {
 function addTouchStart(el) {
   const existing = el.ontouchstart;
   el.ontouchstart(e => {
-    existing && existing(e);
     touchStart(e);
+    existing && existing(e);
   });
 }
 modal.ontouchstart = touchStart;
@@ -1838,7 +1837,21 @@ function renderHistogram(element, node = null, comics = null) {
     bar.ontouchmove = bar.ontouchstart;
   });
   document.getElementById("histogram-hover").onmouseleave = e => clearTooltip(e, "histogram-tooltip");
-  sideBar.ontouchstart = e => clearTooltip(e, "histogram-tooltip");
+  sideBar.ontouchstart = e => {
+    const touch = (e.touches || e.changedTouches)[0];
+    if (!touch) return;
+    const dims = (comicsBarView ? comicsHistogram : element).getBoundingClientRect(),
+      x = touch.clientX,
+      y = touch.clientY;
+    if (
+      x < dims.left || x > dims.right ||
+      y < dims.top  || y > dims.bottom
+    ) {
+      clearTooltip(e, "histogram-tooltip");
+      document.querySelectorAll(".histobar-hover.highlighted").forEach(b => rmClass(b, "highlighted"));
+    }
+  };
+  comicsBar.ontouchstart = sideBar.ontouchstart;
 }
 
 
