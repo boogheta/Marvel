@@ -1018,11 +1018,11 @@ label {
   html, body {
     touch-action: pan-x, pan-y;
   }
-  ::selection {
-    background-color: unset;
-  }
-  ::-moz-selection {
-    background-color: unset;
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   .histobar-hover.highlighted {
     background-color: white;
