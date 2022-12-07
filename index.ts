@@ -1,5 +1,4 @@
 /* TODO:
-- node not selected when reload with also comic selected and alternateentity
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
 - reorder css
@@ -1537,6 +1536,7 @@ modal.onclick = () => {
   if (preventClick) return preventClick = false;
   preventClick = false;
   modal.style.display = "none";
+  modalImgMissing.style.display = "none";
   comicsCache.style.display = "none";
 };
 modalImg.onclick = modal.onclick;
@@ -1606,6 +1606,7 @@ document.onkeydown = function(e) {
     return
   if (modal.style.display === "block" && e.which === 27) {
     modal.style.display = "none";
+    modalImgMissing.style.display = "none";
     comicsCache.style.display = "none";
   } else if (selectedComic) {
     switch(e.which) {
@@ -1773,7 +1774,7 @@ function renderHistogram(element, node = null, comics = null) {
   histogramDiv += '<div id="histogram">';
   histogram.values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar" ' +
-      'style="width: calc(100% / ' + totalYears + '); ' +
+      'style="width: ' + (100 / totalYears) + '%; ' +
         'height: ' + Math.round(y * heightRatio) + 'px">' +
     '</span>'
   );
@@ -1782,7 +1783,7 @@ function renderHistogram(element, node = null, comics = null) {
   histogram.values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar-hover" tooltip="' +
       (y ? y + '&nbsp;comic' + (y > 1 ? 's' : '') + '&nbsp;in&nbsp;' : '') + (startYear + idx) + '" ' +
-      'style="width: calc(100% / ' + totalYears + ')">' +
+      'style="width: ' + (100 / totalYears) + '%">' +
     '</span>'
   );
 
