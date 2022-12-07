@@ -1,6 +1,4 @@
 /* TODO:
-- mobiles fix:
-  - node selection not updated
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
 - change not found image
@@ -85,6 +83,7 @@ let entity = "",
     creators: {}
   },
   suggestions = [],
+  allSuggestions = [],
   comicsReady = null,
   comicsBarView = false,
   shift = 0,
@@ -502,7 +501,7 @@ function renderNetwork(shouldComicsBarView) {
   }
 
   // Prepare list of nodes for search/select suggestions
-  const allSuggestions = data.graph.nodes()
+  allSuggestions = data.graph.nodes()
     .map((node) => ({
       node: node,
       label: data.graph.getNodeAttribute(node, "label")
@@ -846,7 +845,9 @@ function clickNode(node, updateURL = true, center = false) {
   if (comicsReady)
     setViewComicsButton(node);
 
-    const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
+  selectSuggestions.selectedIndex = allSuggestions.map(x => x.label).indexOf(selectedNodeLabel) + 1;
+
+  const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
   if (!comicsBarView || !(selectedComic && comicEntities && comicEntities.indexOf(node) !== -1)) {
     renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     if (relatedNodes === null) {
