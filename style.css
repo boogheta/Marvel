@@ -702,9 +702,15 @@ h5 {
   margin-right: 5px;
   width: 156px;
 }
+#search-icon {
+  position: fixed;
+  bottom: 11px;
+  width: 18px;
+  height: 18px;
+}
 #search input {
   width: 100%;
-  padding: 7px 5px 7px 7px;
+  padding: 4px 5px 4px 27px;
   text-align: center;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
@@ -844,6 +850,9 @@ label {
   #controls {
     left: 203px;
   }
+  #search-icon {
+    left: 210px;
+  }
   #comics-bar {
     right: 0;
     transform-origin: right;
@@ -852,6 +861,9 @@ label {
 @media (min-width: 1001px) {
   #controls {
     left: 305px;
+  }
+  #search-icon {
+    left: 312px;
   }
   .large-bar {
     display: inline;
@@ -963,6 +975,9 @@ label {
   }
   #legend {
     transform: translateX(-159px);
+  }
+  #search-icon {
+    right: 136px;
   }
 }
 @media (max-height: 400px) {
