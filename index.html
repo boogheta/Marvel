@@ -64,7 +64,6 @@
         <p><span class="characters-details">Colors indicate which <i>family</i> each character belongs to: <span id="clusters-legend"></span>, etc.</span></p>
         <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
-        <!--<p><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> on the <span class="colors-details">colored nodes</span><span class="pictures-details">pictures</span> to see each <span class="creators-details">creator</span><span class="characters-details">character</span>'s links and details.</p> -->
         <p id="view-node" class="tooltip" tooltip="focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
         <p id="view-all-comics" class="tooltip hidden" tooltip="browse the list of all comics and their associated creators & characters"><span>Explore all comics</span></p>
         <div id="full-histogram"></div>
@@ -145,9 +144,13 @@
       </div>
       <div id="search">
         <input type="search" id="search-input" list="suggestions" placeholder="search…" class="tooltip" tooltip="search a specific 'entity' in the graph" />
+        <img id="search-icon" src="./images/search.svg" alt="search a node in the graph" />
         <datalist id="suggestions"><option>&nbsp;</option></datalist>
         <select id="suggestions-select"><option>search…</option></select>
       </div>
+    </div>
+    <div id="legend">
+      <p><span class="desktop-details">click</span><span class="mobiles-details">tap</span> on a <span class="colors-details">colored node</span><span class="pictures-details">picture</span> to select a <span class="creators-details">creator</span><span class="characters-details">character</span> and see its links, details&nbsp;and&nbsp;comics</p>
     </div>
     <div id="comics-bar">
       <div id="comics-header">
