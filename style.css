@@ -729,6 +729,7 @@ h5 {
   height: 28px;
   border: 2px solid #555;
   border-radius: 5px;
+  padding-left: 20px;
 }
 
 #legend {
