@@ -1,9 +1,9 @@
 /* TODO:
 - mobiles fix:
-  - multiple clicks on toggles when touch
-  - touchmove should follow across tooltips like histogram's
+  - node selection not updated
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
+- change not found image
 - reorder css
 - handle mobile darkmodes diffs? cf branch nightmode
 - reorga dossiers
@@ -12,6 +12,7 @@
   - check why Tiomothy Truman has no comic
   - check why zoom on Spiderman 1602 only zooms on regular spiderman
   - test new spatialization graphology
+  - test FA2 + louvain after sparsification
  => scraper comics as counter-truth? :
   - select good creators fields
   - take from scraping good image url if /clean within (example https://www.marvel.com/comics/issue/51567/captain_britain_and_the_mighty_defenders_2015_1)
@@ -26,7 +27,11 @@
 IDEAS:
 - remove most/main switch and only propose most?
 - remove colors/avatars switch and use node borders with sigma3 instead?
+- add some kind of touch tooltip on remaining
 - test large histogram
+- improve touch tooltips :
+  - touchmove should follow across tooltips like histogram's
+  - better positioning away from the finger
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
 - install app button?
@@ -1275,22 +1280,19 @@ function enableSwitchButtons() {
 
 switchNodeType.onchange = (event) => {
   disableSwitchButtons();
-  const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setURL(target.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+  setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeFilter.onchange = (event) => {
   disableSwitchButtons();
-  const target = event.target as HTMLInputElement;
   explanations.style.opacity = "0";
-  setURL(entity, target.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+  setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeView.onchange = (event) => {
   disableSwitchButtons();
-  const target = event.target as HTMLInputElement;
-  setURL(entity, networkSize, target.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+  setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 
@@ -1418,7 +1420,7 @@ function clearTooltip(e, tooltipId="tooltip") {
 
 function setupTooltip(element) {
   element.onmouseenter = e => {
-    if (isTouchDevice() && !e.touches) return;
+    if (isTouchDevice() && (!e.touches || hasClass(element, "network-switch-label"))) return;
     const tooltip = element.getAttribute("tooltip");
     if (!tooltip ||
       (hasClass(element, "reset-graph") && !(selectedNode || selectedComic)) ||
@@ -1645,18 +1647,11 @@ function touchStart(e) {
   touches.x[0] = e.changedTouches[0].screenX;
   touches.y[0] = e.changedTouches[0].screenY;
 };
-function addTouchStart(el) {
-  const existing = el.ontouchstart;
-  el.ontouchstart(e => {
-    touchStart(e);
-    existing && existing(e);
-  });
-}
 modal.ontouchstart = touchStart;
 comicImg.ontouchstart = touchStart;
-addTouchStart(switchTypeLabel);
-addTouchStart(switchViewLabel);
-addTouchStart(switchFilterLabel);
+switchTypeLabel.ontouchstart = touchStart;
+switchViewLabel.ontouchstart = touchStart;
+switchFilterLabel.ontouchstart = touchStart;
 
 function touchEnd(e, threshold = 100) {
   touches.x[1] = e.changedTouches[0].screenX;
@@ -1695,25 +1690,25 @@ comicImg.ontouchend = e => {
 
 switchTypeLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
-  if (typ === "left" || typ === "right") {
+  if ((typ === "left" || typ === "right") && !switchNodeType.disabled) {
     switchNodeType.checked = !switchNodeType.checked;
-    setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+    switchNodeType.onchange(e);
   }
 };
 
 switchFilterLabel.ontouchend = e => {
   const typ = touchEnd(e, 20);
-  if (typ === "left" || typ === "right") {
+  if ((typ === "left" || typ === "right") && !switchNodeFilter.disabled) {
     switchNodeFilter.checked = !switchNodeFilter.checked;
-    setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+    switchNodeFilter.onchange(e);
   }
 };
 
 switchViewLabel.ontouchend = e => {
   const typ = touchEnd(e, 0);
-  if (typ === "left" || typ === "right") {
+  if ((typ === "left" || typ === "right") && !switchNodeView.disabled) {
     switchNodeView.checked = !switchNodeView.checked;
-    setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+    switchNodeView.onchange(e);
   }
 };
 
@@ -1729,7 +1724,7 @@ function buildLegendItem(year, ref = "") {
     color = '; color: var(--marvel-red-light)';
   else if (ref === "old")
     color = '; color: #555';
-  return '<div style="left: calc((100% - 25px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + ')' +
+  return '<div style="left: calc((100% - 30px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + ')' +
     color + '"' + className + '>' + year + '</div>';
 }
 

@@ -47,7 +47,7 @@ input[type="search"]::-moz-selection {
   border: 1px solid #777;
   border-radius: 4px;
   padding: 4px 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
   color: white;
   z-index: 25;
@@ -87,7 +87,7 @@ h1 {
 
 h2 {
   color: #AAA;
-  font-size: 16px;
+  font-size: 17px;
   margin: 0 10px;
 }
 #title {
@@ -113,7 +113,7 @@ h5 {
   margin: 0;
   margin-right: 2px;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
   background-color: #222;
   color: #AAA;
   float: left;
@@ -140,7 +140,7 @@ h5 {
   height: calc(100% - 2px);
   margin: 0;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 14px;
   background-color: #222;
   color: #AAA;
   float: left;
@@ -373,7 +373,7 @@ h5 {
   opacity: 0;
 }
 #histo-legend {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: bold;
   color: #AAA;
   padding: 4px 0 4px 2px;
@@ -390,7 +390,7 @@ h5 {
   background-color: #555;
   border-radius: 8px;
   padding: 2px 5px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
   color: white;
   z-index: 1;
@@ -469,7 +469,7 @@ h5 {
   z-index: 2;
 }
 #credits p {
-  font-size: 11px;
+  font-size: 12px;
   padding: 3px 0px 0 34px;
   margin: 0;
 }
@@ -886,6 +886,9 @@ label {
   #view-comics, #view-node, #view-all-comics {
     font-size: 14px;
   }
+  #sidebar, #comics-bar {
+    font-size: 13px;
+  }
   #comics-bar h3 {
     font-size: 14px;
   }
@@ -976,6 +979,9 @@ label {
   }
   .marvel {
     font-size: 32px;
+  }
+  #sidebar, #comics-bar {
+    font-size: 13px;
   }
   #comics {
     line-height: 18px;
