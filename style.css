@@ -239,7 +239,7 @@ h5 {
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: space-between;
+  justify-content: space-evenly;
   margin: 0;
 }
 #comics-actions button {
@@ -655,7 +655,7 @@ h5 {
 }
 #controls {
   position: absolute;
-  top: 10px;
+  top: 5px;
   text-align: center;
   width: 156px;
 }
@@ -696,7 +696,11 @@ h5 {
   }
 }
 #search {
+  position: fixed;
+  bottom: 5px;
   margin: 2px;
+  margin-right: 5px;
+  width: 156px;
 }
 #search input {
   width: 100%;
@@ -716,10 +720,31 @@ h5 {
 #suggestions-select {
   display: none;
   width: 152px;
-  height: 33px;
+  height: 28px;
   border: 2px solid #555;
   border-radius: 5px;
 }
+
+#legend {
+  position: absolute;
+  opacity: 0;
+  top: 6px;
+  line-height: 14px;
+  font-size: 14px;
+  padding: 5px 10px;
+  background-color: rgba(255, 255, 255, 0.13);
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  -webkit-transition: opacity 0.25s ease-in-out;
+  -moz-transition: opacity 0.25s ease-in-out;
+  -o-transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
+}
+#legend p {
+  margin: 0;
+}
+
 /* -------- Switch Styles ------------*/
 #choices .network-choice:last-child {
   margin-bottom: 0;
@@ -826,7 +851,7 @@ label {
 }
 @media (min-width: 1001px) {
   #controls {
-    left: 310px;
+    left: 305px;
   }
   .large-bar {
     display: inline;
@@ -869,8 +894,9 @@ label {
   #histo-legend .hidable {
     display: none;
   }
-  #controls {
-    top: 5px;
+  #legend {
+    line-height: 14px;
+    font-size: 13px;
   }
   #loader {
     left: calc(50% + 75px);
@@ -934,7 +960,9 @@ label {
   }
   #controls {
     right: 5px;
-    top: 5px;
+  }
+  #legend {
+    transform: translateX(-159px);
   }
 }
 @media (max-height: 400px) {
@@ -965,11 +993,6 @@ label {
   }
   #header {
     padding-bottom: 5px;
-  }
-  #search {
-    position: fixed;
-    bottom: 5px;
-    margin-right: 5px;
   }
   .network-choice {
     height: 22px;
@@ -1002,17 +1025,6 @@ label {
   #comics-list li {
     padding: 2px;
     font-size: 14px;
-  }
-  #controls {
-    width: 136px;
-  }
-  #sigma-buttons button {
-    width: 30px;
-    height: 30px;
-  }
-  #suggestions-select {
-    width: 132px;
-    height: 28px;
   }
   #loader-list img {
     top: 10px;

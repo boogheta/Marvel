@@ -1,7 +1,7 @@
 /* TODO:
-- Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
 - reorder css
+- make rendering lisst of comics async?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -21,6 +21,7 @@
 - auto data updates
 - reorga dossiers
 IDEAS:
+- add more cases to legend
 - remove most/main switch and only propose most?
 - remove colors/avatars switch and use node borders with sigma3 instead?
 - add some kind of touch tooltip on remaining
@@ -126,6 +127,7 @@ const conf = {},
 
 // Useful DOM elements
 const container = document.getElementById("sigma-container") as HTMLElement,
+  legend = document.getElementById("legend") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
@@ -784,8 +786,10 @@ function clickNode(node, updateURL = true, center = false) {
   if (!data.graph.hasNode(node))
     return setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
 
-  if (updateURL && !sameNode)
+  if (updateURL && !sameNode) {
+    legend.style.display = "none";
     setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
+  }
 
   // Fill sidebar with selected node's details
   const attrs = data.graph.getNodeAttributes(node);
@@ -975,6 +979,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   comicsBar.style.transform = "scaleX(1)";
   hideViewComicsButton();
   comicsCache.style.display = "none";
+  setTimeout(() => resize(true), 300);
 
   if (resetTitle) {
     comicsTitle.innerHTML = "... comics";
@@ -1865,6 +1870,7 @@ let resizing = null;
 function resize(fast = false) {
   logDebug("RESIZE");
   if (!fast) resizing = true;
+
   const graph = entity ? networks[entity][networkSize].graph : null,
     freeHeight = (divHeight("sidebar") - divHeight("header") - divHeight("choices") - divHeight("credits") - 1) + "px";
   explanations.style.opacity = "1"
@@ -1874,6 +1880,7 @@ function resize(fast = false) {
   nodeDetails.style["min-height"] = freeHeight;
   comicsDiv.style.height = divHeight("comics-bar") - divHeight("comics-header") - divHeight("comic-details") - 11 + "px";
   loader.style.transform = (comicsBarView && comicsBar.getBoundingClientRect().x !== 0 ? "translateX(-" + divWidth("comics-bar") / 2 + "px)" : "");
+
   const comicsDims = comicsDiv.getBoundingClientRect();
   ["width", "height", "top"].forEach(k =>
     comicsCache.style[k] = comicsDims[k] + "px"
@@ -1881,6 +1888,17 @@ function resize(fast = false) {
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   updateShift();
+
+  const legendLeft = divWidth("sidebar") + divWidth("controls") + 10;
+  legend.style.left = legendLeft + "px";
+  legend.style.opacity = "1";
+  legend.style.width = "calc(100% - " +
+    (27 + legendLeft +
+      (comicsBarView && comicsBar.getBoundingClientRect().x !== 0
+        ? divWidth("comics-bar")
+        : 0)
+    ) + "px)";
+
   if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
