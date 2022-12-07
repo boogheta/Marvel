@@ -584,11 +584,25 @@ h5 {
   vertical-align: middle;
 }
 #modal-img {
-  max-width: calc(100% - 10px);
+  max-width: calc(100% - 15px);
   max-height: calc(100% - 50px);
   z-index: 20;
   vertical-align: middle;
   margin: 5px 5px 45px 0;
+}
+#modal-img-missing {
+  display: none;
+  position: absolute;
+  top: 45%;
+  left: calc(50% - 150px);
+  color: var(--marvel-red-light);
+  font-size: 36px;
+  font-weight: bold;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 5px 10px;
+  opacity: 0.45;
+  z-index: 25;
 }
 #modal-actions {
   position: fixed;

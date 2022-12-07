@@ -1,10 +1,8 @@
 /* TODO:
+- node not selected when reload with also comic selected and alternateentity
 - Réseau au centre : il faudrait peut-être un petit texte donnant les interactions possibles (genre en bas à droite "click on a circle to see its related characters/artists")
 - uniformize class action buttons/sigma
-- change not found image
 - reorder css
-- handle mobile darkmodes diffs? cf branch nightmode
-- reorga dossiers
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -22,6 +20,7 @@
  => one more check with takoyaki on authors/characters labels + readjust louvain after
 - update screenshots
 - auto data updates
+- reorga dossiers
 IDEAS:
 - remove most/main switch and only propose most?
 - remove colors/avatars switch and use node borders with sigma3 instead?
@@ -31,6 +30,7 @@ IDEAS:
   - touchmove should follow across tooltips like histogram's
   - better positioning away from the finger
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
+- handle mobile darkmodes diffs? cf branch nightmode
 - add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
@@ -47,6 +47,7 @@ import { Coordinates } from "./sigma.js/types";
 import {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
+  fixImage,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
@@ -134,6 +135,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   helpBox = document.getElementById("help-box") as HTMLElement,
   modal = document.getElementById("modal") as HTMLElement,
   modalImg = document.getElementById("modal-img") as HTMLImageElement,
+  modalImgMissing = document.getElementById("modal-img-missing") as HTMLImageElement,
   modalNext = document.getElementById("modal-next") as HTMLButtonElement,
   modalPrev = document.getElementById("modal-previous") as HTMLButtonElement,
   modalPlay = document.getElementById("modal-play") as HTMLButtonElement,
@@ -744,6 +746,7 @@ function clickNode(node, updateURL = true, center = false) {
   if (!node || !sameNode) {
     nodeImg.src = "";
     modalImg.src = "";
+    modalImgMissing.style.display = "none";
   }
   // Reset unselected node view
   renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
@@ -795,9 +798,9 @@ function clickNode(node, updateURL = true, center = false) {
   if (!sameNode) {
     nodeDetails.scrollTo(0, 0);
     nodeLabel.innerHTML = attrs.label;
-    nodeImg.src = attrs.image_url.replace(/^http:/, '');
+    nodeImg.src = fixImage(attrs.image_url)
     nodeImg.onclick = () => {
-      modalImg.src = attrs.image_url.replace(/^http:/, '');
+      modalImg.src = fixImage(attrs.image_url);
       stopPlayComics();
       modal.style.display = "block";
       modalPrev.style.opacity = "0";
@@ -1128,10 +1131,10 @@ function selectComic(comic, keep = false, autoReselect = false) {
   }
 
   comicTitle.innerHTML = formatMonth(comic.date);
-  comicImg.src = comic.image_url.replace(/^http:/, '');
-  modalImg.src = comic.image_url.replace(/^http:/, '');
+  comicImg.src = fixImage(comic.image_url);
+  modalImg.src = fixImage(comic.image_url, modal.style.display === "block" && modalImgMissing);
   comicImg.onclick = () => {
-    modalImg.src = comic.image_url.replace(/^http:/, '');
+    modalImg.src = fixImage(comic.image_url, modalImgMissing);
     modal.style.display = "block";
     modalPlay.style.display = playing ? "none" : "inline-block";
     modalPause.style.display = playing ? "inline-block" : "none";
@@ -1333,6 +1336,7 @@ function defaultSidebar() {
   nodeDetails.style.display = "none";
   modal.style.display = "none";
   modalImg.src = "";
+  modalImgMissing.style.display = "none";
   if (comicsReady)
     renderHistogram(
       selectedNode ? nodeHistogram : fullHistogram,
@@ -1649,6 +1653,7 @@ function touchStart(e) {
   touches.y[0] = e.changedTouches[0].screenY;
 };
 modal.ontouchstart = touchStart;
+modalImgMissing.ontouchstart = touchStart;
 comicImg.ontouchstart = touchStart;
 switchTypeLabel.ontouchstart = touchStart;
 switchViewLabel.ontouchstart = touchStart;
@@ -1680,6 +1685,7 @@ modal.ontouchend = e => {
   else if (typ === "right" || typ === "down")
     selectAndScrollSibling("next");
 };
+modalImgMissing.ontouchend = modal.ontouchend;
 
 comicImg.ontouchend = e => {
   const typ = touchEnd(e, 30);

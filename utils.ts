@@ -32,6 +32,17 @@ function switchClass(element, clss, condition) {
   element.className = Array.from(classes).join(" ");
 }
 
+function fixImage(url, replacement=null) {
+  if (/image_not_available/.test(url)) {
+    if (replacement)
+      replacement.style.display = "block";
+    return '';
+  }
+  if (replacement)
+    replacement.style.display = "none";
+  return url.replace(/^http:/, '');
+}
+
 function formatNumber(x) {
   return (x + "")
     .replace(/(.)(.{3})$/, '<span class="shifted">$1</span>$2');
@@ -120,6 +131,7 @@ function uncompress(compressed, method, callback) {
 export {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
+  fixImage,
   formatNumber, formatMonth,
   lightenColor,
   meanArray,
