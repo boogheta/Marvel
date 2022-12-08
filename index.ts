@@ -1,7 +1,5 @@
 /* TODO:
-- uniformize class action buttons/sigma
-- reorder css
-- make rendering lisst of comics async?
+- make rendering list of comics async?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -1041,6 +1039,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         .replace(/&nbsp;([^&]+)$/, " or $1");
 
     setTimeout(() => {
+// TODO ASYNC HERE SPLIT LIST BY SETS OF 1000 COMICS
       comicsList.innerHTML = comics.length
         ? comics.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
           .join("")

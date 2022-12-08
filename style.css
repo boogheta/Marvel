@@ -1,3 +1,21 @@
+/* -------- General style ------------*/
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "DejaVu Sans Mono", monospace;
+  background-color: black;
+}
+
+.hidden {
+  display: none!important;
+}
+
+/* App colors & Fonts */
+
 :root {
   --marvel-red: #ec1d24;
   --marvel-red-light: #ff4f56;
@@ -9,36 +27,69 @@
 .lightred {
   color: var(--marvel-red-light);
 }
-.hidden {
-  display: none!important;
-}
 
 @font-face {
   font-family: "ImpactLoad";
   src: url(./impact.ttf) format("truetype");
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  font-family: "DejaVu Sans Mono", monospace;
-  background-color: black;
-}
+/* Discrete selected texts */
+
 ::selection {
   background-color: #000;
 }
 ::-moz-selection {
   background-color: #000;
 }
+
 input[type="search"]::selection {
   background-color: #AAA;
 }
 input[type="search"]::-moz-selection {
   background-color: #AAA;
 }
+
+/* Buttons */
+
+button {
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  background-color: #eee;
+  font-size: 15px;
+  font-weight: bold;
+  text-indent: 0px;
+  text-align: center;
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+  border: 2px solid #555;
+  border-radius: 5px;
+}
+
+button.selected {
+  background-color: var(--marvel-red-light);
+  border: 2px solid #222;
+}
+button.selected img {
+  filter: invert(100%);
+}
+
+button.close-button {
+  position: fixed;
+  top: 0;
+  right: 2px;
+  margin: 2px!important;
+}
+
+button img {
+  width: 24px;
+  height: 24px;
+  margin-top: 3px;
+}
+
+
+/* Hover tooltips on actions */
 
 #tooltip {
   display: none;
@@ -59,9 +110,56 @@ input[type="search"]::-moz-selection {
   display: inline-block;
 }
 
+/* Missing JS/WebGL disclaimers */
+
+#webgl-disclaimer, #noscript {
+  z-index: 10;
+  opacity: 0.8;
+}
+#webgl-disclaimer {
+  display: none;
+}
+#webgl-disclaimer p, #noscript p {
+  position: relative;
+  width: 66%;
+  top: 30%;
+  left: 17%;
+  text-align: center;
+  font-size: 22px;
+  color: #999;
+}
+
+
+/* -------- Main sidebar ------------*/
+
+#sidebar {
+  width: 300px;
+  height: 100%;
+  margin: 0;
+  margin-right: 2px;
+  overflow: hidden;
+  font-size: 14px;
+  background-color: #222;
+  color: #AAA;
+  float: left;
+  text-align: center;
+}
+#sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
+  color: #af4f4f;
+}
+
+/* Logo & Title */
+
 #header {
   padding-bottom: 10px;
 }
+
+.logo {
+  float: left;
+  padding: 3px 0 0 4px;
+  height: 47px;
+}
+
 h1 {
   font-size: 32px;
   background-color: var(--marvel-red);
@@ -79,11 +177,6 @@ h1 {
   padding-right: 10px;
   vertical-align: top;
 }
-.logo {
-  float: left;
-  padding: 3px 0 0 4px;
-  height: 47px;
-}
 
 h2 {
   color: #AAA;
@@ -97,31 +190,73 @@ h2 {
   display: none;
 }
 
-h5 {
-  font-size: 15px;
+/* Text info zone */
+
+.sidebar-text {
+  clear: both;
+  display: none;
   margin: 0;
-  margin-bottom: 8px;
+  padding: 0;
+  overflow-y: auto;
+  line-height: 16px;
+}
+#explanations {
+  border-top: 1px dashed #444;
+  opacity: 0;
+  -webkit-transition: opacity 0.75s ease-in-out;
+  -moz-transition: opacity 0.75s ease-in-out;
+  -o-transition: opacity 0.75s ease-in-out;
+  transition: opacity 0.75s ease-in-out;
+}
+#explanations p {
+  margin: 7px 25px;
 }
 
-.shifted {
-  margin-right: 5px;
+#order {
+  min-width: 20px;
+  display: inline-block;
+}
+#clusters-legend b span {
+  white-space: nowrap;
 }
 
-#sidebar {
-  width: 300px;
-  height: 100%;
-  margin: 0;
-  margin-right: 2px;
-  overflow: hidden;
-  font-size: 14px;
-  background-color: #222;
-  color: #AAA;
-  float: left;
+#node-details {
   text-align: center;
+  max-height: 60%;
+  padding-top: 1px;
 }
-#sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
-  color: #af4f4f;
+#node-img, #comic-img {
+  max-width: 75%;
+  max-height: 400px;
+  cursor: pointer;
 }
+#node-extra {
+  margin: 7px 25px;
+}
+
+/* View more buttons */
+
+#view-node, #view-comics, #view-all-comics {
+  display: inline-block;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 10px 0 10px 0!important;
+  text-transform: uppercase;
+  line-height: 20px;
+}
+#view-all-comics {
+  padding-top: 5px;
+}
+#view-node > span, #view-comics > span, #view-all-comics span {
+  width: 170px;
+  background-color: var(--marvel-red);
+  color: #DDD!important;
+  border: 2px solid #555;
+  border-radius: 5px;
+  padding: 5px;
+}
+
 #sidebar .selected {
   opacity: 0.35;
   cursor: progress;
@@ -133,6 +268,220 @@ h5 {
 #sidebar .selected.left, #sidebar .selected.right {
   opacity: 1;
 }
+
+/* Switch buttons */
+
+h5 {
+  font-size: 15px;
+  margin: 0;
+  margin-bottom: 8px;
+}
+
+#choices {
+  position: absolute;
+  bottom: 36px;
+  width: 300px;
+  padding: 8px 0 10px 0;
+  margin: 0;
+  border-top: 1px dashed #444;
+}
+.network-choice {
+  display: flex;
+  justify-content: center;
+  position:relative;
+  width: 100%;
+  margin-bottom: 10px;
+  height: 28px;
+}
+#choices .network-choice:last-child {
+  margin-bottom: 0;
+}
+#choices .network-choice:first-child {
+  margin-top: 0;
+}
+
+.network-switch-label, .toggle {
+  height: 100%;
+  border-radius: 100px;
+}
+.network-switch-label {
+  display: block;
+  width: 236px;
+  background-color: white;
+  border-radius: 100px;
+  position: relative;
+  cursor: pointer;
+}
+.toggle {
+  position: absolute;
+  width: 116px;
+  background-color: var(--marvel-red);
+  transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin: -2px 0 0 -2px;
+  border: 2px solid #555;
+}
+
+.names {
+  font-size: 90%;
+  font-weight: bolder;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  align-content: center;
+  user-select: none;
+}
+.names > div {
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.left, .right{
+  width: 50%;
+  text-align: center;
+}
+.left {
+  color: white;
+}
+.right {
+  color: var(--marvel-red);
+}
+
+[type="checkbox"] {
+  display: none;
+}
+[type="checkbox"]:disabled + .network-switch-label {
+  cursor: progress;
+}
+[type="checkbox"]:checked + .network-switch-label .toggle {
+  transform: translateX(100%);
+}
+[type="checkbox"]:checked + .network-switch-label .left {
+  color: var(--marvel-red);
+}
+[type="checkbox"]:checked + .network-switch-label .right {
+  color: white;
+}
+
+/* Credits & Help Footer */
+
+#credits {
+  position: absolute;
+  bottom: 0px;
+  width: 300px;
+  line-height: 13px;
+  border-top: 1px dashed #444;
+  background-color: #222;
+  z-index: 2;
+}
+#credits p {
+  font-size: 12px;
+  padding: 3px 0px 0 34px;
+  margin: 0;
+}
+#credits p:last-child {
+  padding-bottom: 3px;
+}
+
+#help {
+  position: absolute;
+  left: 0;
+  margin: 4px;
+  width: 28px;
+  height: 28px;
+  background-color: var(--marvel-red)!important;
+  color: white;
+  font-family: Arial;
+  font-size: 20px;
+  font-weight: bold;
+  text-indent: 0px;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #555;
+  border-radius: 20px;
+}
+
+
+/* -------- Comics Histogram ------------*/
+
+#node-histogram, #full-histogram {
+  margin-top: 10px;
+}
+#comics-histogram {
+  margin: 4px 0 1px 0;
+}
+
+#histogram-title {
+  font-size: 14px;
+  font-weight: bold;
+  padding-bottom: 5px;
+}
+
+#histogram, #histogram-hover {
+  display: flex;
+  align-items: flex-end;
+  margin: 0 10px;
+  height: 25px;
+}
+#histogram {
+  border-bottom: 1px solid var(--marvel-red);
+}
+.histobar {
+  display: block;
+  background-color: var(--marvel-red);
+  box-shadow: 0px 0px 2px var(--marvel-red);
+}
+
+#histogram-hover {
+  margin-top: -25px;
+  cursor: cell;
+}
+.histobar-hover {
+  height: 26px;
+  background-color: #555;
+  opacity: 0;
+}
+
+#histo-legend {
+  font-size: 12px;
+  font-weight: bold;
+  color: #AAA;
+  padding: 4px 0 4px 2px;
+  text-align: left;
+}
+#histo-legend div {
+  position: relative;
+  display: inline-block;
+  width: 0;
+}
+
+#histogram-tooltip {
+  display: none;
+  position: absolute;
+  background-color: #555;
+  border-radius: 8px;
+  padding: 2px 5px;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
+  z-index: 1;
+}
+
+
+/* -------- Extra sidebar with comics ------------*/
+
 #comics-bar {
   position: absolute;
   bottom: 0;
@@ -153,6 +502,7 @@ h5 {
   transition: 0.3s ease-in-out;
   z-index: 6;
 }
+
 #comics, #comic-details {
   padding: 5px;
   text-align: center;
@@ -167,32 +517,52 @@ h5 {
   height: calc(100% / 2);
   border-top: 1px dashed #444;
 }
-#comic-desc {
-  line-height: 16px;
-  padding-left: 10px;
-  padding-right: 10px;
+
+/* Actions Buttons */
+
+#comics-actions {
+  width: 100%;
+  height: 40px;
+  text-align: center;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  margin: 0;
 }
-.action-button {
-  width: 35px;
-  height: 35px;
-  margin: 5px;
-  background: #eee;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
+#comics-actions button {
+  margin: 0;
+}
+
+button.sort-button.selected {
+  cursor: default;
+}
+button.sort-button img {
+  width: 26px;
+  height: 26px;
+  margin: 3px 0px 0px 1px;
+}
+
+#comics-pause {
+  display: none;
+}
+
+#filter-comics {
+  display: none;
+}
+#filter-input {
+  width: calc(100% - 4px);
+  margin: -2px 2px 4px 2px;
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: 14px;
   border: 2px solid #555;
   border-radius: 5px;
+  line-height: 24px;
+  padding: 0 10px;
 }
-.action-button img {
-  width: 18px;
-  margin-top: 2px;
-}
-.close-button {
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 2px;
-}
+
+/* Comics List */
+
 #comics-bar h3 {
   margin: 0;
   font-size: 16px;
@@ -202,6 +572,7 @@ h5 {
   color: var(--marvel-red);
   font-weight: bold;
 }
+
 #comics-list {
   display: contents;
 }
@@ -232,179 +603,25 @@ h5 {
   z-index: 5;
   cursor: pointer;
 }
-#comics-actions {
-  width: 100%;
-  height: 40px;
-  text-align: center;
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-evenly;
-  margin: 0;
-}
-#comics-actions button {
-  width: 38px;
-  height: 38px;
-  background: #eee;
-  outline: none;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 0;
-  margin: 0;
-  border: 2px solid #555;
-  border-radius: 5px;
-}
-#comics-actions button.selected, #modal-actions button.selected {
-  background: var(--marvel-red-light);
-  border: 2px solid #222;
-}
-#comics-actions button.sort-button.selected {
-  cursor: default;
-}
-#comics-actions button img {
-  width: 24px;
-  height: 24px;
-  margin-top: 3px;
-}
-#comics-actions button.sort-button img {
-  width: 26px;
-  height: 26px;
-  margin: 2px 0px 0px 1px;
-}
-#filter-comics {
-  display: none;
-}
-#filter-input {
-  width: calc(100% - 4px);
-  margin: -2px 2px 4px 2px;
-  font-family: "DejaVu Sans Mono", monospace;
-  font-size: 14px;
-  border: 2px solid #555;
-  border-radius: 5px;
-  line-height: 24px;
-  padding: 0 10px;
-}
-#comics-pause {
-  display: none;
-}
 
-.sidebar-text {
-  clear: both;
-  display: none;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  line-height: 16px;
-}
-#explanations {
-  border-top: 1px dashed #444;
-  opacity: 0;
-  -webkit-transition: opacity 0.75s ease-in-out;
-  -moz-transition: opacity 0.75s ease-in-out;
-  -o-transition: opacity 0.75s ease-in-out;
-  transition: opacity 0.75s ease-in-out;
-}
-#explanations p {
-  margin: 7px 25px;
-}
-#order {
-  min-width: 20px;
-  display: inline-block;
-}
-#clusters-legend b span {
-  white-space: nowrap;
-}
+/* Single Comic Details */
 
-.sidebar-text {
-  clear: both;
-  display: none;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  line-height: 16px;
-}
-#node-details {
-  text-align: center;
-  max-height: 60%;
-  padding-top: 1px;
-}
-#node-img, #comic-img {
-  max-width: 75%;
-  max-height: 400px;
-  cursor: pointer;
-}
-#node-extra {
-  margin: 7px 25px;
-}
-
-#node-histogram, #full-histogram {
-  margin-top: 10px;
-}
-#comics-histogram {
-  margin: 4px 0 1px 0;
-}
-#histogram-title {
-  font-size: 14px;
-  font-weight: bold;
-  padding-bottom: 5px;
-}
-#histogram, #histogram-hover {
-  display: flex;
-  align-items: flex-end;
-  margin: 0 10px;
-  height: 25px;
-}
-#histogram {
-  border-bottom: 1px solid var(--marvel-red);
-}
-.histobar {
-  display: block;
-  background-color: var(--marvel-red);
-  box-shadow: 0px 0px 2px var(--marvel-red);
-}
-#histogram-hover {
-  margin-top: -25px;
-  cursor: cell;
-}
-.histobar-hover {
-  height: 26px;
-  background-color: #555;
-  opacity: 0;
-}
-#histo-legend {
-  font-size: 12px;
-  font-weight: bold;
-  color: #AAA;
-  padding: 4px 0 4px 2px;
-  text-align: left;
-}
-#histo-legend div {
-  position: relative;
-  display: inline-block;
-  width: 0;
-}
-#histogram-tooltip {
-  display: none;
-  position: absolute;
-  background-color: #555;
-  border-radius: 8px;
-  padding: 2px 5px;
-  font-size: 13px;
-  font-weight: bold;
-  color: white;
-  z-index: 1;
-}
-#comic-title {
-  margin: 0;
-}
 #comic-img {
   max-width: 90%;
   padding-top: 5px;
 }
+#comic-title {
+  margin: 0;
+}
+#comic-desc {
+  line-height: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
 #comic-url {
   display: none;
 }
+
 .comic-entities {
   display: none;
   width: calc(50% - 4px);
@@ -439,77 +656,10 @@ h5 {
 #comic-characters li:nth-child(odd) {
   background: #2F2F2F;
 }
-#view-comics, #view-node, #view-all-comics {
-  display: inline-block;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 16px;
-  margin: 10px 0 10px 0!important;
-  text-transform: uppercase;
-  line-height: 20px;
-}
-#view-all-comics {
-  padding-top: 5px;
-}
-#view-comics > span, #view-node > span, #view-all-comics span {
-  width: 170px;
-  background-color: var(--marvel-red);
-  color: #DDD!important;
-  border: 2px solid #555;
-  border-radius: 5px;
-  padding: 5px;
-}
-#credits {
-  position: absolute;
-  bottom: 0px;
-  width: 300px;
-  line-height: 13px;
-  border-top: 1px dashed #444;
-  background-color: #222;
-  z-index: 2;
-}
-#credits p {
-  font-size: 12px;
-  padding: 3px 0px 0 34px;
-  margin: 0;
-}
-#credits p:last-child {
-  padding-bottom: 3px;
-}
-#help {
-  background-color: var(--marvel-red)!important;
-  width: 28px;
-  height: 28px;
-  font-size: 20px;
-  color: white;
-  position: absolute;
-  left: 0;
-  margin: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 20px;
-  border: 1px solid #555;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-}
-#webgl-disclaimer, #noscript {
-  z-index: 10;
-  opacity: 0.8;
-}
-#webgl-disclaimer {
-  display: none;
-}
-#webgl-disclaimer p, #noscript p {
-  position: relative;
-  width: 66%;
-  top: 30%;
-  left: 17%;
-  text-align: center;
-  font-size: 22px;
-  color: #999;
-}
+
+
+/* -------- Graph zone ------------*/
+
 .sigma-container {
   height: 100%;
   margin: 0;
@@ -517,6 +667,9 @@ h5 {
   overflow: hidden;
   background-color: black;
 }
+
+/* Creators era labels layer */
+
 #clusters-layer {
   width: 100%;
   height: 100%;
@@ -533,126 +686,9 @@ h5 {
   border-radius: 14px;
   text-align: center;
 }
-.loader {
-  position: absolute;
-  z-index: 5;
-  display: none;
-  opacity: 0.85;
-  -webkit-transition: opacity 0.25s ease-in-out;
-  -moz-transition: opacity 0.25s ease-in-out;
-  -o-transition: opacity 0.25s ease-in-out;
-  transition: opacity 0.25s ease-in-out;
-}
-.loader img {
-  width: 45px;
-}
-#loader {
-  top: calc(50% - 25px);
-  left: calc(50% + 125px);
-  opacity: 0;
-}
-#loader-comics {
-  bottom: 0;
-  right: 0;
-  padding: 0 5px;
-  display: none;
-}
-#loader-list {
-  display: none;
-}
-#loader-list img {
-  position: relative;
-  top: 35px;
-  left: 0;
-  width: 45px;
-}
-.modal {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 20;
-  display: none;
-  background-color: rgba(0, 0, 0, 0.85);
-  text-align: center;
-  cursor: pointer;
-}
-#modal-helper {
-  height: 100%;
-  display: inline-block;
-  vertical-align: middle;
-}
-#modal-img {
-  max-width: calc(100% - 15px);
-  max-height: calc(100% - 50px);
-  z-index: 20;
-  vertical-align: middle;
-  margin: 5px 5px 45px 0;
-}
-#modal-img-missing {
-  display: none;
-  position: absolute;
-  top: 45%;
-  left: calc(50% - 150px);
-  color: var(--marvel-red-light);
-  font-size: 36px;
-  font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
-  padding: 5px 10px;
-  z-index: 25;
-}
-#modal-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 45px;
-}
-#modal-actions button {
-  margin: 5px 10px;
-  display: inline-block;
-}
-#modal button img {
-  z-index: -1;
-  width: 24px;
-}
-#modal-pause {
-  display: none;
-}
-#help-box {
-  position: absolute;
-  top: 0;
-  left: 15%;
-  width: calc(70% - 60px);
-  height: calc(100% - 60px);
-  z-index: 25;
-  overflow-y: auto;
-  background-color: #444;
-  color: #CCC;
-  text-align: left;
-  padding: 30px;
-  margin: 0;
-  transform: scale(0);
-  -webkit-transition: transform .3s linear;
-  -moz-transition: transform .3s linear;
-  -o-transition: transform .3s linear;
-  transition: transform .3s linear;
-  cursor: default;
-}
-#help-box p {
-  margin: 8px;
-  font-size: 14px;
-  line-height: 24px;
-}
-#help-box a, #help-box a:visited {
-  color: #af7f7f;
-  text-decoration: none;
-}
-#help-box a:hover, #help-box a:visited:hover {
-  text-decoration: underline;
-}
+
+/* Action Buttons */
+
 #controls {
   position: absolute;
   top: 5px;
@@ -663,24 +699,14 @@ h5 {
   display: flex;
   vertical-align: middle;
 }
+
 #sigma-buttons button {
-  flex: auto;
-  width: 38px;
-  height: 38px;
   margin: 1px;
-  background: #eee;
-  outline: none;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 0;
-  border: 2px solid #555;
-  border-radius: 5px;
 }
-#sigma-buttons button img {
-  width: 20px;
-  margin-top: 3px;
+#zoom-reset img {
+  margin: 2px;
 }
+
 #regscreen {
   display: none;
 }
@@ -695,6 +721,7 @@ h5 {
     display: none;
   }
 }
+
 #search {
   position: fixed;
   bottom: 5px;
@@ -732,6 +759,8 @@ h5 {
   padding-left: 20px;
 }
 
+/* Hint legend box */
+
 #legend {
   position: absolute;
   opacity: 0;
@@ -752,101 +781,252 @@ h5 {
   margin: 0;
 }
 
-/* -------- Switch Styles ------------*/
-#choices .network-choice:last-child {
-  margin-bottom: 0;
-}
-#choices .network-choice:first-child {
-  margin-top: 0;
-}
-#choices {
+
+/* -------- Loaders ------------*/
+
+.loader {
   position: absolute;
-  bottom: 36px;
-  width: 300px;
-  padding: 8px 0 10px 0;
-  margin: 0;
-  border-top: 1px dashed #444;
-}
-.network-choice {
-  display: flex;
-  justify-content: center;
-  position:relative;
-  width: 100%;
-  margin-bottom: 10px;
-  height: 28px;
-}
-label, .toggle {
-  height: 100%;
-  border-radius: 100px;
-}
-label {
-  display: block;
-  width: 236px;
-  background-color: white;
-  border-radius: 100px;
-  position: relative;
-  cursor: pointer;
-}
-.toggle {
-  position: absolute;
-  width: 116px;
-  background-color: var(--marvel-red);
-  transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  margin: -2px 0 0 -2px;
-  border: 2px solid #555;
-}
-.names {
-  font-size: 90%;
-  font-weight: bolder;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  align-content: center;
-  user-select: none;
-}
-.names > div {
-  font-size: 14px;
-  font-weight: bold;
-  text-transform: uppercase;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.left, .right{
-  width: 50%;
-  text-align: center;
-}
-[type="checkbox"] {
+  z-index: 5;
   display: none;
+  opacity: 0.85;
+  -webkit-transition: opacity 0.25s ease-in-out;
+  -moz-transition: opacity 0.25s ease-in-out;
+  -o-transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
 }
-[type="checkbox"]:disabled+label {
-  cursor: progress;
-}
-/* Toggle */
-[type="checkbox"]:checked + .network-switch-label .toggle {
-  transform: translateX(100%);
-}
-.left {
-  color: white;
-}
-.right {
-  color: var(--marvel-red);
-}
-[type="checkbox"]:checked + .network-switch-label .left {
-  color: var(--marvel-red);
-}
-[type="checkbox"]:checked + .network-switch-label .right {
-  color: white;
+.loader img {
+  width: 45px;
 }
 
-/* Responsiveness */
+#loader {
+  top: calc(50% - 25px);
+  left: calc(50% + 125px);
+  opacity: 0;
+}
+
+#loader-comics {
+  bottom: 0;
+  right: 0;
+  padding: 0 5px;
+  display: none;
+}
+
+#loader-list {
+  display: none;
+}
+#loader-list img {
+  position: relative;
+  top: 35px;
+  left: 0;
+  width: 45px;
+}
+
+
+/* -------- Modals ------------*/
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  display: none;
+  background-color: rgba(0, 0, 0, 0.85);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* FullScreen images modal */
+
+#modal-helper {
+  height: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
+#modal-img {
+  max-width: calc(100% - 15px);
+  max-height: calc(100% - 55px);
+  z-index: 20;
+  vertical-align: middle;
+  margin: 5px 5px 50px 0;
+}
+#modal-img-missing {
+  display: none;
+  position: absolute;
+  top: 45%;
+  left: calc(50% - 150px);
+  color: var(--marvel-red-light);
+  font-size: 36px;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 5px 10px;
+  z-index: 25;
+}
+
+#modal-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+}
+#modal-actions button {
+  margin: 5px 10px;
+  display: inline-block;
+}
+#modal button img {
+  z-index: -1;
+}
+#modal-pause {
+  display: none;
+}
+
+/* Helpbox modal */
+
+#help-box {
+  position: absolute;
+  top: 0;
+  left: 15%;
+  width: calc(70% - 60px);
+  height: calc(100% - 60px);
+  z-index: 25;
+  overflow-y: auto;
+  background-color: #444;
+  color: #CCC;
+  text-align: left;
+  padding: 30px;
+  margin: 0;
+  transform: scale(0);
+  -webkit-transition: transform .3s linear;
+  -moz-transition: transform .3s linear;
+  -o-transition: transform .3s linear;
+  transition: transform .3s linear;
+  cursor: default;
+}
+#help-box p {
+  margin: 8px;
+  font-size: 14px;
+  line-height: 24px;
+}
+#help-box a, #help-box a:visited {
+  color: #af7f7f;
+  text-decoration: none;
+}
+#help-box a:hover, #help-box a:visited:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Portrait modal */
+
+#rotate-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background-color: rgba(0, 0, 0, 0.85);
+  text-align: center;
+}
+
+#rotate-modal h2 {
+  background-color: var(--marvel-red);
+  color: white;
+  font-size: 34px!important;
+  padding: 5px 0!important;
+  margin: 0px 0px 10px 0px;
+}
+#rotate-modal .marvel {
+  font-size: 36px!important;
+  padding-right: 15px!important;
+}
+
+#rotate-modal-img {
+  position: relative;
+  top: 25%;
+  left: 0;
+  min-width: 25%;
+  max-width: 45%;
+}
+
+#rotate-modal p {
+  display: block;
+  position: relative;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  background-color: var(--marvel-red);
+  color: white;
+  font-size: 20px;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 15px 0px;
+}
+#rotate-modal p small {
+  font-size: 14px;
+  text-transform: lowercase;
+  padding: 15px 5px 5px 5px;
+  display: inline-block;
+  line-height: 20px;
+}
+
+@media (orientation: landscape) {
+  #rotate-modal {
+    z-index: -1;
+    opacity: 0;
+    -webkit-transition: opacity 0.5s linear;
+    -moz-transition: opacity 0.5s linear;
+    -o-transition: opacity 0.5s linear;
+    transition: opacity 0.5s linear;
+  }
+  #rotate-modal p, #rotate-modal-img {
+    height: 0;
+  }
+}
+
+@media (orientation: portrait) {
+  #rotate-modal {
+    opacity: 1;
+    -webkit-transition: 0.1s linear;
+    -moz-transition: 0.1s linear;
+    -o-transition: 0.1s linear;
+    transition: 0.1s linear;
+  }
+  .logo {
+    display: block;
+    padding: 5px;
+    height: 44px;
+  }
+  #sidebar, #controls, #comics-bar {
+    display: none!important;
+  }
+  #explanations, #node-details {
+    opacity: 0!important;
+  }
+  #loader {
+    top: 20%;
+    left: calc(50% - 25px);
+  }
+}
+
+@media (orientation: portrait) and (min-height: 1000px) {
+  #rotate-modal p {
+    font-size: 24px;
+  }
+  #rotate-modal p small {
+    display: none;
+  }
+}
+
+
+/* -------- Responsiveness ------------*/
+
 .show-middle {
   display: none;
 }
+
 @media (min-width: 700px) {
   #controls {
     left: 203px;
@@ -859,6 +1039,7 @@ label {
     transform-origin: right;
   }
 }
+
 @media (min-width: 1001px) {
   #controls {
     left: 305px;
@@ -873,16 +1054,19 @@ label {
     display: none;
   }
 }
+
 @media (min-width: 1001px) and (max-height: 600px) {
   .hide-small {
     display: none!important;
   }
 }
+
 @media (max-width: 1000px) and (max-height: 400px) {
   .show-middle {
     display: none!important;
   }
 }
+
 @media (max-width: 1000px) {
   .hide-small {
     display: none;
@@ -890,8 +1074,14 @@ label {
   .show-middle {
     display: inline;
   }
-  #sidebar, #choices, #credits, #comics-bar {
+  #sidebar, #choices, #credits {
     width: 198px;
+  }
+  #comics-bar {
+    width: 232px;
+  }
+  #comics-filter {
+    display: none;
   }
   h5 {
     font-size: 14px;
@@ -899,10 +1089,6 @@ label {
   }
   #explanations p, #node-extra {
     margin: 7px 8px;
-  }
-  #comics-actions button {
-    width: 33px;
-    height: 33px;
   }
   #histo-legend .hidable {
     display: none;
@@ -926,7 +1112,11 @@ label {
     padding-right: 7px!important;
     letter-spacing: -0.5px!important;
   }
-  label {
+  h2 {
+    font-size: 14.6px;
+    padding: 0px 2px;
+  }
+  .network-switch-label {
     width: 180px;
   }
   .toggle {
@@ -957,6 +1147,7 @@ label {
     display: inline;
   }
 }
+
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
@@ -966,10 +1157,6 @@ label {
     width: 235px;
     border: 1px solid #333;
     border-radius: 0 6px 6px 0;
-  }
-  #comics-actions button {
-    width: 38px;
-    height: 38px;
   }
   #controls {
     right: 5px;
@@ -981,6 +1168,7 @@ label {
     right: 136px;
   }
 }
+
 @media (max-height: 400px) {
   h2 {
     font-size: 14.6px;
@@ -993,6 +1181,7 @@ label {
     font-size: 13px!important;
   }
 }
+
 @media (max-height: 400px) and (max-width: 1000px) {
   h2 {
     font-size: 12px!important;
@@ -1002,6 +1191,7 @@ label {
     margin-bottom: 6px;
   }
 }
+
 @media (max-height: 600px) {
   h2 {
     font-size: 14.6px;
@@ -1045,7 +1235,35 @@ label {
   #loader-list img {
     top: 10px;
   }
+  #modal-img {
+    max-height: calc(100% - 15px);
+    max-width: calc(100% - 15px);
+    margin: 0;
+  }
+  #modal-actions {
+    height: 100%;
+  }
+  #modal-actions button {
+    position: absolute;
+    margin: 5px;
+  }
+  #modal-previous {
+    top: calc(50% - 17px);
+    left: 0;
+  }
+  #modal-next {
+    top: calc(50% - 17px);
+    right: 0;
+  }
+  #modal-play, #modal-pause {
+    bottom: calc(100% - 45px);
+    left: 0;
+  }
 }
+
+
+/* -------- Touch handling ------------*/
+
 @media not (pointer: coarse) {
   .histobar-hover:hover {
     background-color: white;
@@ -1061,6 +1279,7 @@ label {
     width: 25px;
   }
 }
+
 @media (pointer: coarse) {
   html, body {
     touch-action: pan-x, pan-y;
@@ -1078,7 +1297,7 @@ label {
   input, textarea, button, select, a, label, div, p {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
-  #search input, #comics-filter {
+  #search input {
     display: none;
   }
   #suggestions-select {
@@ -1094,129 +1313,11 @@ label {
     display: inline;
   }
 }
+
 @media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
   #loader-comics {
     bottom: 35px;
     right: 8px;
     padding: 0;
-  }
-}
-#rotate-modal {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 20;
-  background-color: rgba(0, 0, 0, 0.85);
-  text-align: center;
-}
-#rotate-modal h2 {
-  background-color: var(--marvel-red);
-  color: white;
-  font-size: 34px!important;
-  padding: 5px 0!important;
-  margin: 0px 0px 10px 0px;
-}
-#rotate-modal .marvel {
-  font-size: 36px!important;
-  padding-right: 15px!important;
-}
-#rotate-modal-img {
-  position: relative;
-  top: 25%;
-  left: 0;
-  min-width: 25%;
-  max-width: 45%;
-}
-#rotate-modal p {
-  display: block;
-  position: relative;
-  top: 25%;
-  left: 25%;
-  width: 50%;
-  background-color: var(--marvel-red);
-  color: white;
-  font-size: 20px;
-  text-transform: uppercase;
-  font-weight: bold;
-  padding: 15px 0px;
-}
-#rotate-modal p small {
-  font-size: 14px;
-  text-transform: lowercase;
-  padding: 15px 5px 5px 5px;
-  display: inline-block;
-  line-height: 20px;
-}
-@media (orientation: landscape) {
-  #rotate-modal {
-    z-index: -1;
-    opacity: 0;
-    -webkit-transition: opacity 0.5s linear;
-    -moz-transition: opacity 0.5s linear;
-    -o-transition: opacity 0.5s linear;
-    transition: opacity 0.5s linear;
-  }
-  #rotate-modal p, #rotate-modal-img {
-    height: 0;
-  }
-}
-@media (orientation: landscape) and (max-height: 600px) {
-  #modal-img {
-    max-height: calc(100% - 15px);
-    max-width: calc(100% - 15px);
-    margin: 0;
-  }
-  #modal-actions {
-    height: 100%;
-  }
-  #modal .action-button {
-    position: absolute;
-    margin: 5px;
-  }
-  #modal-previous {
-    top: calc(50% - 17px);
-    left: 0;
-  }
-  #modal-next {
-    top: calc(50% - 17px);
-    right: 0;
-  }
-  #modal-play, #modal-pause {
-    bottom: calc(100% - 45px);
-    left: 0;
-  }
-}
-@media (orientation: portrait) {
-  #rotate-modal {
-    opacity: 1;
-    -webkit-transition: 0.1s linear;
-    -moz-transition: 0.1s linear;
-    -o-transition: 0.1s linear;
-    transition: 0.1s linear;
-  }
-  .logo {
-    display: block;
-    padding: 5px;
-    height: 44px;
-  }
-  #sidebar, #controls, #comics-bar {
-    display: none!important;
-  }
-  #explanations, #node-details {
-    opacity: 0!important;
-  }
-  #loader {
-    top: 20%;
-    left: calc(50% - 25px);
-  }
-}
-@media (orientation: portrait) and (min-height: 1000px) {
-  #rotate-modal p {
-    font-size: 24px;
-  }
-  #rotate-modal p small {
-    display: none;
   }
 }
