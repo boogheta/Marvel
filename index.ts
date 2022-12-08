@@ -976,6 +976,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   comicsBarView = true;
   comicsBar.style.transform = "scaleX(1)";
   hideViewComicsButton();
+  disableSwitchButtons();
   comicsCache.style.display = "none";
   setTimeout(() => resize(true), 300);
 
@@ -991,10 +992,10 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   if (!comicsReady) {
     loaderList.style.display = "block";
     const waiter = setInterval(() => {
-     if (!comicsReady)
-      return;
-    clearInterval(waiter);
-    return setTimeout(() => actuallyDisplayComics(node, autoReselect), 0);
+      if (!comicsReady)
+        return;
+      clearInterval(waiter);
+      return setTimeout(() => actuallyDisplayComics(node, autoReselect), 0);
     }, 50);
   } else actuallyDisplayComics(node, autoReselect);
 }
@@ -1038,13 +1039,18 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         .join("&nbsp;")
         .replace(/&nbsp;([^&]+)$/, " or $1");
 
-    setTimeout(() => {
-// TODO ASYNC HERE SPLIT LIST BY SETS OF 1000 COMICS
-      comicsList.innerHTML = comics.length
-        ? comics.map(x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>")
-          .join("")
-        : "<b>no comic-book found</b>";
+    if (!comics.length) {
+      comicsList.innerHTML = "<b>no comic-book found</b>";
+      loaderList.style.display = "none";
+      resize(true);
+      enableSwitchButtons();
+// TODO USE WEBWORKER HERE INSTEAD OF TIMEOUT
+    } else setTimeout(() => {
+      comicsList.innerHTML = comics.map(
+        x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>"
+        ).join("");
       minComicLiHeight = 100;
+// TODO ASYNC HERE SPLIT LIST BY SETS OF 250 COMICS
       comics.forEach(c => {
         const comicLi = document.getElementById("comic-" + c.id) as any;
         minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
@@ -1061,6 +1067,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         comicsCache.style.display = "none";
       }
       resize(true);
+      enableSwitchButtons();
     }, 200);
   }, 200);
 }
@@ -1277,6 +1284,7 @@ function disableSwitchButtons() {
 }
 
 function enableSwitchButtons() {
+  if (comicsBarView && !comicsReady) return;
   switchNodeType.disabled = false;
   switchNodeFilter.disabled = false;
   switchNodeView.disabled = false;
