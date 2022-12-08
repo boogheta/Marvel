@@ -108,9 +108,9 @@
         </div>
       </div>
       <div id="credits">
-        <button id="help" class="tooltip" tooltip="read more info &amp;&nbsp;explanations">
+        <div id="help" class="tooltip" tooltip="read more info &amp;&nbsp;explanations">
           <span>?</span>
-        </button>
+        </div>
         <p>data <span class="large-bar">provided </span>by <a href="https://developer.marvel.com/" target="_blank">MARVEL</a> © 2022</p>
         <p>
           <span class="large-bar">built </span>by <a href="https://twitter.com/boogheta" target="_blank">@boogheta</a>
@@ -219,22 +219,22 @@
       <span id="modal-helper"></span>
       <img id="modal-img"/>
       <div id="modal-actions">
-        <button id="modal-previous" class="action-button tooltip" tooltip="previous comic">
+        <button id="modal-previous" class="tooltip" tooltip="previous comic">
           <img src="./images/left.svg" alt="previous-picture" />
         </button>
-        <button id="modal-play" class="action-button tooltip" tooltip="start scrolling comics">
+        <button id="modal-play" class="tooltip" tooltip="start scrolling comics">
           <img src="./images/play.svg" alt="play" />
         </button>
-        <button id="modal-pause" class="action-button selected tooltip" tooltip="stop scrolling comics">
+        <button id="modal-pause" class="selected tooltip" tooltip="stop scrolling comics">
           <img src="./images/pause.svg" alt="pause" />
         </button>
-        <button id="modal-next" class="action-button tooltip" tooltip="next comic">
+        <button id="modal-next" class="tooltip" tooltip="next comic">
           <img src="./images/right.svg" alt="previous-picture" />
         </button>
+        <button id="close-modal" class="close-button tooltip" tooltip="close picture overlay">
+          <img src="./images/close.svg" alt="close-picture-modal" />
+        </button>
       </div>
-      <button id="close-modal" class="action-button close-button tooltip" tooltip="close picture overlay">
-        <img src="./images/close.svg" alt="close-picture-modal" />
-      </button>
     </div>
     <div id="help-modal" class="modal">
       <div id="help-box">
@@ -267,7 +267,7 @@
         <br/>
         <p>You can find me on Mastodon:&nbsp;<a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter:&nbsp;<a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or&nbsp;<a href="https://github.com/boogheta">GitHub</a>.</p>
       </div>
-      <button id="close-help" class="action-button close-button tooltip" tooltip="close info box">
+      <button id="close-help" class="close-button tooltip" tooltip="close info box">
         <img src="./images/close.svg" alt="close-help-box" />
       </button>
     </div>
