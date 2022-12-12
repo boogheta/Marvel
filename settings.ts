@@ -1,4 +1,4 @@
-import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
+import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
 const startYear = 1939,
   curYear = (new Date).getFullYear(),

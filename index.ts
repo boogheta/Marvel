@@ -41,8 +41,8 @@ IDEAS:
 
 import Papa from "papaparse";
 import Graph from "graphology";
-import { Sigma } from "./sigma.js";
-import { Coordinates } from "./sigma.js/types";
+import { Sigma } from "sigma";
+import { Coordinates } from "sigma/types";
 import {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
