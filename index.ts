@@ -1,7 +1,6 @@
 /* TODO:
 - fix close comics button breaks reopen comics
-- legend should opacify during loads
-- disable comics buttons while loading comics + add comicsCache and maintain loader visible
+- hide edges by default? replace with halos?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -129,6 +128,7 @@ const conf = {},
 // Useful DOM elements
 const container = document.getElementById("sigma-container") as HTMLElement,
   legend = document.getElementById("legend") as HTMLElement,
+  controls = document.getElementById("controls") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
   loaderList = document.getElementById("loader-list") as HTMLElement,
@@ -142,6 +142,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   modalPrev = document.getElementById("modal-previous") as HTMLButtonElement,
   modalPlay = document.getElementById("modal-play") as HTMLButtonElement,
   modalPause = document.getElementById("modal-pause") as HTMLButtonElement,
+  comicsActions = document.getElementById("comics-actions") as HTMLButtonElement,
   comicsNext = document.getElementById("comics-next") as HTMLButtonElement,
   comicsPrev = document.getElementById("comics-prev") as HTMLButtonElement,
   comicsPlay = document.getElementById("comics-play") as HTMLButtonElement,
@@ -203,10 +204,8 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
   if (networks[ent][siz].loaded && (!waitForComics || comicsReady))
     return callback ? setTimeout(callback, 0) : null;
 
-  if (callback || (waitForComics && !comicsReady)) {
-    loader.style.display = "block";
-    loader.style.opacity = "0.5";
-  }
+  if (callback || (waitForComics && !comicsReady))
+    showLoader();
 
   if (networks[ent][siz].loading) {
     if (callback) {
@@ -600,8 +599,8 @@ function renderNetwork(shouldComicsBarView) {
     conditionalOpenComicsBar();
   }
 
-  loader.style.opacity = "0.5";
   resize();
+  showLoader();
   // Zoom in graph on first init network
   if (!data.rendered) {
     camera.x = 0.5 + (shift / (2 * sigmaWidth));
@@ -1056,10 +1055,9 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
         selectedComic: selectedComic
       }, comicsListData => {
         resize(true);
-        if ((new Date() as any) - now > 100) {
-          loader.style.display = "block";
-          loader.style.opacity = "0.5";
-        }
+        if ((new Date() as any) - now > 100)
+          showLoader();
+
         setTimeout(() => {
           if (comicsBarView)
             comicsList.innerHTML = comicsListData.join("");
@@ -1346,16 +1344,31 @@ function showCanvases(showClustersLayer = true) {
     clustersLayer.style.display = "block";
 }
 
+function showLoader() {
+  loader.style.display = "block";
+  loader.style.opacity = "0.5";
+  controls.style.opacity = "0.25";
+  legend.style.opacity = "0.25";
+  comicsActions.style.opacity = "0.25";
+}
+
 function hideLoader() {
+  if (comicsBarView && !comicsReady)
+    return;
   if (view === "pictures")
     return setTimeout(() => {
-      loader.style.display = "none";
-      loader.style.opacity = "0";
+      actuallyHideLoader();
       picturesRenderingDelay[entity] = Math.min(picturesRenderingDelay[entity],
         networkSize === "most" ? 0 : picturesLoadingDelay / 2);
     }, picturesRenderingDelay[entity]);
+  actuallyHideLoader();
+}
+function actuallyHideLoader() {
   loader.style.display = "none";
   loader.style.opacity = "0";
+  controls.style.opacity = "1";
+  legend.style.opacity = "1";
+  comicsActions.style.opacity = "1";
 }
 
 function defaultSidebar() {
@@ -1914,7 +1927,6 @@ function resize(fast = false) {
 
   const legendLeft = divWidth("sidebar") + divWidth("controls") + 10;
   legend.style.left = legendLeft + "px";
-  legend.style.opacity = "1";
   legend.style.width = "calc(100% - " +
     (27 + legendLeft +
       (comicsBarView && comicsBar.getBoundingClientRect().x !== 0
@@ -2019,8 +2031,8 @@ function readURL() {
       clustersLayer.innerHTML = "";
       clustersLayer.style.display = "none";
     }
+    showLoader();
     loader.style.opacity = "1";
-    loader.style.display = "block";
 
     // Clear highlighted node from previous graph so it won't remain further on
     if (entity && selectedNode) {
@@ -2111,8 +2123,7 @@ function readURL() {
   }, 0);
   else if (switchv) {
     if (graph && renderer) {
-      loader.style.display = "block";
-      loader.style.opacity = "0.5";
+      showLoader();
 
       setTimeout(() => {
         renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
