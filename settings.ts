@@ -106,7 +106,8 @@ const startYear = 1939,
     labelFont: '"DejaVu Sans Mono", monospace',
     labelColor: {color: '#AAA'},
     labelWeight: 'bold',
-    labelGridCellSize: 200,
+    labelDensity: 1.5,
+    labelGridCellSize: 350,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       circle: createNodeCompoundProgram([

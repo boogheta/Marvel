@@ -1,5 +1,5 @@
 /* TODO:
-- fix switch entity on unselected node does not recenter graph
+- fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - remove most/main switch and only propose most?
 - replace last switch with big button and proper touch tooltip
 - check bad data marvel :
@@ -282,8 +282,8 @@ function buildNetwork(networkData, ent, siz, callback, waitForComics) {
         borderColor: lightenColor(color, 25),
         borderSize: sigmaDim / 1000,
         haloSize: size * 10,
-        haloIntensity: ent === "characters" ? 0.06 : 0.04,
-        haloColor: lightenColor(color, 75)
+        haloIntensity: 0.05,
+        haloColor: lightenColor(color, 65)
       });
       if (ent === "creators")
         allCreators[node] = label;
@@ -887,8 +887,8 @@ function clickNode(node, updateURL = true, center = false) {
           data.graph.hasExtremity(edge, node)
             ? { ...attrs,
                 zIndex: 0,
-                color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-                size: Math.max(2, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
+                color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 25),
+                size: Math.max(sigmaDim < 500 ? 1 : 2, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 10000)
               }
             : { ...attrs,
                 zIndex: 0,
@@ -1212,8 +1212,8 @@ function selectComic(comic, keep = false, autoReselect = false) {
       ? { ...attrs,
           zIndex: 2,
           size: attrs.size * 1.75,
-          haloSize: attrs.size * 2.5,
-          haloIntensity: 1
+          haloSize: attrs.size * 3,
+          haloIntensity: 0.75
         }
       : { ...attrs,
           type: "circle",
@@ -1238,7 +1238,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
           hidden: true
         }
   );
-  renderer.setSetting("labelGridCellSize", 10);
+  renderer.setSetting("labelGridCellSize", 200);
 
   if (!preventAutoScroll && keep)
     scrollComicsList();
