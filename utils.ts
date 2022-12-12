@@ -109,24 +109,47 @@ function rotatePosition(pos, angle) {
   };
 };
 
-function uncompress(compressed, method, callback) {
-  const worker_script = `
-    importScripts("${window.location.origin}/pako_inflate.min.js");
-    self.onmessage = async (evt) => {
-      const file = evt.data;
-      const decompressed = pako.${method}(file, {to: "string"});
-      self.postMessage(decompressed);
-    };
-  `;
-  const worker_blob = new Blob([worker_script], { type: "application/javascript" });
+function useWebWorker(script, inputData, callback) {
+  const worker_blob = new Blob([script], { type: "application/javascript" });
   const worker_url = URL.createObjectURL(worker_blob);
   const worker = new Worker(worker_url);
   worker.onmessage = ({ data }) => {
     callback(data);
     worker.terminate();
   };
-  worker.postMessage(compressed);
+  worker.postMessage(inputData);
 };
+
+function uncompress(compressed, method, callback) {
+  useWebWorker(`
+    importScripts("${window.location.origin}/pako_inflate.min.js");
+    self.onmessage = async (evt) => {
+      const file = evt.data;
+      const decompressed = pako.${method}(file, {to: "string"});
+      self.postMessage(decompressed);
+    };
+  `, compressed, callback);
+};
+
+function buildComicsList(data, callback) {
+  useWebWorker(`
+    self.onmessage = async (evt) => {
+      const data = evt.data;
+      const lightenColor = ${lightenColor.toString()};
+      const list = data.comics.map(
+        x => '<li id="comic-' + x.id + '"' +
+          (data.color
+            ? ' style="color: ' + lightenColor(data.creatorsRoles[x.role]) + '"'
+            : ""
+          ) + (data.selectedComic && x.id === data.selectedComic.id
+            ? ' class="selected"'
+            : ""
+          ) + '>' + x.title + '</li>'
+      );
+      self.postMessage(list);
+    };
+  `, data, callback);
+}
 
 export {
   logDebug,
@@ -138,5 +161,6 @@ export {
   divWidth, divHeight,
   isTouchDevice, webGLSupport,
   rotatePosition,
-  uncompress
+  uncompress,
+  buildComicsList
 };
