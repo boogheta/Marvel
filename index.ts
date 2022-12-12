@@ -1,6 +1,4 @@
 /* TODO:
-- fix close comics button breaks reopen comics
-- hide edges by default? replace with halos?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -17,12 +15,14 @@
   - add cover artist in comics list, not in links used
  => one more check with takoyaki on authors/characters labels + readjust louvain after
 - update screenshots
+- update README
 - auto data updates
 - reorga dossiers
 IDEAS:
 - add more cases to legend
 - remove most/main switch and only propose most?
 - remove colors/avatars switch and use node borders with sigma3 instead?
+- replace edges by color halos on unselected view?
 - add some kind of touch tooltip on remaining
 - test large histogram
 - improve touch tooltips :
@@ -2005,7 +2005,7 @@ function readURL() {
   switchClass(sortDate, "selected", sortComics === "date");
   switchClass(sortAlpha, "selected", sortComics === "alpha");
 
-  const dispc = selectedComic !== oldComic || sortComics !== oldSort;
+  const dispc = (shouldComicsBarView && !comicsBarView) || selectedComic !== oldComic || sortComics !== oldSort;
 
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
