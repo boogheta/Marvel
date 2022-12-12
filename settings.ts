@@ -1,4 +1,9 @@
-import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
+import { createNodeCompoundProgram } from 'sigma/rendering/webgl/programs/common/node';
+import NodePointProgram from 'sigma/rendering/webgl/programs/node.point';
+import NodePointWithBorderProgram from '@yomguithereal/sigma-experiments-renderers/node/node.point.border';
+import NodeHaloProgram from '@yomguithereal/sigma-experiments-renderers/node/node.halo';
+import getNodeProgramImage from "./node.image";
+
 
 const startYear = 1939,
   curYear = (new Date).getFullYear(),
@@ -94,15 +99,25 @@ const startYear = 1939,
     "#904f13",
     "#c45ecf"
   ],
+  NodeProgramImage = getNodeProgramImage(),
   sigmaSettings = {
     maxCameraRatio: 75,
-    defaultEdgeColor: '#1A1A1A',
+    defaultEdgeColor: '#000',
     labelFont: '"DejaVu Sans Mono", monospace',
+    labelColor: {color: '#AAA'},
     labelWeight: 'bold',
     labelGridCellSize: 200,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
-      image: getNodeProgramImage()
+      circle: createNodeCompoundProgram([
+        NodeHaloProgram,
+        NodePointProgram
+      ]),
+      image: createNodeCompoundProgram([
+        NodeHaloProgram,
+        NodePointWithBorderProgram,
+        NodeProgramImage
+      ])
     }
   };
 
