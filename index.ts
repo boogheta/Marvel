@@ -461,7 +461,7 @@ function renderNetwork(shouldComicsBarView) {
       () => camera.animatedReset({ duration: 300 });
   } else {
     renderer.setSetting("nodeReducer", (n, attrs) => attrs);
-    renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+    renderer.setSetting("edgeReducer", (edge, attrs) => ({...attrs, hidden: true}));
     renderer.setSetting("labelColor", sigmaSettings["labelColor"]);
     renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings["labelRenderedSizeThreshold"]);
     renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
@@ -751,7 +751,7 @@ function clickNode(node, updateURL = true, center = false) {
   }
   // Reset unselected node view
   renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
-  renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+  renderer.setSetting("edgeReducer", (edge, attrs) => ({...attrs, hidden: true}));
   renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (!node) {
     selectedNode = null;
@@ -2127,7 +2127,7 @@ function readURL() {
 
       setTimeout(() => {
         renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
-        renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
+        renderer.setSetting("edgeReducer", (edge, attrs) => ({...attrs, hidden: true}));
         renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
         if (graph && shouldComicsBarView && selectedComic)
           selectComic(selectedComic, true, true);
