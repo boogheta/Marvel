@@ -1,5 +1,4 @@
 /* TODO:
-- fix close comics button breaks reopen comics
 - hide edges by default? replace with halos?
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
@@ -2005,7 +2004,7 @@ function readURL() {
   switchClass(sortDate, "selected", sortComics === "date");
   switchClass(sortAlpha, "selected", sortComics === "alpha");
 
-  const dispc = selectedComic !== oldComic || sortComics !== oldSort;
+  const dispc = (shouldComicsBarView && !comicsBarView) || selectedComic !== oldComic || sortComics !== oldSort;
 
   logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
