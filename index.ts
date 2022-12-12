@@ -1,5 +1,7 @@
 /* TODO:
-- make rendering list of comics async?
+- fix close comics button breaks reopen comics
+- legend should opacify during loads
+- disable comics buttons while loading comics + add comicsCache and maintain loader visible
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -52,7 +54,8 @@ import {
   divWidth, divHeight,
   isTouchDevice, webGLSupport,
   rotatePosition,
-  uncompress
+  uncompress,
+  buildComicsList
 } from "./utils";
 import {
   startYear, curYear, totalYears,
@@ -1044,30 +1047,43 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
       loaderList.style.display = "none";
       resize(true);
       enableSwitchButtons();
-// TODO USE WEBWORKER HERE INSTEAD OF TIMEOUT
     } else setTimeout(() => {
-      comicsList.innerHTML = comics.map(
-        x => '<li id="comic-' + x.id + '"' + (selectedNodeLabel && creatorsComics[selectedNode] ? ' style="color: ' + lightenColor(creatorsRoles[x.role]) + '"' : "") + (selectedComic && x.id === selectedComic.id ? ' class="selected"' : "") + '>' + x.title + "</li>"
-        ).join("");
-      minComicLiHeight = 100;
-// TODO ASYNC HERE SPLIT LIST BY SETS OF 250 COMICS
-      comics.forEach(c => {
-        const comicLi = document.getElementById("comic-" + c.id) as any;
-        minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
-        comicLi.comic = c;
-        comicLi.onmouseup = () => {
-          preventAutoScroll = true;
-          setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic.id === comicLi.comic.id ? "" : comicLi.comic), sortComics);
-        };
-        comicLi.onmouseenter = () => selectComic(c);
+      const now = new Date() as any;
+      buildComicsList({
+        comics: comics,
+        color: selectedNodeLabel && creatorsComics[selectedNode],
+        creatorsRoles: creatorsRoles,
+        selectedComic: selectedComic
+      }, comicsListData => {
+        resize(true);
+        if ((new Date() as any) - now > 100) {
+          loader.style.display = "block";
+          loader.style.opacity = "0.5";
+        }
+        setTimeout(() => {
+          if (comicsBarView)
+            comicsList.innerHTML = comicsListData.join("");
+          if (comicsBarView && autoReselect) {
+            if (selectedComic) scrollComicsList();
+            comicsCache.style.display = "none";
+          }
+          hideLoader();
+          enableSwitchButtons();
+          loaderList.style.display = "none";
+
+          minComicLiHeight = 100;
+          setTimeout(() => comicsBarView && comics.filter(c => {
+            const comicLi = document.getElementById("comic-" + c.id) as any;
+            minComicLiHeight = Math.min(minComicLiHeight, comicLi.getBoundingClientRect().height);
+            comicLi.comic = c;
+            comicLi.onmouseup = () => {
+              preventAutoScroll = true;
+              setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic.id === comicLi.comic.id ? "" : comicLi.comic), sortComics);
+            };
+            comicLi.onmouseenter = () => selectComic(c);
+          }), 50);
+        }, 50);
       });
-      loaderList.style.display = "none";
-      if (autoReselect) {
-        if (selectedComic) scrollComicsList();
-        comicsCache.style.display = "none";
-      }
-      resize(true);
-      enableSwitchButtons();
     }, 200);
   }, 200);
 }
