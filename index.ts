@@ -411,7 +411,7 @@ function renderNetwork(shouldComicsBarView) {
   } else document.getElementById("clusters-legend").innerHTML = Object.keys(data.clusters)
     .filter(k => !data.clusters[k].hide)
     .map(k =>
-      '<b style="color: ' + data.clusters[k].color + '">'
+      '<b style="color: ' + lightenColor(data.clusters[k].color, 25) + '">'
       + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
       + ' (<span class="color">' + formatNumber(data.counts[data.clusters[k].community]) + '</span>)</b>'
     ).join(", ");
@@ -837,7 +837,7 @@ function clickNode(node, updateURL = true, center = false) {
     }
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
-      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
+      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + lightenColor(data.communities[attrs.community].color, 25) + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
   } else
     nodeExtra.innerHTML += '<p>The size of the node reflects how often ' +
       'the ' + entity + ' are ' +

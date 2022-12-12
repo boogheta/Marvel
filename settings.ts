@@ -37,7 +37,7 @@ const startYear = 1939,
     characters: {
       "Avengers": {
         match: ["Avengers"],
-        color: "#2b6718"
+        color: "#57b23d"
       },
       "X-Men": {
         match: ["X-Men"],
@@ -49,7 +49,7 @@ const startYear = 1939,
       },
       "Ultimate Universe": {
         match: ["Ultimates"],
-        color: "#57b23d"
+        color: "#b2ff9d"
       },
       "Fantastic Four & Cosmic heroes": {
         match: ["Fantastic Four"],
