@@ -96,7 +96,7 @@ const startYear = 1939,
   ],
   sigmaSettings = {
     maxCameraRatio: 75,
-    defaultEdgeColor: '#2A2A2A',
+    defaultEdgeColor: '#1A1A1A',
     labelFont: '"DejaVu Sans Mono", monospace',
     labelWeight: 'bold',
     labelGridCellSize: 200,
