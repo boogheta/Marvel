@@ -1,4 +1,9 @@
-import getNodeProgramImage from "./sigma.js/rendering/webgl/programs/node.image";
+import { createNodeCompoundProgram } from 'sigma/rendering/webgl/programs/common/node';
+import NodePointProgram from 'sigma/rendering/webgl/programs/node.point';
+import NodePointWithBorderProgram from '@yomguithereal/sigma-experiments-renderers/node/node.point.border';
+import NodeHaloProgram from "./node.halo";
+import getNodeProgramImage from "./node.image";
+
 
 const startYear = 1939,
   curYear = (new Date).getFullYear(),
@@ -32,7 +37,7 @@ const startYear = 1939,
     characters: {
       "Avengers": {
         match: ["Avengers"],
-        color: "#2b6718"
+        color: "#57b23d"
       },
       "X-Men": {
         match: ["X-Men"],
@@ -44,7 +49,7 @@ const startYear = 1939,
       },
       "Ultimate Universe": {
         match: ["Ultimates"],
-        color: "#57b23d"
+        color: "#b2ff9d"
       },
       "Fantastic Four & Cosmic heroes": {
         match: ["Fantastic Four"],
@@ -94,15 +99,26 @@ const startYear = 1939,
     "#904f13",
     "#c45ecf"
   ],
+  NodeProgramImage = getNodeProgramImage(),
   sigmaSettings = {
     maxCameraRatio: 75,
-    defaultEdgeColor: '#1A1A1A',
+    defaultEdgeColor: '#000',
     labelFont: '"DejaVu Sans Mono", monospace',
+    labelColor: {color: '#AAA'},
     labelWeight: 'bold',
-    labelGridCellSize: 200,
+    labelDensity: 1.2,
+    labelGridCellSize: 350,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
-      image: getNodeProgramImage()
+      circle: createNodeCompoundProgram([
+        NodeHaloProgram,
+        NodePointProgram
+      ]),
+      image: createNodeCompoundProgram([
+        NodeHaloProgram,
+        NodePointWithBorderProgram,
+        NodeProgramImage
+      ])
     }
   };
 

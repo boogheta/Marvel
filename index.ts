@@ -1,7 +1,12 @@
 /* TODO:
+- fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
+- remove most/main switch and only propose most?
+- replace last switch with big button and proper touch tooltip
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
+  - filter creator "Title"
+  - merge Curt Conners => Lizard
   - check why zoom on Spiderman 1602 only zooms on regular spiderman
   - test new spatialization graphology
   - test FA2 + louvain after sparsification
@@ -19,15 +24,12 @@
 - auto data updates
 - reorga dossiers
 IDEAS:
+- build gif of all versions of the app
 - add more cases to legend
-- remove most/main switch and only propose most?
-- remove colors/avatars switch and use node borders with sigma3 instead?
-- replace edges by color halos on unselected view?
-- add some kind of touch tooltip on remaining
-- test large histogram
 - improve touch tooltips :
   - touchmove should follow across tooltips like histogram's
   - better positioning away from the finger
+- test large histogram
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - handle mobile darkmodes diffs? cf branch nightmode
 - add urlrooting for modal? and play?
@@ -36,13 +38,13 @@ IDEAS:
 - handle old browsers where nodeImages are full black (ex: old iPad)
 - handle alternate phone browsers where sigma does not work, ex Samsung Internet on Android 8
 - test bipartite network between authors and characters filtered by category of author
-- build data on movies and add a switch
+- build data on movies and add a switch?
 */
 
 import Papa from "papaparse";
 import Graph from "graphology";
-import { Sigma } from "./sigma.js";
-import { Coordinates } from "./sigma.js/types";
+import { Sigma } from "sigma";
+import { Coordinates } from "sigma/types";
 import {
   logDebug,
   hasClass, addClass, rmClass, switchClass,
@@ -69,7 +71,6 @@ import {
 
 let entity = "",
   networkSize = "",
-  view = "",
   selectedNode = null,
   selectedNodeType = null,
   selectedNodeLabel = null,
@@ -186,14 +187,10 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   switchTypeLabel = document.getElementById("switch-type") as HTMLInputElement,
   switchNodeFilter = document.getElementById("node-filter-switch") as HTMLInputElement,
   switchFilterLabel = document.getElementById("switch-filter") as HTMLInputElement,
-  switchNodeView = document.getElementById("node-view-switch") as HTMLInputElement,
-  switchViewLabel = document.getElementById("switch-view") as HTMLInputElement,
   globalTooltip = document.getElementById("tooltip") as HTMLElement,
   entitySpans = document.querySelectorAll(".entity") as NodeListOf<HTMLElement>,
   charactersDetailsSpans = document.querySelectorAll(".characters-details") as NodeListOf<HTMLElement>,
   creatorsDetailsSpans = document.querySelectorAll(".creators-details") as NodeListOf<HTMLElement>,
-  colorsDetailsSpans = document.querySelectorAll(".colors-details") as NodeListOf<HTMLElement>,
-  picturesDetailsSpans = document.querySelectorAll(".pictures-details") as NodeListOf<HTMLElement>,
   mainDetailsSpans = document.querySelectorAll(".main-details") as NodeListOf<HTMLElement>,
   mostDetailsSpans = document.querySelectorAll(".most-details") as NodeListOf<HTMLElement>;
 
@@ -227,9 +224,9 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
 }
 
 function computeNodeSize(count) {
-  return Math.pow(count, 0.2)
+  return (3/4 + Math.pow(count, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
-    * (networkSize === "main" ? 1.75 : 1.25)
+    * (networkSize === "main" ? 1.75 : 1.25))
     * sigmaDim / 1000
 };
 
@@ -259,7 +256,7 @@ function buildNetwork(networkData, ent, siz, callback, waitForComics) {
         }
     });
 
-    // Adjust nodes visual attributes for rendering (size, color, images)
+    // Adjust nodes visual attributes for rendering (size, color)
     data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
       const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
         role = artist_ratio !== null
@@ -278,12 +275,17 @@ function buildNetwork(networkData, ent, siz, callback, waitForComics) {
       if (!data.counts[key])
         data.counts[key] = 0;
       data.counts[key]++;
+      const size = computeNodeSize(stories);
       data.graph.mergeNodeAttributes(node, {
         type: "circle",
         image: /available/i.test(image) ? "" : image,
-        size: computeNodeSize(stories),
-        color: color,
-        hlcolor: lightenColor(color, 35)
+        size: size,
+        color: lightenColor(color, 25),
+        borderColor: lightenColor(color, 25),
+        borderSize: sigmaDim / 1500,
+        haloSize: size * 5,
+        haloIntensity: 0.05 * Math.log(stories),
+        haloColor: lightenColor(color, 75)
       });
       if (ent === "creators")
         allCreators[node] = label;
@@ -397,7 +399,7 @@ function buildComics(comicsData) {
 /* -- Graphs display -- */
 
 function renderNetwork(shouldComicsBarView) {
-  logDebug("RENDER", {entity, networkSize, view, selectedNode, selectedNodeType, selectedNodeLabel, shouldComicsBarView, comicsBarView, selectedComic});
+  logDebug("RENDER", {entity, networkSize, selectedNode, selectedNodeType, selectedNodeLabel, shouldComicsBarView, comicsBarView, selectedComic});
   const data = networks[entity][networkSize];
 
   // Feed communities size to explanations
@@ -411,14 +413,13 @@ function renderNetwork(shouldComicsBarView) {
   } else document.getElementById("clusters-legend").innerHTML = Object.keys(data.clusters)
     .filter(k => !data.clusters[k].hide)
     .map(k =>
-      '<b style="color: ' + data.clusters[k].color + '">'
+      '<b style="color: ' + lightenColor(data.clusters[k].color, 25) + '">'
       + k.split(" ").map(x => '<span>' + x + '</span>').join(" ")
       + ' (<span class="color">' + formatNumber(data.counts[data.clusters[k].community]) + '</span>)</b>'
     ).join(", ");
 
   // Instantiate sigma:
   sigmaSettings["labelRenderedSizeThreshold"] = ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000;
-  sigmaSettings["labelColor"] = view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'};
 
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
@@ -445,9 +446,9 @@ function renderNetwork(shouldComicsBarView) {
     renderer.on("clickNode", (event) => clickNode(event.node));
     renderer.on("clickStage", () => {
       if (comicsBarView && selectedComic)
-        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+        setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, "", sortComics);
       else if (comicsBarView)
-        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
+        setURL(entity, networkSize, selectedNodeLabel, selectedNodeType);
       else setSearchQuery();
     });
 
@@ -462,7 +463,6 @@ function renderNetwork(shouldComicsBarView) {
   } else {
     renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-    renderer.setSetting("labelColor", sigmaSettings["labelColor"]);
     renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings["labelRenderedSizeThreshold"]);
     renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
 
@@ -583,7 +583,7 @@ function renderNetwork(shouldComicsBarView) {
 
   const sigmaWidth = divWidth("sigma-container");
   function finalizeGraph() {
-    renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
+    renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     // If a node is selected we refocus it
     if (selectedNodeLabel && selectedNodeType !== entity)
       return loadNetwork(selectedNodeType, "most", () => {
@@ -612,6 +612,9 @@ function renderNetwork(shouldComicsBarView) {
       {ratio: sigmaWidth / (sigmaWidth - shift)},
       {duration: 1500},
       () => {
+        data.graph.forEachNode((node) =>
+          data.graph.setNodeAttribute(node, "type", "image")
+        );
         finalizeGraph();
         // Load comics data after first network rendered
         if (comicsReady === null) {
@@ -750,9 +753,8 @@ function clickNode(node, updateURL = true, center = false) {
     modalImgMissing.style.display = "none";
   }
   // Reset unselected node view
-  renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
+  renderer.setSetting("nodeReducer", (n, attrs) => attrs);
   renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-  renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
   if (!node) {
     selectedNode = null;
     selectedNodeType = null;
@@ -760,7 +762,7 @@ function clickNode(node, updateURL = true, center = false) {
     nodeLabel.style.display = "none";
     resize(true);
     if (updateURL)
-      setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
+      setURL(entity, networkSize, null, null, selectedComic, sortComics);
     selectSuggestions.selectedIndex = 0;
     defaultSidebar();
     if (comicsBarView && !sameNode)
@@ -784,11 +786,11 @@ function clickNode(node, updateURL = true, center = false) {
   }
 
   if (!data.graph.hasNode(node))
-    return setURL(entity, networkSize, view, null, null, selectedComic, sortComics);
+    return setURL(entity, networkSize, null, null, selectedComic, sortComics);
 
   if (updateURL && !sameNode) {
     legend.style.display = "none";
-    setURL(entity, networkSize, view, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
+    setURL(entity, networkSize, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
   }
 
   // Fill sidebar with selected node's details
@@ -837,7 +839,7 @@ function clickNode(node, updateURL = true, center = false) {
     }
     // Or communities if we have it for characters
     else if (data.communities[attrs.community])
-      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + data.communities[attrs.community].color + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
+      nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + lightenColor(data.communities[attrs.community].color, 25) + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
   } else
     nodeExtra.innerHTML += '<p>The size of the node reflects how often ' +
       'the ' + entity + ' are ' +
@@ -857,25 +859,26 @@ function clickNode(node, updateURL = true, center = false) {
   if (!comicsBarView || !(selectedComic && comicEntities && comicEntities.indexOf(node) !== -1)) {
     renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     if (relatedNodes === null) {
-      // Highlight clicked node and make it bigger always with a picture and hide unconnected ones
+      // Highlight clicked node, make it bigger and hide unconnected ones
       data.graph.setNodeAttribute(node, "highlighted", true);
       renderer.setSetting(
         "nodeReducer", (n, attrs) => n === node
           ? { ...attrs,
-              type: "image",
               zIndex: 2,
               size: attrs.size * 1.75,
-              hlcolor: "#ec1d24"
+              haloSize: attrs.size * 3.5,
+              haloIntensity: 0.75,
             }
           : data.graph.hasEdge(n, node)
             ? { ...attrs,
-                type: view === "pictures" ? "image" : "circle",
-                zIndex: 1,
-                hlcolor: null
+                haloSize: attrs.size * 2,
+                haloIntensity: 0.65,
+                zIndex: 1
               }
             : { ...attrs,
-                type: "circle",
                 zIndex: 0,
+                type: "circle",
+                haloIntensity: 0,
                 color: "#2A2A2A",
                 size: sigmaDim < 500 ? 1 : 2,
                 label: null
@@ -887,8 +890,8 @@ function clickNode(node, updateURL = true, center = false) {
           data.graph.hasExtremity(edge, node)
             ? { ...attrs,
                 zIndex: 0,
-                color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 75),
-                size: Math.max(2, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 5000)
+                color: lightenColor(data.graph.getNodeAttribute(data.graph.opposite(node, edge), 'color'), 25),
+                size: Math.max(sigmaDim < 500 ? 1 : 2, Math.log(data.graph.getEdgeAttribute(edge, 'weight')) * sigmaDim / 10000)
               }
             : { ...attrs,
                 zIndex: 0,
@@ -901,13 +904,15 @@ function clickNode(node, updateURL = true, center = false) {
       renderer.setSetting(
         "nodeReducer", (n, attrs) => relatedNodes[n] !== undefined
           ? { ...attrs,
-              type: view === "pictures" ? "image" : "circle",
-              size: computeNodeSize(relatedNodes[n] * comicsRatio),
+              size: computeNodeSize(Math.pow(relatedNodes[n] * comicsRatio, 1.3)),
+              haloSize: 5 * computeNodeSize(Math.pow(relatedNodes[n] * comicsRatio, 1.3)),
+              haloIntensity: 0.05 * Math.log(relatedNodes[n] * comicsRatio),
               zIndex: 2
             }
           : { ...attrs,
-              type: "circle",
               zIndex: 0,
+              type: "circle",
+              haloIntensity: 0,
               color: "#2A2A2A",
               size: sigmaDim < 500 ? 1 : 2,
               label: null
@@ -929,10 +934,6 @@ function clickNode(node, updateURL = true, center = false) {
               }
       );
     }
-
-    renderer.setSetting(
-      "labelColor", {attribute: "hlcolor", color: "#CCC"}
-    );
   }
 
   if (comicsBarView) {
@@ -1020,7 +1021,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   if (autoReselect) {
     const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
     if (selectedNode && comicEntities && comicEntities.indexOf(selectedNode) === -1)
-      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+      setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, "", sortComics);
     else selectComic(allComicsMap[selectedComic] || selectedComic, true, autoReselect);
   }
 
@@ -1076,7 +1077,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
             comicLi.comic = c;
             comicLi.onmouseup = () => {
               preventAutoScroll = true;
-              setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, (selectedComic.id === comicLi.comic.id ? "" : comicLi.comic), sortComics);
+              setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, (selectedComic.id === comicLi.comic.id ? "" : comicLi.comic), sortComics);
             };
             comicLi.onmouseenter = () => selectComic(c);
           }), 50);
@@ -1089,10 +1090,10 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
 viewAllComicsButton.onclick = () => {
   addClass(viewAllComicsButton, "hidden");
   fullHistogram.style.display = "none";
-  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+  setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, "", sortComics);
 };
 document.getElementById("close-bar").onclick =
-  () => setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
+  () => setURL(entity, networkSize, selectedNodeLabel, selectedNodeType);
 
 function clearComicDetails() {
   comicTitle.innerHTML = "";
@@ -1200,12 +1201,12 @@ function selectComic(comic, keep = false, autoReselect = false) {
   comic.creators.forEach(c => {
     if (!allCreators[c]) return;
     const entityLi = document.getElementById("creator-" + c) as HTMLElement;
-    entityLi.onclick = () => setURL(entity, networkSize, view, allCreators[c], "creators", selectedComic, sortComics);
+    entityLi.onclick = () => setURL(entity, networkSize, allCreators[c], "creators", selectedComic, sortComics);
   });
   comic.characters.forEach(c => {
     if (!allCharacters[c]) return;
     const entityLi = document.getElementById("character-" + c) as HTMLElement;
-    entityLi.onclick = () => setURL(entity, networkSize, view, allCharacters[c], "characters", selectedComic, sortComics);
+    entityLi.onclick = () => setURL(entity, networkSize, allCharacters[c], "characters", selectedComic, sortComics);
   });
   (document.querySelectorAll(".entity-link") as NodeListOf<HTMLElement>).forEach(setupTooltip);
 
@@ -1214,12 +1215,14 @@ function selectComic(comic, keep = false, autoReselect = false) {
       ? { ...attrs,
           zIndex: 2,
           size: attrs.size * 1.75,
-          type: view === "pictures" ? "image" : "circle"
+          haloSize: attrs.size * 3,
+          haloIntensity: 0.75
         }
       : { ...attrs,
+          type: "circle",
+          haloIntensity: 0,
           zIndex: 0,
           color: "#2A2A2A",
-          type: "circle",
           size: sigmaDim < 500 ? 1 : 2,
           label: null
         }
@@ -1238,7 +1241,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
           hidden: true
         }
   );
-  renderer.setSetting("labelGridCellSize", 10);
+  renderer.setSetting("labelGridCellSize", 200);
 
   if (!preventAutoScroll && keep)
     scrollComicsList();
@@ -1291,7 +1294,6 @@ regScreenBtn.onclick = () => {
 function disableSwitchButtons() {
   switchNodeType.disabled = true;
   switchNodeFilter.disabled = true;
-  switchNodeView.disabled = true;
   (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => addClass(el, "selected")
   );
@@ -1301,7 +1303,6 @@ function enableSwitchButtons() {
   if (comicsBarView && !comicsReady) return;
   switchNodeType.disabled = false;
   switchNodeFilter.disabled = false;
-  switchNodeView.disabled = false;
   (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => rmClass(el, "selected")
   );
@@ -1310,18 +1311,13 @@ function enableSwitchButtons() {
 switchNodeType.onchange = (event) => {
   disableSwitchButtons();
   explanations.style.opacity = "0";
-  setURL(switchNodeType.checked ? "creators" : "characters", networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+  setURL(switchNodeType.checked ? "creators" : "characters", networkSize, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 switchNodeFilter.onchange = (event) => {
   disableSwitchButtons();
   explanations.style.opacity = "0";
-  setURL(entity, switchNodeFilter.checked ? "most" : "main", view, selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
-};
-
-switchNodeView.onchange = (event) => {
-  disableSwitchButtons();
-  setURL(entity, networkSize, switchNodeView.checked ? "colors" : "pictures", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
+  setURL(entity, switchNodeFilter.checked ? "most" : "main", selectedNodeLabel, selectedNodeType, selectedComic, sortComics);
 };
 
 
@@ -1333,7 +1329,7 @@ switchNodeView.onchange = (event) => {
   el.onclick = () => {
     if (!renderer) return;
     hideComicsBar();
-    setURL(entity, networkSize, view);
+    setURL(entity, networkSize);
     setTimeout(() => camera.animate({x: 0.5, y: 0.5, ratio: 1, angle: 0}, {duration: 250}), 100);
   }
 });
@@ -1355,13 +1351,11 @@ function showLoader() {
 function hideLoader() {
   if (comicsBarView && !comicsReady)
     return;
-  if (view === "pictures")
-    return setTimeout(() => {
-      actuallyHideLoader();
-      picturesRenderingDelay[entity] = Math.min(picturesRenderingDelay[entity],
-        networkSize === "most" ? 0 : picturesLoadingDelay / 2);
-    }, picturesRenderingDelay[entity]);
-  actuallyHideLoader();
+  return setTimeout(() => {
+    actuallyHideLoader();
+    picturesRenderingDelay[entity] = Math.min(picturesRenderingDelay[entity],
+      networkSize === "most" ? 0 : picturesLoadingDelay / 2);
+  }, picturesRenderingDelay[entity]);
 }
 function actuallyHideLoader() {
   loader.style.display = "none";
@@ -1413,7 +1407,7 @@ function setViewComicsButton(node) {
   viewComicsButton.onclick = () => {
     addClass(viewComicsButton, "hidden");
     nodeHistogram.style.display = "none";
-    setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+    setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, "", sortComics);
   };
   renderHistogram(nodeHistogram, node);
 }
@@ -1516,7 +1510,7 @@ function scrollComicsList() {
 
 function selectAndScroll(el) {
   if (!el) return;
-  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, el.comic, sortComics);
+  setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, el.comic, sortComics);
   scrollComicsList();
 }
 
@@ -1600,11 +1594,11 @@ const sortableTitle = s => s.replace(/^(.* \(\d+\)).*$/, "$1 / ") + s.replace(/^
   sortByDate = (a, b) => a.date < b.date ? -1 : (a.date === b.date ? 0 : 1);
 
 sortAlpha.onclick = () => {
-  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, "alpha");
+  setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, selectedComic, "alpha");
 };
 
 sortDate.onclick = () => {
-  setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, selectedComic, "date");
+  setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, selectedComic, "date");
 };
 
 // Search comics input
@@ -1666,7 +1660,7 @@ document.onkeydown = function(e) {
         break;
 
       case 27: // esc
-        setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType, "", sortComics);
+        setURL(entity, networkSize, selectedNodeLabel, selectedNodeType, "", sortComics);
         break;
 
       default: return; // exit this handler for other keys
@@ -1677,7 +1671,7 @@ document.onkeydown = function(e) {
     else if (e.which === 39 || e.which === 40)
       selectAndScroll(document.querySelector("#comics-list li:first-child") as any);
     else if (e.which === 27)
-      setURL(entity, networkSize, view, selectedNodeLabel, selectedNodeType);
+      setURL(entity, networkSize, selectedNodeLabel, selectedNodeType);
     else return;
   }  else if (selectedNode && e.which === 27)
     clickNode(null);
@@ -1698,7 +1692,6 @@ modal.ontouchstart = touchStart;
 modalImgMissing.ontouchstart = touchStart;
 comicImg.ontouchstart = touchStart;
 switchTypeLabel.ontouchstart = touchStart;
-switchViewLabel.ontouchstart = touchStart;
 switchFilterLabel.ontouchstart = touchStart;
 
 function touchEnd(e, threshold = 100) {
@@ -1750,14 +1743,6 @@ switchFilterLabel.ontouchend = e => {
   if ((typ === "left" || typ === "right") && !switchNodeFilter.disabled) {
     switchNodeFilter.checked = !switchNodeFilter.checked;
     switchNodeFilter.onchange(e);
-  }
-};
-
-switchViewLabel.ontouchend = e => {
-  const typ = touchEnd(e, 0);
-  if ((typ === "left" || typ === "right") && !switchNodeView.disabled) {
-    switchNodeView.checked = !switchNodeView.checked;
-    switchNodeView.onchange(e);
   }
 };
 
@@ -1937,9 +1922,14 @@ function resize(fast = false) {
   if (!fast && renderer) {
     const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
     renderer.setSetting("labelRenderedSizeThreshold", ((networkSize === "main" ? 6 : 4) + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
-    graph.forEachNode((node, {stories}) =>
-      graph.setNodeAttribute(node, "size", computeNodeSize(stories))
-    );
+    graph.forEachNode((node, {stories}) => {
+      const size = computeNodeSize(stories);
+      graph.mergeNodeAttributes(node, {
+        size: size,
+        borderSize: sigmaDim / 1500,
+        haloSize: size * 5
+      });
+    });
   }
   if (!fast) resizing = false;
 }
@@ -1953,7 +1943,7 @@ window.onresize = () => {
 
 /* -- URL actions routing -- */
 
-function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort = "date") {
+function setURL(ent, siz, sel = null, selType = null, comics = null, sort = "date") {
   const opts = [];
   if (sel !== null && !(ent === selType && !(networks[ent][siz].graph && networks[ent][siz].graph.findNode((node, {label}) => label === sel))))
     opts.push((selType || ent).replace(/s$/, "") + "=" + sel.replace(/ /g, "+"));
@@ -1963,7 +1953,7 @@ function setURL(ent, siz, vie, sel = null, selType = null, comics = null, sort =
       opts.push("sort=" + sort);
   }
 
-  window.location.hash = "/" + siz + "/" + ent + "/" + vie + "/"
+  window.location.hash = "/" + siz + "/" + ent + "/"
     + (opts.length ? "?" + opts.join("&") : "");
 }
 
@@ -1971,19 +1961,17 @@ function readURL() {
   const args = window.location.hash
     .replace(/^#\//, '')
     .split(/\/\??/);
-  if (args.length < 4
+  if (args.length < 3
     || ["main", "most"].indexOf(args[0]) === -1
     || ["characters", "creators"].indexOf(args[1]) === -1
-    || ["pictures", "colors"].indexOf(args[2]) === -1
-  ) return setURL("characters", "main", "pictures");
+  ) return setURL("characters", "main");
   const opts = Object.fromEntries(
-    args[3].split("&")
+    args[2].split("&")
     .map(o => /=/.test(o) ? o.split("=") : [o, ""])
     .filter(o => ["creator", "character", "comics", "sort"].indexOf(o[0]) !== -1)
   );
 
-  const reload = args[1] !== entity || args[0] !== networkSize,
-    switchv = args[2] !== view;
+  const reload = args[1] !== entity || args[0] !== networkSize;
 
   const oldNodeLabel = selectedNodeLabel;
   selectedNodeLabel = null;
@@ -2007,7 +1995,7 @@ function readURL() {
 
   const dispc = (shouldComicsBarView && !comicsBarView) || selectedComic !== oldComic || sortComics !== oldSort;
 
-  logDebug("READ URL", {args, opts, reload, switchv, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
+  logDebug("READ URL", {args, opts, reload, clickn, oldNodeLabel, selectedNodeLabel, dispc, oldComic, selectedComic, shouldComicsBarView, oldSort, sortComics});
 
   // Update titles
   const combo = args[0] + " " + args[1];
@@ -2069,12 +2057,6 @@ function readURL() {
   document.getElementById("min-stories").innerHTML = conf["min_stories_for_" + entity];
   document.getElementById("cooccurrence-threshold").innerHTML = conf["cooccurrence_threshold_for_" + entity];
 
-  // Setup View switch
-  switchNodeView.checked = args[2] === "colors";
-  view = args[2];
-  colorsDetailsSpans.forEach(span => span.style.display = (view === "colors" ? "inline" : "none"));
-  picturesDetailsSpans.forEach(span => span.style.display = (view === "pictures" ? "inline" : "none"));
-
   // Update tooltips
   viewComicsButton.setAttribute("tooltip",
     "browse the list of comics listed as " +
@@ -2099,11 +2081,6 @@ function readURL() {
       (selectedNodeType === "creators" ? "from" : "with") +
       " '" + selectedNodeLabel + "'")
   );
-  switchViewLabel.setAttribute("tooltip", "switch the " + entity + " aspect to '" +
-    (view === "colors" ? "avatar images" :
-      (entity === "creators" ? "vocation" : "community") + " colors"
-    ) + "'"
-  );
   if (sortComics === "date") {
     sortDate.setAttribute("tooltip", "comics are ordered by 'publication date'");
     sortAlpha.setAttribute("tooltip", "sort comics by 'title &amp; issue number'");
@@ -2113,31 +2090,16 @@ function readURL() {
   }
 
   const graph = networks[entity][networkSize].graph;
-  if (reload) setTimeout(() => {
-    // If graph already loaded, just render it
-    stopPlayComics();
-    if (graph)
-      renderNetwork(shouldComicsBarView);
-    // Otherwise load network file
-    else loadNetwork(entity, networkSize, () => renderNetwork(shouldComicsBarView));
-  }, 0);
-  else if (switchv) {
-    if (graph && renderer) {
-      showLoader();
-
-      setTimeout(() => {
-        renderer.setSetting("nodeReducer", (n, attrs) => (view === "pictures" ? { ...attrs, type: "image" } : attrs));
-        renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-        renderer.setSetting("labelColor", view === "pictures" ? {attribute: 'hlcolor'} : {color: '#999'});
-        if (graph && shouldComicsBarView && selectedComic)
-          selectComic(selectedComic, true, true);
-        else if (graph && selectedNode)
-          clickNode(selectedNode, false);
-        else hideLoader();
-        enableSwitchButtons();
-      }, 10);
-    }
-  } else if (clickn) {
+  if (reload)
+    setTimeout(() => {
+      // If graph already loaded, just render it
+      stopPlayComics();
+      if (graph)
+        renderNetwork(shouldComicsBarView);
+      // Otherwise load network file
+      else loadNetwork(entity, networkSize, () => renderNetwork(shouldComicsBarView));
+    }, 0);
+  else if (clickn) {
     stopPlayComics();
     let network = networks[entity][networkSize];
     if (selectedNodeType !== entity) {
