@@ -59,7 +59,7 @@
       </div>
       <div id="explanations" class="sidebar-text">
         <p>This graph shows a map of <b id="order"></b> Marvel <span class="entity"></span> positionned close to those they are the most linked with.</p>
-        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in <span class="main-details">at least </span><span class="main-details" id="min-stories"></span><span class="most-details">all</span> comics registered into Marvel's API. Stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored. A few isolated sets of <span class="entity"></span> from the others were removed.</p>
+        <p>The network includes all <span class="entity"></span> <span class="creators-details">(writers and pencillers)</span><span class="characters-details">(including teams)</span> mentioned as involved in all comics registered into Marvel's API. Stories accounting more than <span id="cooccurrence-threshold"></span> <span class="entity"></span> were ignored. A few isolated sets of <span class="entity"></span> from the others were removed.</p>
         <p>The size of the nodes reflects how often the <span class="entity"></span> are accounted as participating to comics in Marvel API's data.</p>
         <p><span class="characters-details">Colors indicate which <i>family</i> each character belongs to: <span id="clusters-legend"></span>, etc.</span></p>
         <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
@@ -76,16 +76,6 @@
       </div>
       <div id="choices" class="selected">
         <h5>Switch to the <span class="large-bar">alternative</span><span class="small-bar">other</span> graph</h5>
-        <div class="network-choice">
-          <input type="checkbox" id="node-filter-switch" />
-          <label id="switch-filter" class="network-switch-label tooltip" for="node-filter-switch">
-            <div class="toggle"></div>
-            <div class="names">
-              <div id="size-main" class="left">main</div>
-              <div id="size-most" class="right">most</div>
-            </div>
-          </label>
-        </div>
         <div class="network-choice">
           <input type="checkbox" id="node-type-switch" />
           <label id="switch-type" class="network-switch-label tooltip" for="node-type-switch">
@@ -248,7 +238,7 @@
         <p>Web interface and network visualization in Node.js using <a href="https://graphology.github.io/" target="_blank">graphology</a>, <a href="https://sigmajs.org/" target="_blank">Sigma.js</a>, <a href="http://nodeca.github.io/pako/" target="_blank">pako</a> and <a href="https://www.papaparse.com/" target="_blank">PapaParse</a>, built in TypeScript with <a href="https://www.npmjs.com/package/kotatsu" target="_blank">kotatsu</a>.</p>
         <p>All icons are used or adapted from SVG creations under CC Zero Public Domain by <a href="https://openclipart.org/detail/191399/smartphone" target="_blank">agomjo</a>, CC Attribution License by <a href="https://github.com/atisawd/boxicons" target="_blank">boxicons</a> and MIT license from <a href="https://github.com/artcoholic/akar-icons" target="_blank">artcoholic</a> &amp; <a href="https://github.com/twbs/icons" target="_blank">Bootstrap</a>.</p>
         <br/>
-        <p>Thanks to <a href="#/main/creators/colors/?creator=Stan+Lee&comics" onclick="document.getElementById('close-help').onclick()">Stan Lee</a>, <a href="#/main/characters/pictures/?creator=Jack+Kirby&comics" onclick="document.getElementById('close-help').onclick()">Jack Kirby</a> and all the amazing <a href="https://www.marvel.com/" target="_blank">Marvel comics</a> authors who brought us so many incredible stories and uncanny characters over the past decades!<br/>
+        <p>Thanks to <a href="#/creators/?creator=Stan+Lee&comics" onclick="document.getElementById('close-help').onclick()">Stan Lee</a>, <a href="#/characters/?creator=Jack+Kirby&comics" onclick="document.getElementById('close-help').onclick()">Jack Kirby</a> and all the amazing <a href="https://www.marvel.com/" target="_blank">Marvel comics</a> authors who brought us so many incredible stories and uncanny characters over the past decades!<br/>
         And thanks to MARVEL for bringing all of those together and providing the <a href="https://developer.marvel.com/" target="_blank">API</a> which makes this app possible.</p>
         <p>Thanks to <a href="https://github.com/Yomguithereal" target="_blank">@Yomguithereal</a>, <a href="https://github.com/paulgirard" target="_blank">@paulgirard</a>, <a href="https://github.com/jacomyal" target="_blank">@jacomyal</a>, <a href="https://github.com/jacomyMa" target="_blank">@jacomyMa</a> and <a href="https://github.com/robindemourat" target="_blank">robindemourat</a> for their precious help, ideas and code libraries!</p>
         <p>And lots of thanks to the 2014 Amsterdam <a href="http://contropedia.net/" target="_blank">Contropedia</a> datasprint where this whole idea germinated before it got buried in my mind and GitHub repositories for 8 long years. :)</p>
