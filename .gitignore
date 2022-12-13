@@ -8,5 +8,4 @@ data/*.positions
 images/other_formats
 images/creators.*
 images/characters.*
-sigma.js
 pako_inflate.min.js

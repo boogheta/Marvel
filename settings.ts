@@ -119,6 +119,15 @@ const startYear = 1939,
         NodePointWithBorderProgram,
         NodeProgramImage
       ])
+    },
+    nodeHoverProgramClasses: {
+      circle: createNodeCompoundProgram([
+        NodePointProgram
+      ]),
+      image: createNodeCompoundProgram([
+        NodePointWithBorderProgram,
+        NodeProgramImage
+      ])
     }
   };
 
