@@ -1,5 +1,6 @@
-/**
- * Sigma.js WebGL Renderer Node Program
+// Forked from Sigma.js to handle node border attributes used by @Yomguithereal's NodePointWithBorderProgram from sigma-experiments: https://github.com/Yomguithereal/sigma-experiments/blob/master/renderers/src/node/node.point.border.ts
+
+/* Sigma.js WebGL Renderer Node Program
  * =====================================
  *
  * Program rendering nodes using GL_POINTS, but that draws an image on top of

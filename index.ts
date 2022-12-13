@@ -24,6 +24,7 @@
 - auto data updates
 - reorga dossiers
 IDEAS:
+- build gif of all versions of the app
 - add more cases to legend
 - improve touch tooltips :
   - touchmove should follow across tooltips like histogram's
@@ -282,9 +283,9 @@ function buildNetwork(networkData, ent, siz, callback, waitForComics) {
         color: lightenColor(color, 25),
         borderColor: lightenColor(color, 25),
         borderSize: sigmaDim / 1500,
-        haloSize: size * 10,
-        haloIntensity: 0.05,
-        haloColor: lightenColor(color, 65)
+        haloSize: size * 5,
+        haloIntensity: 0.05 * Math.log(stories),
+        haloColor: lightenColor(color, 75)
       });
       if (ent === "creators")
         allCreators[node] = label;
@@ -865,12 +866,13 @@ function clickNode(node, updateURL = true, center = false) {
           ? { ...attrs,
               zIndex: 2,
               size: attrs.size * 1.75,
-              haloSize: attrs.size * 17.5,
-              haloIntensity: 0.075
+              haloSize: attrs.size * 3.5,
+              haloIntensity: 0.75,
             }
           : data.graph.hasEdge(n, node)
             ? { ...attrs,
-                haloIntensity: 0.075,
+                haloSize: attrs.size * 2,
+                haloIntensity: 0.65,
                 zIndex: 1
               }
             : { ...attrs,
@@ -902,9 +904,9 @@ function clickNode(node, updateURL = true, center = false) {
       renderer.setSetting(
         "nodeReducer", (n, attrs) => relatedNodes[n] !== undefined
           ? { ...attrs,
-              size: computeNodeSize(relatedNodes[n] * comicsRatio),
-              haloSize: 10 * computeNodeSize(relatedNodes[n] * comicsRatio),
-              haloIntensity: 0.075,
+              size: computeNodeSize(Math.pow(relatedNodes[n] * comicsRatio, 1.3)),
+              haloSize: 5 * computeNodeSize(Math.pow(relatedNodes[n] * comicsRatio, 1.3)),
+              haloIntensity: 0.05 * Math.log(relatedNodes[n] * comicsRatio),
               zIndex: 2
             }
           : { ...attrs,
@@ -1925,7 +1927,7 @@ function resize(fast = false) {
       graph.mergeNodeAttributes(node, {
         size: size,
         borderSize: sigmaDim / 1500,
-        haloSize: size * 10
+        haloSize: size * 5
       });
     });
   }
