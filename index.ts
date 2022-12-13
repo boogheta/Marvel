@@ -5,6 +5,7 @@
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
+  - filter creator "Title"
   - merge Curt Conners => Lizard
   - check why zoom on Spiderman 1602 only zooms on regular spiderman
   - test new spatialization graphology
@@ -222,9 +223,9 @@ function loadNetwork(ent, siz, callback = null, waitForComics = false) {
 }
 
 function computeNodeSize(count) {
-  return Math.pow(count, 0.2)
+  return (3/4 + Math.pow(count, 0.2)
     * (entity === "characters" ? 1.75 : 1.25)
-    * (networkSize === "main" ? 1.75 : 1.25)
+    * (networkSize === "main" ? 1.75 : 1.25))
     * sigmaDim / 1000
 };
 
@@ -280,7 +281,7 @@ function buildNetwork(networkData, ent, siz, callback, waitForComics) {
         size: size,
         color: lightenColor(color, 25),
         borderColor: lightenColor(color, 25),
-        borderSize: sigmaDim / 1000,
+        borderSize: sigmaDim / 1500,
         haloSize: size * 10,
         haloIntensity: 0.05,
         haloColor: lightenColor(color, 65)
@@ -1923,7 +1924,7 @@ function resize(fast = false) {
       const size = computeNodeSize(stories);
       graph.mergeNodeAttributes(node, {
         size: size,
-        borderSize: sigmaDim / 1000,
+        borderSize: sigmaDim / 1500,
         haloSize: size * 10
       });
     });
