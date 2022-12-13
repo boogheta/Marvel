@@ -1,7 +1,10 @@
+// Forked from @Yomguithereal's sigma-experiments programs: https://github.com/Yomguithereal/sigma-experiments/blob/master/renderers/src/node/node.halo.ts
+
 // A node renderer using one triangle to render a blurry halo useful to render
 // a basic heatmap with variable color, size and intensity
 // NOTE: the ignoreZoom uniform is not in use but could be accessed through
 // a factory.
+
 import type { NodeDisplayData, RenderParams } from "sigma/types";
 import { NodeProgram } from "sigma/rendering/webgl/programs/common/node";
 import NodeCircleProgram from "sigma/rendering/webgl/programs/node.circle";
@@ -58,9 +61,9 @@ varying float v_intensity;
 const vec4 transparent = vec4(0.0, 0.0, 0.0, 0.0);
 void main(void) {
   float dist = length(v_diffVector);
-  float intensity = v_intensity * (1.0 - dist);
+  float intensity = v_intensity * (v_radius - dist) / v_radius;
   if (dist < v_radius) {
-    gl_FragColor = mix(v_color, transparent, pow(dist / v_radius, intensity));
+    gl_FragColor = vec4(v_color * intensity);
   }
   else {
     gl_FragColor = transparent;
