@@ -1,7 +1,7 @@
 import { createNodeCompoundProgram } from 'sigma/rendering/webgl/programs/common/node';
 import NodePointProgram from 'sigma/rendering/webgl/programs/node.point';
 import NodePointWithBorderProgram from '@yomguithereal/sigma-experiments-renderers/node/node.point.border';
-import NodeHaloProgram from '@yomguithereal/sigma-experiments-renderers/node/node.halo';
+import NodeHaloProgram from "./node.halo";
 import getNodeProgramImage from "./node.image";
 
 
