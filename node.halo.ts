@@ -52,7 +52,7 @@ void main() {
 `;
 
 const FRAGMENT_SHADER_SOURCE = /*glsl*/ `
-precision mediump float;
+precision highp float;
 varying vec4 v_color;
 varying vec2 v_diffVector;
 varying float v_radius;
