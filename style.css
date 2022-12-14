@@ -668,6 +668,10 @@ button.sort-button img {
   background-color: black;
 }
 
+.sigma-edges {
+  opacity: 0.5;
+}
+
 /* Creators era labels layer */
 
 #clusters-layer {
