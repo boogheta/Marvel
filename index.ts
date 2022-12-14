@@ -1,5 +1,4 @@
 /* TODO:
-- set threshold label to max node size instead and readjust grid size
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - replace last switch with big button and proper touch tooltip
 - check bad data marvel :
@@ -410,8 +409,6 @@ function renderNetwork(shouldComicsBarView) {
     ).join(", ");
 
   // Instantiate sigma:
-  sigmaSettings["labelRenderedSizeThreshold"] = (4 + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000;
-
   const sigmaDims = container.getBoundingClientRect();
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   if (!renderer) {
@@ -454,8 +451,6 @@ function renderNetwork(shouldComicsBarView) {
   } else {
     renderer.setSetting("nodeReducer", (n, attrs) => attrs);
     renderer.setSetting("edgeReducer", (edge, attrs) => attrs);
-    renderer.setSetting("labelRenderedSizeThreshold", sigmaSettings["labelRenderedSizeThreshold"]);
-    renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
 
     renderer.setGraph(data.graph);
   }
@@ -848,7 +843,6 @@ function clickNode(node, updateURL = true, center = false) {
 
   const comicEntities = selectedComic && selectedComic[selectedNodeType || entity];
   if (!comicsBarView || !(selectedComic && comicEntities && comicEntities.indexOf(node) !== -1)) {
-    renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
     if (relatedNodes === null) {
       // Highlight clicked node, make it bigger and hide unconnected ones
       data.graph.setNodeAttribute(node, "highlighted", true);
@@ -1094,7 +1088,6 @@ function clearComicDetails() {
   comicCreators.innerHTML = "";
   comicCharacters.innerHTML = "";
   comicUrl.style.display = "none";
-  renderer.setSetting("labelGridCellSize", sigmaSettings.labelGridCellSize);
 }
 
 function unselectComic() {
@@ -1232,7 +1225,6 @@ function selectComic(comic, keep = false, autoReselect = false) {
           hidden: true
         }
   );
-  renderer.setSetting("labelGridCellSize", 200);
 
   if (!preventAutoScroll && keep)
     scrollComicsList();
@@ -1893,16 +1885,17 @@ function resize(fast = false) {
     ) + "px)";
 
   if (!fast && renderer) {
-    const ratio = Math.pow(1.1, Math.log(camera.ratio) / Math.log(1.5));
-    renderer.setSetting("labelRenderedSizeThreshold", (4 + (entity === "characters" ? 1 : 0.5)) * sigmaDim / 1000);
+    let maxSize = 0;
     graph.forEachNode((node, {stories}) => {
       const size = computeNodeSize(stories);
+      maxSize = Math.max(maxSize, size);
       graph.mergeNodeAttributes(node, {
         size: size,
         borderSize: sigmaDim / 1500,
         haloSize: size * 5
       });
     });
+    renderer.setSetting("labelRenderedSizeThreshold", maxSize - 5);
   }
   if (!fast) resizing = false;
 }
