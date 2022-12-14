@@ -1,4 +1,5 @@
 /* TODO:
+- set threshold label to max node size instead and readjust grid size
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - replace last switch with big button and proper touch tooltip
 - check bad data marvel :
@@ -914,7 +915,7 @@ function clickNode(node, updateURL = true, center = false) {
           relatedNodes[networks[entity].graph.target(edge)] !== undefined
             ? { ...attrs,
                 zIndex: 0,
-                color: '#222',
+                color: '#444',
                 size: 1
               }
             : { ...attrs,
@@ -1222,7 +1223,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
       comic[entity].indexOf(graph.source(edge)) !== -1 && comic[entity].indexOf(graph.target(edge)) !== -1
       ? { ...attrs,
           zIndex: 0,
-          color: '#333',
+          color: '#666',
           size: sigmaDim < 500 ? 1 : 3
         }
       : { ...attrs,
