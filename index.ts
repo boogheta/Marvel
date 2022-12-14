@@ -291,7 +291,7 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
     }
     networks[ent].loaded = true;
     networksLoaded += 1;
-    if (networksLoaded === 4)
+    if (networksLoaded === 2)
       loaderComics.style.display = "none";
     if (callback) {
       if (waitForComics && !comicsReady) {
