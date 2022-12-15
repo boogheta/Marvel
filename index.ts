@@ -1,7 +1,4 @@
 /* TODO:
-- make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
-  -> handle unhover
-  -> handle hover from comicslist => warning on cases where a comic is selected, what to do then?
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - make labels on multiple lines
 - load good mono font on mobile
@@ -81,6 +78,7 @@ let entity = "",
   sigmaDim = null,
   renderer = null,
   camera = null,
+  currentReducers = {nodes: null, edges: null},
   animation = null,
   clustersLayer = null,
   resizeClusterLabels = function() {},
@@ -1810,8 +1808,19 @@ function renderHistogram(element, node = null, comics = null) {
         node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
-  (comicsBarView ? comicsHistogram : element).innerHTML = histogramDiv;
+  const histoDiv = (comicsBarView ? comicsHistogram : element);
+  histoDiv.innerHTML = histogramDiv;
 
+  histoDiv.onmouseenter = e => {
+    currentReducers = {
+      nodes: renderer.getSetting("nodeReducer"),
+      edges: renderer.getSetting("edgeReducer")
+    };
+  };
+  histoDiv.onmouseleave = e => {
+    renderer.setSetting("nodeReducer", currentReducers.nodes);
+    renderer.setSetting("edgeReducer", currentReducers.edges);
+  };
   const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
     bar.onmouseenter = e => {
@@ -1827,14 +1836,14 @@ function renderHistogram(element, node = null, comics = null) {
         maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar");
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
-      const comicsRatio = allComics.length / (3 * histogram.sum);
       if (histogram.entityYearMap[year]) {
+        const comicsRatio = allComics.length / histogram.sum;
         renderer.setSetting(
           "nodeReducer", (n, attrs) => histogram.entityYearMap[year][n] !== undefined
             ? { ...attrs,
-                size: computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
-                haloSize: 5 * computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
-                haloIntensity: 0.1 * Math.log(histogram.entityYearMap[year][n] * comicsRatio),
+                size: 1.5 * computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
+                haloSize: 3.5 * computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
+                haloIntensity: 0.15 * Math.log(histogram.entityYearMap[year][n] * comicsRatio),
                 zIndex: 2
               }
             : { ...attrs,
