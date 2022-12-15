@@ -75,7 +75,7 @@
         <div id="node-histogram"></div>
       </div>
       <div id="choices" class="selected">
-        <h5>Switch to <span class="large-bar">the alternative</span><span class="small-bar">other</span> graph</h5>
+        <h5>Switch to the graph of</h5>
         <div class="network-choice">
           <input type="checkbox" id="node-type-switch" />
           <label id="switch-type" class="network-switch-label tooltip" for="node-type-switch">
@@ -218,17 +218,18 @@
     </div>
     <div id="help-modal" class="modal">
       <div id="help-box">
-        <p><b>MARVEL graphs</b> is an app that displays network maps of Marvel characters or creators where each one is positionned close to those she/he is most linked with as registered within <a href="https://developer.marvel.com/" target="_blank">Marvel's&nbsp;API</a>.</p>
+        <p><b>MARVEL graphs</b> is an app that displays network maps of the Marvel characters or creators galaxy where each one is positionned close to those she/he is most linked with as registered within <a href="https://developer.marvel.com/" target="_blank">Marvel's&nbsp;API</a>.</p>
         <p>Data, comic book images and photographs are all provided by Marvel. ©&nbsp;2022&nbsp;<a href="https://https://www.marvel.com/" target="_blank">Marvel</a></p>
         <br/>
-        <p>Although Marvel API's data is not always perfect and many comics miss information on their creators or characters, it still remains really rich over all periods since the 40's and results look good enough! They should not be considered as perfectly accurate though.</p>
+        <p>Although Marvel API's data is not always perfect and many comics miss information on their creators or characters, it still remains really rich over all periods since the 40's and results look good enough! They should not be considered as totally accurate though.</p>
         <p>Since associations between authors and comic book issues are more complete within webpages from the Marvel.com website than within the API, the data was completed accordingly.</p>
         <br/>
         <p>The nodes positions are computed using the <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0098679" target="_blank">ForceAtlas2 algorithm</a> implemented in <a href="https://doi.org/10.1371/journal.pone.0098679" target="_blank">graphology.js</a>, which places nodes that are the most linked together closer and further from the others.</p>
-        <p>The characters <i>families</i> used for the colors are network communities that were manually labeled after being computed with graphology's <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a> <a href="https://graphology.github.io/standard-library/communities-louvain" target="_blank">implementation</a>. They can therefore be sometimes a little imprecise.</p>
+        <p>The characters <i>families</i> used for the colors are network communities that were manually labeled after being computed with graphology's <a href="https://en.wikipedia.org/wiki/Louvain_method" target="_blank">Louvain algorithm</a> <a href="https://graphology.github.io/standard-library/communities-louvain" target="_blank">implementation</a>. They aretherefore sometimes a little imprecise.</p>
         <br/>
         <p>All views have their own URL so each one can be shared directly with a link.</p>
-        <p>The app should work on most mobile devices (and <a href="https://sigmajs.org/" target="_blank">Sigma</a>'s dual-touch interactions with the graphs are quite cool) but exploring the graphs and comics is way nicer on bigger screens. You can <i>"install"</i> it as a mobile app by simply clicking the "Add to home screen" option within your browser's options menu.</p>
+        <p>The app should work on most mobile devices (and <a href="https://sigmajs.org/" target="_blank">Sigma</a>'s dual-touch interactions with the graphs are quite cool) but exploring the graphs and comics is way nicer on bigger screens.</p>
+        <p>You can <i>"install"</i> it as a mobile app by simply clicking the "Add to home screen" option within your browser's options menu.</p>
         <br/>
         <p>This web application is entirely built with Free Libre Open Source Software and released as such under the <a href="https://github.com/boogheta/Marvel/blob/master/LICENSE" target="_blank">AGPL V3 license</a>.</p>
         <p>The full source code is available on <a href="https://github.com/boogheta/Marvel/" target="_blank">GitHub</a>.</p>
@@ -240,10 +241,10 @@
         <br/>
         <p>Thanks to <a href="#/creators/?creator=Stan+Lee&comics" onclick="document.getElementById('close-help').onclick()">Stan Lee</a>, <a href="#/characters/?creator=Jack+Kirby&comics" onclick="document.getElementById('close-help').onclick()">Jack Kirby</a> and all the amazing <a href="https://www.marvel.com/" target="_blank">Marvel comics</a> authors who brought us so many incredible stories and uncanny characters over the past decades!<br/>
         And thanks to MARVEL for bringing all of those together and providing the <a href="https://developer.marvel.com/" target="_blank">API</a> which makes this app possible.</p>
-        <p>Thanks to <a href="https://github.com/Yomguithereal" target="_blank">@Yomguithereal</a>, <a href="https://github.com/paulgirard" target="_blank">@paulgirard</a>, <a href="https://github.com/jacomyal" target="_blank">@jacomyal</a>, <a href="https://github.com/jacomyMa" target="_blank">@jacomyMa</a> and <a href="https://github.com/robindemourat" target="_blank">robindemourat</a> for their precious help, ideas and code libraries!</p>
+        <p>Thanks to <a href="https://github.com/Yomguithereal" target="_blank">@Yomguithereal</a>, <a href="https://github.com/paulgirard" target="_blank">@paulgirard</a>, <a href="https://github.com/jacomyal" target="_blank">@jacomyal</a>, <a href="https://github.com/jacomyMa" target="_blank">@jacomyMa</a> and <a href="https://github.com/robindemourat" target="_blank">@robindemourat</a> for their precious help, ideas and code libraries!</p>
         <p>And lots of thanks to the 2014 Amsterdam <a href="http://contropedia.net/" target="_blank">Contropedia</a> datasprint where this whole idea germinated before it got buried in my mind and GitHub repositories for 8 long years. :)</p>
         <br/>
-        <p>If you're interested in Marvel and graphs, you can also watch this nice <a href="https://livestream.com/hugeinc/events/2474611/videos/32324838" target="_blank">talk by Peter Olson</a> from Marvel IT in 2013 where he explains how and why they used the Neo4J Graph database to modelize their data.</p>
+        <p>If you're interested in Marvel and graphs, you can also watch this nice <a href="https://livestream.com/hugeinc/events/2474611/videos/32324838" target="_blank">talk by Peter Olson</a> from Marvel IT in 2013 where he explains how and why they used the Neo4J graph database to modelize their data.</p>
         <br/>
         <p>You can find me on Mastodon:&nbsp;<a href="https://piaille.fr/@boogheta" target="_blank">@boogheta@piaille.fr</a>, Twitter:&nbsp;<a href="https://twitter.com/boogheta" target="_blank">@boogheta</a> or&nbsp;<a href="https://github.com/boogheta">GitHub</a>.</p>
       </div>
@@ -252,7 +253,6 @@
       </button>
     </div>
     <script src="build/bundle.js"></script>
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WX3GLGZ95V"></script>
     <script>
 window.dataLayer = window.dataLayer || [];

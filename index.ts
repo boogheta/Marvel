@@ -1,8 +1,9 @@
 /* TODO:
-- load good mono font on mobile
-- make labels on multiple lines
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
-- replace last switch with big button and proper touch tooltip?
+- make labels on multiple lines
+- load good mono font on mobile
+- stick action buttons to bottom with switch
+- add star on family that focuses sentence in help
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic

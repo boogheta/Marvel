@@ -93,7 +93,7 @@ button img {
   position: fixed;
   background-color: #555;
   border: 1px solid #777;
-  border-radius: 4px;
+  border-radius: 3px;
   padding: 4px 6px;
   font-size: 13px;
   font-weight: bold;
@@ -256,7 +256,7 @@ h2 {
   background-color: var(--marvel-red);
   color: #DDD!important;
   border: 1px solid #444;
-  border-radius: 5px;
+  border-radius: 3px;
   padding: 5px;
 }
 
@@ -305,13 +305,13 @@ h5 {
 
 .network-switch-label, .toggle {
   height: 100%;
-  border-radius: 100px;
+  border-radius: 3px;
 }
 .network-switch-label {
   display: block;
   width: 236px;
   background-color: #000;
-  border-radius: 100px;
+  border-radius: 3px;
   position: relative;
   cursor: pointer;
 }
@@ -320,8 +320,9 @@ h5 {
   width: 116px;
   background-color: var(--marvel-red);
   transition: .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  margin: -2px 0 0 -2px;
+  margin: -2px 0 0 0px;
   border: 1px solid #444;
+  height: 30px
 }
 
 .names {
@@ -337,7 +338,7 @@ h5 {
   user-select: none;
 }
 .names > div {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   text-transform: uppercase;
   height: 100%;
@@ -474,7 +475,7 @@ h5 {
   display: none;
   position: absolute;
   background-color: #555;
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 2px 5px;
   font-size: 13px;
   font-weight: bold;
@@ -782,7 +783,7 @@ input::-webkit-search-cancel-button {
   font-size: 14px;
   padding: 5px 10px;
   background-color: rgba(255, 255, 255, 0.13);
-  border-radius: 10px;
+  border-radius: 3px;
   text-align: center;
   color: white;
   -webkit-transition: opacity 0.25s ease-in-out;
@@ -873,7 +874,7 @@ input::-webkit-search-cancel-button {
   font-size: 36px;
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 5px 10px;
   z-index: 25;
 }
@@ -1063,9 +1064,6 @@ input::-webkit-search-cancel-button {
   .large-bar {
     display: inline;
   }
-  .small-bar {
-    display: none;
-  }
 }
 
 @media (max-width: 1000px) {
@@ -1118,13 +1116,14 @@ input::-webkit-search-cancel-button {
     padding: 0px 2px;
   }
   .network-switch-label {
-    width: 180px;
+    width: 190px;
   }
   .toggle {
-    width: 88px;
+    width: 93px;
+    height: 27px;
   }
   .names > div {
-    font-size: 13px;
+    font-size: 14px;
   }
   #view-comics, #view-node, #view-all-comics {
     font-size: 14px;
@@ -1143,9 +1142,6 @@ input::-webkit-search-cancel-button {
   }
   .large-bar {
     display: none;
-  }
-  .small-bar {
-    display: inline;
   }
 }
 
@@ -1202,7 +1198,7 @@ input::-webkit-search-cancel-button {
     padding-bottom: 5px;
   }
   .network-choice {
-    height: 22px;
+    height: 25px;
     margin-bottom: 8px;
   }
   #choices {
