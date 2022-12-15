@@ -43,10 +43,10 @@ html, body {
 }
 
 input[type="search"]::selection {
-  background-color: #AAA;
+  background-color: #000;
 }
 input[type="search"]::-moz-selection {
-  background-color: #AAA;
+  background-color: #000;
 }
 
 /* Buttons */
@@ -68,11 +68,8 @@ button {
 }
 
 button.selected {
-  background-color: var(--marvel-red-light);
+  background-color: var(--marvel-red);
   border-color: #555;
-}
-button.selected img {
-  filter: none;
 }
 
 button.close-button {
@@ -86,7 +83,6 @@ button img {
   width: 24px;
   height: 24px;
   margin-top: 3px;
-  filter: invert(100%);
 }
 
 
@@ -97,7 +93,7 @@ button img {
   position: fixed;
   background-color: #555;
   border: 1px solid #777;
-  border-radius: 4px;
+  border-radius: 3px;
   padding: 4px 6px;
   font-size: 13px;
   font-weight: bold;
@@ -234,6 +230,8 @@ h2 {
   max-width: 75%;
   max-height: 400px;
   cursor: pointer;
+  display: inherit;
+  margin: auto;
 }
 #node-extra {
   margin: 7px 25px;
@@ -257,8 +255,8 @@ h2 {
   width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
-  border: 2px solid #555;
-  border-radius: 5px;
+  border: 1px solid #444;
+  border-radius: 3px;
   padding: 5px;
 }
 
@@ -307,13 +305,13 @@ h5 {
 
 .network-switch-label, .toggle {
   height: 100%;
-  border-radius: 100px;
+  border-radius: 3px;
 }
 .network-switch-label {
   display: block;
   width: 236px;
-  background-color: white;
-  border-radius: 100px;
+  background-color: #000;
+  border-radius: 3px;
   position: relative;
   cursor: pointer;
 }
@@ -321,9 +319,10 @@ h5 {
   position: absolute;
   width: 116px;
   background-color: var(--marvel-red);
-  transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  margin: -2px 0 0 -2px;
-  border: 2px solid #555;
+  transition: .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin: -2px 0 0 0px;
+  border: 1px solid #444;
+  height: 30px
 }
 
 .names {
@@ -339,7 +338,7 @@ h5 {
   user-select: none;
 }
 .names > div {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   text-transform: uppercase;
   height: 100%;
@@ -414,7 +413,7 @@ h5 {
   align-content: center;
   justify-content: center;
   align-items: center;
-  border: 1px solid #555;
+  border: 1px solid #444;
   border-radius: 20px;
 }
 
@@ -476,7 +475,7 @@ h5 {
   display: none;
   position: absolute;
   background-color: #555;
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 2px 5px;
   font-size: 13px;
   font-weight: bold;
@@ -530,7 +529,7 @@ h5 {
   height: 40px;
   text-align: center;
   display: inline-flex;
-  margin: 1px;
+  margin: 1px 1px 4px 1px;
 }
 
 button.sort-button.selected {
@@ -550,14 +549,16 @@ button.sort-button img {
   display: none;
 }
 #filter-input {
-  width: calc(100% - 4px);
-  margin: -2px 2px 4px 2px;
+  width: calc(100% - 6px);
+  margin: 0 3px 4px 3px;
+  padding: 0 10px;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
-  border: 2px solid #555;
-  border-radius: 5px;
+  color: #FFF;
+  background: #333;
+  border: 1px solid #444;
   line-height: 24px;
-  padding: 0 10px;
+  outline: none;
 }
 
 /* Comics List */
@@ -734,6 +735,7 @@ button.sort-button img {
   bottom: 11px;
   width: 18px;
   height: 18px;
+  cursor: pointer;
 }
 #search input {
   width: 100%;
@@ -742,22 +744,34 @@ button.sort-button img {
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
   line-height: 16px;
-  background: #eee;
+  color: #FFF;
+  background: #333;
   display: block;
-  border: 2px solid #555;
-  border-radius: 5px;
+  border: 1px solid #444;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  outline: none;
 }
 #suggestions-select {
   display: none;
   width: 164px;
   height: 28px;
-  border: 2px solid #555;
-  border-radius: 5px;
+  border: 1px solid #444;
   padding-left: 20px;
+  color: #FFF;
+  background: #333;
 }
+/* Handle Chrome's blue cross and focus border */
+input::-webkit-search-cancel-button {
+  filter: grayscale(100%);
+  cursor: pointer;
+}
+#suggestions-select:focus {
+  outline-style: none;
+  box-shadow: none;
+}
+
 
 /* Hint legend box */
 
@@ -769,7 +783,7 @@ button.sort-button img {
   font-size: 14px;
   padding: 5px 10px;
   background-color: rgba(255, 255, 255, 0.13);
-  border-radius: 10px;
+  border-radius: 3px;
   text-align: center;
   color: white;
   -webkit-transition: opacity 0.25s ease-in-out;
@@ -860,7 +874,7 @@ button.sort-button img {
   font-size: 36px;
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: 5px 10px;
   z-index: 25;
 }
@@ -1050,21 +1064,6 @@ button.sort-button img {
   .large-bar {
     display: inline;
   }
-  .small-bar {
-    display: none;
-  }
-}
-
-@media (min-width: 1001px) and (max-height: 600px) {
-  .hide-small {
-    display: none!important;
-  }
-}
-
-@media (max-width: 1000px) and (max-height: 400px) {
-  .show-middle {
-    display: none!important;
-  }
 }
 
 @media (max-width: 1000px) {
@@ -1117,13 +1116,14 @@ button.sort-button img {
     padding: 0px 2px;
   }
   .network-switch-label {
-    width: 180px;
+    width: 190px;
   }
   .toggle {
-    width: 88px;
+    width: 93px;
+    height: 27px;
   }
   .names > div {
-    font-size: 13px;
+    font-size: 14px;
   }
   #view-comics, #view-node, #view-all-comics {
     font-size: 14px;
@@ -1142,9 +1142,6 @@ button.sort-button img {
   }
   .large-bar {
     display: none;
-  }
-  .small-bar {
-    display: inline;
   }
 }
 
@@ -1201,7 +1198,7 @@ button.sort-button img {
     padding-bottom: 5px;
   }
   .network-choice {
-    height: 22px;
+    height: 25px;
     margin-bottom: 8px;
   }
   #choices {

@@ -1,11 +1,16 @@
 /* TODO:
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
-- replace last switch with big button and proper touch tooltip
+- make labels on multiple lines
+- load good mono font on mobile
+- stick action buttons to bottom with switch
+- add star on family that focuses sentence in help
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
   - filter creator "Title"
   - merge Curt Conners => Lizard
+  - check gweenpool & jeff missing
+  - http://localhost:3000/#/creators/?creator=Gail+Simone&comics=73419 should have Braga not Pacheco
   - check why zoom on Spiderman 1602 only zooms on regular spiderman
   - test new spatialization graphology
   - test FA2 + louvain after sparsification
@@ -18,7 +23,7 @@
   - filter imprint marvel
   - add cover artist in comics list, not in links used
  => one more check with takoyaki on authors/characters labels + readjust louvain after
-- update screenshots
+- update screenshots + make gif
 - update README
 - auto data updates
 - reorga dossiers
@@ -30,7 +35,6 @@ IDEAS:
   - better positioning away from the finger
 - test large histogram
 - make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
-- handle mobile darkmodes diffs? cf branch nightmode
 - add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
@@ -176,6 +180,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicCreators = document.getElementById("comic-creators") as HTMLElement,
   comicCharacters = document.getElementById("comic-characters") as HTMLElement,
   searchInput = document.getElementById("search-input") as HTMLInputElement,
+  searchIcon = document.getElementById("search-icon") as HTMLInputElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
   selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement,
   switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
@@ -612,6 +617,8 @@ function renderNetwork(shouldComicsBarView) {
     data.rendered = true;
   } else finalizeGraph();
 }
+
+searchIcon.onclick = () => searchInput.focus();
 
 function updateShift() {
   shift = comicsBarView
@@ -1596,6 +1603,7 @@ filterComics.onclick = () => {
     addClass(filterComics, "selected");
     filterComics.setAttribute("tooltip", "clear comics filter");
     filterSearch.style.display = "block";
+    filterInput.focus();
   }
   resize(true);
   if (filterInput.value)
@@ -1964,7 +1972,8 @@ function readURL() {
 
   // Update titles
   let title = "Marvel's " + ent + " " +
-    (ent === "creators" ? "credited" : "featured") + " together within same&nbsp;comics";
+    (ent === "creators" ? "credited" : "featured") +
+    " together within same&nbsp;comics";
   if (selectedNodeLabel)
     title += " " + (selectedNodeType === ent
       ? "as"
