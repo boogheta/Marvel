@@ -179,6 +179,7 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   comicCreators = document.getElementById("comic-creators") as HTMLElement,
   comicCharacters = document.getElementById("comic-characters") as HTMLElement,
   searchInput = document.getElementById("search-input") as HTMLInputElement,
+  searchIcon = document.getElementById("search-icon") as HTMLInputElement,
   searchSuggestions = document.getElementById("suggestions") as HTMLDataListElement,
   selectSuggestions = document.getElementById("suggestions-select") as HTMLSelectElement,
   switchNodeType = document.getElementById("node-type-switch") as HTMLInputElement,
@@ -615,6 +616,8 @@ function renderNetwork(shouldComicsBarView) {
     data.rendered = true;
   } else finalizeGraph();
 }
+
+searchIcon.onclick = () => searchInput.focus();
 
 function updateShift() {
   shift = comicsBarView
@@ -1599,6 +1602,7 @@ filterComics.onclick = () => {
     addClass(filterComics, "selected");
     filterComics.setAttribute("tooltip", "clear comics filter");
     filterSearch.style.display = "block";
+    filterInput.focus();
   }
   resize(true);
   if (filterInput.value)

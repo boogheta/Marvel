@@ -557,6 +557,7 @@ button.sort-button img {
   background: #333;
   border: 1px solid #444;
   line-height: 24px;
+  outline: none;
 }
 
 /* Comics List */
@@ -733,6 +734,7 @@ button.sort-button img {
   bottom: 11px;
   width: 18px;
   height: 18px;
+  cursor: pointer;
 }
 #search input {
   width: 100%;
@@ -748,6 +750,7 @@ button.sort-button img {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  outline: none;
 }
 #suggestions-select {
   display: none;
@@ -758,11 +761,16 @@ button.sort-button img {
   color: #FFF;
   background: #333;
 }
-/* Handle Chrome's blue cross */
+/* Handle Chrome's blue cross and focus border */
 input::-webkit-search-cancel-button {
   filter: grayscale(100%);
   cursor: pointer;
 }
+#suggestions-select:focus {
+  outline-style: none;
+  box-shadow: none;
+}
+
 
 /* Hint legend box */
 
