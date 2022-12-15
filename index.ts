@@ -34,7 +34,6 @@ IDEAS:
   - touchmove should follow across tooltips like histogram's
   - better positioning away from the finger
 - test large histogram
-- make histogram brushable pour visualiser une partie du réseau correspondant à un subset d'années ? ou "playable" avec animation comme pour le détail d'un personnage ou d'un artiste ?
 - add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
@@ -79,6 +78,7 @@ let entity = "",
   sigmaDim = null,
   renderer = null,
   camera = null,
+  currentReducers = {nodes: null, edges: null},
   animation = null,
   clustersLayer = null,
   resizeClusterLabels = function() {},
@@ -1740,12 +1740,19 @@ function buildHistogram(node, comics) {
     return histograms[entity][node];
   const histo = {
     values: new Array(totalYears).fill(0),
+    entityYearMap: {},
     start: curYear,
     end: startYear,
     sum: 0
   };
   (comics || getNodeComics(node)).forEach(c => {
     const comicYear = (new Date(c.date)).getFullYear();
+    c[entity].forEach(e => {
+      if (!histo.entityYearMap[comicYear]) histo.entityYearMap[comicYear] = {};
+      if (!histo.entityYearMap[comicYear][e])
+        histo.entityYearMap[comicYear][e] = 0;
+      histo.entityYearMap[comicYear][e]++;
+    });
     histo.values[comicYear - startYear] += 1;
     histo.start = Math.min(histo.start, comicYear);
     histo.end = Math.max(histo.end, comicYear);
@@ -1780,8 +1787,8 @@ function renderHistogram(element, node = null, comics = null) {
 
   histogramDiv += '</div><div id="histogram-hover">';
   histogram.values.forEach((y, idx) => histogramDiv +=
-    '<span class="histobar-hover" tooltip="' +
-      (y ? y + '&nbsp;comic' + (y > 1 ? 's' : '') + '&nbsp;in&nbsp;' : '') + (startYear + idx) + '" ' +
+    '<span class="histobar-hover" year="' + (startYear + idx) + '" ' +
+      'tooltip="' + (y ? y + '&nbsp;comic' + (y > 1 ? 's' : '') + '&nbsp;in&nbsp;' : '') + (startYear + idx) + '" ' +
       'style="width: ' + (100 / totalYears) + '%">' +
     '</span>'
   );
@@ -1801,12 +1808,24 @@ function renderHistogram(element, node = null, comics = null) {
         node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
-  (comicsBarView ? comicsHistogram : element).innerHTML = histogramDiv;
+  const histoDiv = (comicsBarView ? comicsHistogram : element);
+  histoDiv.innerHTML = histogramDiv;
 
+  histoDiv.onmouseenter = e => {
+    currentReducers = {
+      nodes: renderer.getSetting("nodeReducer"),
+      edges: renderer.getSetting("edgeReducer")
+    };
+  };
+  histoDiv.onmouseleave = e => {
+    renderer.setSetting("nodeReducer", currentReducers.nodes);
+    renderer.setSetting("edgeReducer", currentReducers.edges);
+  };
   const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
     bar.onmouseenter = e => {
-      const tooltip = bar.getAttribute("tooltip");
+      const tooltip = bar.getAttribute("tooltip"),
+        year = bar.getAttribute("year");
       if (!tooltip)
         return clearTooltip(e, "histogram-tooltip");
       histoTooltip.innerHTML = tooltip;
@@ -1817,6 +1836,41 @@ function renderHistogram(element, node = null, comics = null) {
         maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar");
       histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
       histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
+      if (histogram.entityYearMap[year]) {
+        const comicsRatio = allComics.length / histogram.sum;
+        renderer.setSetting(
+          "nodeReducer", (n, attrs) => histogram.entityYearMap[year][n] !== undefined
+            ? { ...attrs,
+                size: 1.5 * computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
+                haloSize: 3.5 * computeNodeSize(Math.pow(histogram.entityYearMap[year][n] * comicsRatio, 1.3)),
+                haloIntensity: 0.15 * Math.log(histogram.entityYearMap[year][n] * comicsRatio),
+                zIndex: 2
+              }
+            : { ...attrs,
+                zIndex: 0,
+                type: "circle",
+                haloIntensity: 0,
+                color: "#2A2A2A",
+                size: sigmaDim < 500 ? 1 : 2,
+                label: null
+              }
+        );
+        renderer.setSetting(
+          "edgeReducer", (edge, attrs) =>
+            histogram.entityYearMap[year][networks[entity].graph.source(edge)] !== undefined &&
+            histogram.entityYearMap[year][networks[entity].graph.target(edge)] !== undefined
+              ? { ...attrs,
+                  zIndex: 0,
+                  color: '#444',
+                  size: 1
+                }
+              : { ...attrs,
+                  zIndex: 0,
+                  color: "#FFF",
+                  hidden: true
+                }
+        );
+      }
     };
     bar.ontouchstart = e => {
       e.preventDefault();
