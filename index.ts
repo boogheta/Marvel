@@ -1,9 +1,9 @@
 /* TODO:
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
-- make labels on multiple lines
+- issues still on some slow browsers  with pics
 - load good mono font on mobile
-- stick action buttons to bottom with switch
 - add star on family that focuses sentence in help
+- stick action buttons to bottom with switch
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic

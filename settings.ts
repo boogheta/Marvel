@@ -3,6 +3,7 @@ import NodePointProgram from 'sigma/rendering/webgl/programs/node.point';
 import NodePointWithBorderProgram from '@yomguithereal/sigma-experiments-renderers/node/node.point.border';
 import NodeHaloProgram from "./node.halo";
 import getNodeProgramImage from "./node.image";
+import { drawLabel, drawHover } from './node.label';
 
 
 const startYear = 1939,
@@ -103,11 +104,13 @@ const startYear = 1939,
   sigmaSettings = {
     maxCameraRatio: 75,
     defaultEdgeColor: '#000',
+    labelRenderer: drawLabel,
     labelFont: '"DejaVu Sans Mono", monospace',
     labelColor: {color: '#AAA'},
     labelWeight: 'bold',
     labelDensity: 0.5,
-    labelGridCellSize: 200,
+    labelGridCellSize: 300,
+    hoverRenderer: drawHover,
     zoomToSizeRatioFunction: ratio => Math.pow(ratio, 0.75),
     nodeProgramClasses: {
       circle: createNodeCompoundProgram([
