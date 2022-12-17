@@ -10,8 +10,8 @@ html, body {
   background-color: black;
 }
 
-.hidden {
-  display: none!important;
+.shifted {
+  margin-right: 5px;
 }
 
 /* App colors & Fonts */
@@ -119,7 +119,7 @@ button img {
 #webgl-disclaimer p, #noscript p {
   position: relative;
   width: 66%;
-  top: 30%;
+  top: 35%;
   left: 17%;
   text-align: center;
   font-size: 22px;
@@ -239,7 +239,7 @@ h2 {
 
 /* View more buttons */
 
-#view-node, #view-comics, #view-all-comics {
+#view-node, #view-comics {
   display: inline-block;
   cursor: pointer;
   font-weight: bold;
@@ -248,16 +248,26 @@ h2 {
   text-transform: uppercase;
   line-height: 20px;
 }
-#view-all-comics {
-  padding-top: 5px;
+#view-comics {
+  margin: 0!important;
+  display: none;
 }
-#view-node > span, #view-comics > span, #view-all-comics span {
+#view-node > span, #view-comics > span {
   width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
   border: 1px solid #444;
   border-radius: 3px;
   padding: 5px;
+}
+#view-comics span {
+  padding: 5px 0px 5px 10px;
+}
+#view-comics img {
+  transform: rotate(-90deg);
+  position: relative;
+  top: 5px;
+  margin-right: 5px;
 }
 
 #sidebar .selected {
@@ -420,40 +430,45 @@ h5 {
 
 /* -------- Comics Histogram ------------*/
 
-#node-histogram, #full-histogram {
-  margin-top: 10px;
-}
-#comics-histogram {
-  margin: 4px 0 1px 0;
+#histogram-container {
+  width: calc(100% - 598px);
+  margin-left: -2px;
+  height: 54px;
+  float: left;
+  background-color: #222;
+  color: #AAA;
+  text-align: center;
 }
 
 #histogram-title {
   font-size: 14px;
   font-weight: bold;
-  padding-bottom: 5px;
+  padding-top: 2px;
 }
 
 #histogram, #histogram-hover {
   display: flex;
   align-items: flex-end;
-  margin: 0 10px;
-  height: 25px;
+  margin: 0 12px;
+  height: 33px;
 }
 #histogram {
+  margin-top: 4px;
   border-bottom: 1px solid var(--marvel-red);
 }
 .histobar {
   display: block;
   background-color: var(--marvel-red);
   box-shadow: 0px 0px 2px var(--marvel-red);
+  border-radius: 1px 1px 0 0;
 }
 
 #histogram-hover {
-  margin-top: -25px;
+  margin-top: -32px;
   cursor: cell;
 }
 .histobar-hover {
-  height: 26px;
+  height: 37px;
   background-color: #555;
   opacity: 0;
 }
@@ -462,7 +477,7 @@ h5 {
   font-size: 12px;
   font-weight: bold;
   color: #AAA;
-  padding: 4px 0 4px 2px;
+  padding: 0 2px;
   text-align: left;
 }
 #histo-legend div {
@@ -474,13 +489,23 @@ h5 {
 #histogram-tooltip {
   display: none;
   position: absolute;
+  top: 39px;
   background-color: #555;
   border-radius: 3px;
-  padding: 2px 5px;
-  font-size: 13px;
+  padding: 2px 3px;
+  font-size: 12px;
   font-weight: bold;
   color: white;
   z-index: 1;
+}
+
+#view-comics-container {
+  width: 298px;
+  height: 54px;
+  float: left;
+  background-color: #222;
+  color: #AAA;
+  text-align: center;
 }
 
 
@@ -489,7 +514,7 @@ h5 {
 #comics-bar {
   position: absolute;
   bottom: 0;
-  width: 296px;
+  width: 297px;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -499,7 +524,6 @@ h5 {
   float: left;
   text-align: center;
   border-left: 1px solid #333;
-  transform: scaleX(0);
   -webkit-transition: 0.3s ease-in-out;
   -moz-transition: 0.3s ease-in-out;
   -o-transition: 0.3s ease-in-out;
@@ -515,6 +539,7 @@ h5 {
 }
 #comics {
   border-top: 1px dashed #444;
+  margin-top: 7px;
   overflow-x: hidden;
 }
 #comic-details {
@@ -526,10 +551,15 @@ h5 {
 
 #comics-actions {
   width: 100%;
-  height: 40px;
+  height: 53px;
   text-align: center;
   display: inline-flex;
-  margin: 1px 1px 4px 1px;
+  justify-content: center;
+  margin: 0px;
+}
+#comics-actions button {
+  margin-top: 7px;
+  margin-bottom: 7px;
 }
 
 button.sort-button.selected {
@@ -549,8 +579,8 @@ button.sort-button img {
   display: none;
 }
 #filter-input {
-  width: calc(100% - 6px);
-  margin: 0 3px 4px 3px;
+  width: calc(100% - 7px);
+  margin: -5px 0px 4px 0px;
   padding: 0 10px;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
@@ -564,9 +594,10 @@ button.sort-button img {
 /* Comics List */
 
 #comics-bar h3 {
+  display: inline;
   margin: 0;
-  font-size: 16px;
   padding: 0 4px;
+  font-size: 16px;
 }
 #comics-title {
   color: var(--marvel-red);
@@ -661,11 +692,17 @@ button.sort-button img {
 /* -------- Graph zone ------------*/
 
 .sigma-container {
-  height: 100%;
+  position: absolute;
+  top: 54px;
+  left: 300px;
+  height: calc(100% - 54px);
+  width: calc(100% - 300px);
   margin: 0;
   padding: 0;
   overflow: hidden;
   background-color: black;
+  clear: both;
+  float: left;
 }
 
 .sigma-edges {
@@ -695,7 +732,7 @@ button.sort-button img {
 
 #controls {
   position: absolute;
-  top: 5px;
+  top: 58px;
   text-align: center;
   width: 168px;
 }
@@ -778,7 +815,7 @@ input::-webkit-search-cancel-button {
 #legend {
   position: absolute;
   opacity: 0;
-  top: 6px;
+  top: 60px;
   line-height: 14px;
   font-size: 14px;
   padding: 5px 10px;
@@ -810,19 +847,19 @@ input::-webkit-search-cancel-button {
 }
 .loader img {
   width: 45px;
+  filter: invert(0.1);
 }
 
 #loader {
-  top: calc(50% - 25px);
+  top: calc(50%);
   left: calc(50% + 125px);
   opacity: 0;
 }
 
 #loader-comics {
-  bottom: 0;
-  right: 0;
-  padding: 0 5px;
-  display: none;
+  top: 14px;
+  left: calc(50% + 136px);
+  display: block;
 }
 
 #loader-list {
@@ -1050,7 +1087,8 @@ input::-webkit-search-cancel-button {
   }
   #comics-bar {
     right: 0;
-    transform-origin: right;
+    transform: scaleY(0);
+    transform-origin: top;
   }
 }
 
@@ -1125,7 +1163,7 @@ input::-webkit-search-cancel-button {
   .names > div {
     font-size: 14px;
   }
-  #view-comics, #view-node, #view-all-comics {
+  #view-node, #view-comics {
     font-size: 14px;
   }
   #sidebar, #comics-bar {
@@ -1148,6 +1186,7 @@ input::-webkit-search-cancel-button {
 @media (max-width: 700px) {
   #comics-bar {
     left: 0;
+    transform: scaleX(0);
     transform-origin: left;
     bottom: 35px;
     height: calc(100% - 84px);

@@ -1,9 +1,13 @@
 /* TODO:
-- fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
-- issues still on some slow browsers  with pics
-- load good mono font on mobile
-- add star on family that focuses sentence in help
+- left todo with full histo:
+  - handle small sizes
+  - handle all kind of titles within bar
 - stick action buttons to bottom with switch
+- fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
+- add star on family that focuses sentence in help
+- mobiles fixes:
+  - issues still on some slow browsers with pics
+  - load good mono font on mobile
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -33,7 +37,6 @@ IDEAS:
 - improve touch tooltips :
   - touchmove should follow across tooltips like histogram's
   - better positioning away from the finger
-- test large histogram
 - add urlrooting for modal? and play?
 - install app button?
 - swipe images with actual slide effect?
@@ -95,7 +98,6 @@ let entity = "",
   minComicLiHeight = 100,
   hoveredComic = null,
   selectedComic = null,
-  networksLoaded = 0,
   playing = null,
   sortComics = "date";
 
@@ -156,15 +158,12 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   explanations = document.getElementById("explanations") as HTMLElement,
   viewNodeButton = document.getElementById("view-node") as HTMLElement,
   viewComicsButton = document.getElementById("view-comics") as HTMLElement,
-  viewAllComicsButton = document.getElementById("view-all-comics") as HTMLElement,
   orderSpan = document.getElementById("order") as HTMLElement,
   nodeDetails = document.getElementById("node-details") as HTMLElement,
   nodeLabel = document.getElementById("node-label") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
-  nodeHistogram = document.getElementById("node-histogram") as HTMLElement,
-  fullHistogram = document.getElementById("full-histogram") as HTMLElement,
-  comicsHistogram = document.getElementById("comics-histogram") as HTMLElement,
+  histogramContainer = document.getElementById("histogram-container") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
@@ -295,9 +294,6 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
       }
     }
     networks[ent].loaded = true;
-    networksLoaded += 1;
-    if (networksLoaded === 2)
-      loaderComics.style.display = "none";
     if (callback) {
       if (waitForComics && !comicsReady) {
         const waiter = setInterval(() => {
@@ -312,7 +308,6 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
 }
 
 function loadComics() {
-  loaderComics.style.display = "block";
   logDebug("LOAD COMICS");
   fetch("./data/Marvel_comics.csv.gz")
     .then((res) => res.arrayBuffer())
@@ -376,12 +371,9 @@ function buildComics(comicsData) {
     },
     complete: function() {
       comicsReady = true;
-      if (selectedNode)
-        setViewComicsButton(selectedNode);
-      else {
-        renderHistogram(fullHistogram);
-        showViewComicsButton();
-      }
+      loaderComics.style.display = "none";
+      viewComicsButton.style.display = "block";
+      renderHistogram(selectedNode);
       resize(true);
       ["creators", "characters"].forEach(
         e => loadNetwork(e)
@@ -844,7 +836,7 @@ function clickNode(node, updateURL = true, center = false) {
   if (attrs.url)
     nodeExtra.innerHTML += '<p><a href="' + attrs.url + '" target="_blank">More on Marvel.com…</a></p>';
   if (comicsReady)
-    setViewComicsButton(node);
+    renderHistogram(node);
 
   selectSuggestions.selectedIndex = allSuggestions.map(x => x.label).indexOf(selectedNodeLabel) + 1;
 
@@ -969,8 +961,10 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
     selectedComic = "";
 
   comicsBarView = true;
-  comicsBar.style.transform = "scaleX(1)";
-  hideViewComicsButton();
+  if (window.innerWidth <= 700)
+    comicsBar.style.transform = "scaleX(1)";
+  else comicsBar.style.transform = "scaleY(1)";
+  resize(true);
   disableSwitchButtons();
   comicsCache.style.display = "none";
   setTimeout(() => resize(true), 300);
@@ -1018,11 +1012,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   }
 
   setTimeout(() => {
-    renderHistogram(
-      selectedNode ? nodeHistogram : fullHistogram,
-      selectedNode,
-      comics
-    );
+    renderHistogram(selectedNode, comics);
 
     comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
     if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
@@ -1079,9 +1069,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   }, 200);
 }
 
-viewAllComicsButton.onclick = () => {
-  addClass(viewAllComicsButton, "hidden");
-  fullHistogram.style.display = "none";
+viewComicsButton.onclick = () => {
   setURL(entity, selectedNodeLabel, selectedNodeType, "", sortComics);
 };
 document.getElementById("close-bar").onclick =
@@ -1283,7 +1271,7 @@ regScreenBtn.onclick = () => {
 // Network switch buttons
 function disableSwitchButtons() {
   switchNodeType.disabled = true;
-  (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+  (document.querySelectorAll('#view-node, #view-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => addClass(el, "selected")
   );
 }
@@ -1291,7 +1279,7 @@ function disableSwitchButtons() {
 function enableSwitchButtons() {
   if (comicsBarView && !comicsReady) return;
   switchNodeType.disabled = false;
-  (document.querySelectorAll('#view-node, #view-comics, #view-all-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+  (document.querySelectorAll('#view-node, #view-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => rmClass(el, "selected")
   );
 }
@@ -1353,10 +1341,7 @@ function defaultSidebar() {
   modalImg.src = "";
   modalImgMissing.style.display = "none";
   if (comicsReady)
-    renderHistogram(
-      selectedNode ? nodeHistogram : fullHistogram,
-      selectedNode
-    );
+    renderHistogram(selectedNode);
 }
 
 function hideComicsBar() {
@@ -1364,51 +1349,19 @@ function hideComicsBar() {
     rmClass(filterComics, "selected");
     filterComics.setAttribute("tooltip", "search comics")
     filterSearch.style.display = "none";
-    renderHistogram(
-      selectedNode ? nodeHistogram : fullHistogram,
-      selectedNode
-    );
+    renderHistogram(selectedNode);
   }
   comicsCache.style.display = "none";
   comicsBarView = false;
-  comicsBar.style.transform = "scaleX(0)";
+  if (window.innerWidth <= 700)
+    comicsBar.style.transform = "scaleX(0)";
+  else comicsBar.style.transform = "scaleY(0)";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
-  showViewComicsButton();
-  rmClass(viewComicsButton, "hidden");
-  rmClass(viewAllComicsButton, "hidden");
   unselectComic();
   selectedComic = null;
   if (entity === "creators" && clustersLayer)
     clustersLayer.style.display = "block";
-}
-
-function setViewComicsButton(node) {
-  switchClass(viewComicsButton, "hidden", comicsBarView);
-  viewComicsButton.onclick = () => {
-    addClass(viewComicsButton, "hidden");
-    nodeHistogram.style.display = "none";
-    setURL(entity, selectedNodeLabel, selectedNodeType, "", sortComics);
-  };
-  renderHistogram(nodeHistogram, node);
-}
-
-function showViewComicsButton() {
-  switchClass(viewComicsButton, "hidden", !comicsReady || comicsBarView);
-  switchClass(viewAllComicsButton, "hidden", !comicsReady || comicsBarView);
-  if (!comicsBarView) {
-    nodeHistogram.style.display = "block";
-    fullHistogram.style.display = "block";
-  }
-  resize(true);
-}
-
-function hideViewComicsButton() {
-  addClass(viewComicsButton, "hidden");
-  addClass(viewAllComicsButton, "hidden");
-  nodeHistogram.style.display = "none";
-  fullHistogram.style.display = "none";
-  resize(true);
 }
 
 // Help Box
@@ -1731,7 +1684,7 @@ function buildLegendItem(year, ref = "") {
     color = '; color: var(--marvel-red-light)';
   else if (ref === "old")
     color = '; color: #555';
-  return '<div style="left: calc((100% - 30px) * ' + Math.round(1000 * (year - startYear) / totalYears) / 1000 + ')' +
+  return '<div style="left: calc((100% - 30px) * ' + Math.round(1000 * (year - startYear) / (totalYears - 1)) / 1000 + ')' +
     color + '"' + className + '>' + year + '</div>';
 }
 
@@ -1763,21 +1716,17 @@ function buildHistogram(node, comics) {
   return histo;
 }
 
-function renderHistogram(element, node = null, comics = null) {
+function renderHistogram(node = null, comics = null) {
   const histogram = buildHistogram(node, comics);
 
   const maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar"),
-    heightRatio = 25 / Math.max.apply(Math, histogram.values),
+    heightRatio = 33 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * maxWidth / totalYears) / 1000;
 
-  fullHistogram.innerHTML = "";
-  nodeHistogram.innerHTML = "";
-  comicsHistogram.innerHTML = "";
-  let histogramDiv = '';
-  if (!comicsBarView)
-    histogramDiv += '<div id="histogram-title">' + formatNumber(histogram.sum) + " comics between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end + '</div>';
+  document.getElementById("histogram-title").innerHTML = formatNumber(histogram.sum) + " comics between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end;
 
-  histogramDiv += '<div id="histogram">';
+  histogramContainer.innerHTML = "";
+  let histogramDiv = '<div id="histogram">';
   histogram.values.forEach((y, idx) => histogramDiv +=
     '<span class="histobar" ' +
       'style="width: ' + (100 / totalYears) + '%; ' +
@@ -1808,16 +1757,15 @@ function renderHistogram(element, node = null, comics = null) {
         node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
   histogramDiv += '</div><div id="histogram-tooltip">';
-  const histoDiv = (comicsBarView ? comicsHistogram : element);
-  histoDiv.innerHTML = histogramDiv;
+  histogramContainer.innerHTML = histogramDiv;
 
-  histoDiv.onmouseenter = e => {
+  histogramContainer.onmouseenter = e => {
     currentReducers = {
       nodes: renderer.getSetting("nodeReducer"),
       edges: renderer.getSetting("edgeReducer")
     };
   };
-  histoDiv.onmouseleave = e => {
+  histogramContainer.onmouseleave = e => {
     renderer.setSetting("nodeReducer", currentReducers.nodes);
     renderer.setSetting("edgeReducer", currentReducers.edges);
   };
@@ -1832,10 +1780,9 @@ function renderHistogram(element, node = null, comics = null) {
       histoTooltip.style.display = "inline-block";
       const dims = bar.getBoundingClientRect(),
         tooltipWidth = divWidth("histogram-tooltip"),
-        leftPos = (comicsBarView ? comicsHistogram : element).getBoundingClientRect().x,
-        maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar");
-      histoTooltip.style.top = (dims.bottom + (comicsBarView ? -1 : 2)) + "px";
-      histoTooltip.style.left = Math.min(maxWidth - tooltipWidth - 3, Math.max(3, dims.x - leftPos - tooltipWidth / 2)) + "px";
+        minLeft = histogramContainer.getBoundingClientRect().x,
+        maxLeft = divWidth("sigma-container");
+      histoTooltip.style.left = Math.min(maxLeft - tooltipWidth - 1, Math.max(minLeft + 3, dims.x - tooltipWidth / 2)) + "px";
       if (histogram.entityYearMap[year]) {
         const comicsRatio = allComics.length / histogram.sum;
         renderer.setSetting(
@@ -1896,7 +1843,7 @@ function renderHistogram(element, node = null, comics = null) {
   sideBar.ontouchstart = e => {
     const touch = (e.touches || e.changedTouches)[0];
     if (!touch) return;
-    const dims = (comicsBarView ? comicsHistogram : element).getBoundingClientRect(),
+    const dims = histogramContainer.getBoundingClientRect(),
       x = touch.clientX,
       y = touch.clientY;
     if (
@@ -2080,9 +2027,12 @@ function readURL() {
 
   // Update tooltips
   viewComicsButton.setAttribute("tooltip",
-    "browse the list of comics listed as " +
-    (selectedNodeLabel === "creators" ? "authored by" : "featuring") +
-    " '" + selectedNodeLabel + "'"
+    "browse the list of " +
+    (!selectedNodeLabel ? "all comics and their associated creators & characters" :
+      "comics listed as " +
+      (selectedNodeType === "creators" ? "authored by" : "featuring") +
+      " '" + selectedNodeLabel + "'"
+    )
   );
   searchInput.setAttribute("tooltip", (selectedNodeLabel
     ? "change focused 'entity'"

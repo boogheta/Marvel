@@ -65,14 +65,10 @@
         <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
         <p id="view-node" class="tooltip" tooltip="focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
-        <p id="view-all-comics" class="tooltip hidden" tooltip="browse the list of all comics and their associated creators & characters"><span>Explore all comics</span></p>
-        <div id="full-histogram"></div>
       </div>
       <div id="node-details" class="sidebar-text">
         <img id="node-img"/>
         <div id="node-extra"></div>
-        <p id="view-comics" class="tooltip hidden"><span>Explore comics</span></p>
-        <div id="node-histogram"></div>
       </div>
       <div id="choices" class="selected">
         <h5>Switch to the graph of</h5>
@@ -102,6 +98,16 @@
     <noscript id="noscript"><p>This app runs with JavaScript.<br/>Please enable it to continue.</p></noscript>
     <div id="webgl-disclaimer" class="sigma-container">
       <p>Sorry, this app only works on modern browsers with WebGL capabilities :(</p>
+    </div>
+    <div id="histogram-container"></div>
+    <div id="view-comics-container">
+      <div id="histogram-title"></div>
+      <p id="view-comics" class="tooltip" disabled>
+        <span>
+          Explore comics
+          <img src="./images/left.svg" alt="open comics list" />
+        </span>
+      </p>
     </div>
     <div id="sigma-container" class="sigma-container"></div>
     <div id="controls">
@@ -163,13 +169,12 @@
         <form id="filter-comics" autocomplete="off">
           <input type="search" id="filter-input" placeholder="search…" class="tooltip" tooltip="filter comics by title" />
         </form>
-        <h3 id="comics-title"></h3>
-        <h3 id="comics-subtitle">
-          <span id="comics-subtitle-extra">as </span>
-          <span id="comics-subtitle-list"></span>
-        </h3>
-        <div id="comics-histogram"></div>
       </div>
+      <h3 id="comics-title"></h3>
+      <h3 id="comics-subtitle">
+        <span id="comics-subtitle-extra">as </span>
+        <span id="comics-subtitle-list"></span>
+      </h3>
       <div id="comics">
         <ul id="comics-list"></ul>
         <div id="loader-list" class="tooltip" tooltip="loading list of comics…"><img src="./images/loader.gif"/></div>
