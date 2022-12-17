@@ -1,7 +1,6 @@
 /* TODO:
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - issues still on some slow browsers  with pics
-- make labels on multiple lines
 - load good mono font on mobile
 - add star on family that focuses sentence in help
 - stick action buttons to bottom with switch
