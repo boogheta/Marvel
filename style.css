@@ -166,7 +166,7 @@ h1 {
   background-color: var(--marvel-red);
   color: white;
   padding: 5px 0;
-  margin: 0 0 10px 0;
+  margin: 0 0 9px 0;
 }
 .marvel {
   font-family: "Impact", "ImpactLoad", monospace;
@@ -182,13 +182,14 @@ h1 {
 h2 {
   color: #AAA;
   font-size: 17px;
-  margin: 0 10px;
+  margin: 0 6px;
 }
 #title {
   display: inline;
 }
 #node-label {
   display: none;
+  margin-top: 3px;
 }
 
 /* Text info zone */
@@ -239,7 +240,7 @@ h2 {
 
 /* View more buttons */
 
-#view-node, #view-comics {
+.button {
   display: inline-block;
   cursor: pointer;
   font-weight: bold;
@@ -248,11 +249,7 @@ h2 {
   text-transform: uppercase;
   line-height: 20px;
 }
-#view-comics {
-  margin: 0!important;
-  display: none;
-}
-#view-node > span, #view-comics > span {
+.button > span {
   width: 170px;
   background-color: var(--marvel-red);
   color: #DDD!important;
@@ -260,17 +257,8 @@ h2 {
   border-radius: 3px;
   padding: 5px;
 }
-#view-comics span {
-  padding: 5px 0px 5px 10px;
-}
-#view-comics img {
-  transform: rotate(-90deg);
-  position: relative;
-  top: 5px;
-  margin-right: 5px;
-}
 
-#sidebar .selected {
+.button.selected, #choices.selected {
   opacity: 0.35;
   cursor: progress;
   -webkit-transition: 0.35s ease-in-out;
@@ -278,7 +266,7 @@ h2 {
   -o-transition: 0.35s ease-in-out;
   transition: 0.35s ease-in-out;
 }
-#sidebar .selected.left, #sidebar .selected.right {
+.button.selected.left, .button.selected.right {
   opacity: 1;
 }
 
@@ -431,11 +419,14 @@ h5 {
 /* -------- Comics Histogram ------------*/
 
 #histogram-container {
+  position: absolute;
+  left: 302px;
+  bottom: 0;
   width: calc(100% - 598px);
   margin-left: -2px;
-  height: 54px;
+  height: 76px;
   float: left;
-  background-color: #222;
+  background-color: #2B2B2B;
   color: #AAA;
   text-align: center;
 }
@@ -450,10 +441,15 @@ h5 {
   display: flex;
   align-items: flex-end;
   margin: 0 12px;
-  height: 33px;
+  height: 32px;
+  opacity: 0;
+  -webkit-transition: opacity 0.5s ease-in-out;
+  -moz-transition: opacity 0.5s ease-in-out;
+  -o-transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
 }
 #histogram {
-  margin-top: 4px;
+  margin-top: 3px;
   border-bottom: 1px solid var(--marvel-red);
 }
 .histobar {
@@ -464,23 +460,23 @@ h5 {
 }
 
 #histogram-hover {
-  margin-top: -32px;
+  margin-top: -31px;
   cursor: cell;
 }
 .histobar-hover {
-  height: 37px;
+  height: 36px;
   background-color: #555;
   opacity: 0;
 }
 
-#histo-legend {
+#histogram-legend {
   font-size: 12px;
   font-weight: bold;
   color: #AAA;
-  padding: 0 2px;
+  padding: 3px 0 0 2px;
   text-align: left;
 }
-#histo-legend div {
+#histogram-legend div {
   position: relative;
   display: inline-block;
   width: 0;
@@ -489,7 +485,7 @@ h5 {
 #histogram-tooltip {
   display: none;
   position: absolute;
-  top: 39px;
+  top: 56px;
   background-color: #555;
   border-radius: 3px;
   padding: 2px 3px;
@@ -499,17 +495,36 @@ h5 {
   z-index: 1;
 }
 
+
+/* -------- Extra sidebar with comics ------------*/
+
+/* Closed comics bar */
+
 #view-comics-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   width: 298px;
-  height: 54px;
+  height: 76px;
   float: left;
-  background-color: #222;
+  background-color: #2B2B2B;
   color: #AAA;
   text-align: center;
 }
+#view-comics {
+  margin-top: 20px!important;
+}
+#view-comics span {
+  padding: 10px 5px 10px 15px
+}
+#view-comics img {
+  transform: rotate(90deg);
+  position: relative;
+  top: 5px;
+  margin-right: 5px;
+}
 
-
-/* -------- Extra sidebar with comics ------------*/
+/* Comics Bar */
 
 #comics-bar {
   position: absolute;
@@ -539,7 +554,6 @@ h5 {
 }
 #comics {
   border-top: 1px dashed #444;
-  margin-top: 7px;
   overflow-x: hidden;
 }
 #comic-details {
@@ -551,15 +565,15 @@ h5 {
 
 #comics-actions {
   width: 100%;
-  height: 53px;
+  height: 47px;
   text-align: center;
   display: inline-flex;
   justify-content: center;
   margin: 0px;
 }
 #comics-actions button {
-  margin-top: 7px;
-  margin-bottom: 7px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 button.sort-button.selected {
@@ -580,7 +594,7 @@ button.sort-button img {
 }
 #filter-input {
   width: calc(100% - 7px);
-  margin: -5px 0px 4px 0px;
+  margin: -1px 0px 4px 0px;
   padding: 0 10px;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
@@ -590,19 +604,12 @@ button.sort-button img {
   line-height: 24px;
   outline: none;
 }
+#comics-subtitle {
+  margin-bottom: 5px;
+  display: none;
+}
 
 /* Comics List */
-
-#comics-bar h3 {
-  display: inline;
-  margin: 0;
-  padding: 0 4px;
-  font-size: 16px;
-}
-#comics-title {
-  color: var(--marvel-red);
-  font-weight: bold;
-}
 
 #comics-list {
   display: contents;
@@ -693,16 +700,14 @@ button.sort-button img {
 
 .sigma-container {
   position: absolute;
-  top: 54px;
+  top: 0px;
   left: 300px;
-  height: calc(100% - 54px);
+  height: calc(100% - 76px);
   width: calc(100% - 300px);
   margin: 0;
   padding: 0;
   overflow: hidden;
   background-color: black;
-  clear: both;
-  float: left;
 }
 
 .sigma-edges {
@@ -732,7 +737,7 @@ button.sort-button img {
 
 #controls {
   position: absolute;
-  top: 58px;
+  top: 2px;
   text-align: center;
   width: 168px;
 }
@@ -761,15 +766,13 @@ button.sort-button img {
 }
 
 #search {
-  position: fixed;
-  bottom: 5px;
   margin: 2px;
   margin-right: 5px;
-  width: 168px;
+  width: 164px;
 }
 #search-icon {
-  position: fixed;
-  bottom: 11px;
+  position: absolute;
+  top: 49px;
   width: 18px;
   height: 18px;
   cursor: pointer;
@@ -780,7 +783,7 @@ button.sort-button img {
   text-align: center;
   font-family: "DejaVu Sans Mono", monospace;
   font-size: 14px;
-  line-height: 16px;
+  line-height: 19px;
   color: #FFF;
   background: #333;
   display: block;
@@ -815,10 +818,10 @@ input::-webkit-search-cancel-button {
 #legend {
   position: absolute;
   opacity: 0;
-  top: 60px;
-  line-height: 14px;
+  top: 4px;
+  line-height: 19px;
   font-size: 14px;
-  padding: 5px 10px;
+  padding: 5px 10px 8px 10px;
   background-color: rgba(255, 255, 255, 0.13);
   border-radius: 3px;
   text-align: center;
@@ -857,9 +860,12 @@ input::-webkit-search-cancel-button {
 }
 
 #loader-comics {
-  top: 14px;
-  left: calc(50% + 136px);
+  bottom: 20px;
+  left: calc(50% - 14px);
   display: block;
+}
+#loader-comics img {
+  width: 30px;
 }
 
 #loader-list {
@@ -1080,24 +1086,24 @@ input::-webkit-search-cancel-button {
 
 @media (min-width: 700px) {
   #controls {
-    left: 203px;
+    left: 201px;
   }
   #search-icon {
-    left: 210px;
+    left: 7px;
   }
   #comics-bar {
     right: 0;
     transform: scaleY(0);
-    transform-origin: top;
+    transform-origin: bottom;
   }
 }
 
 @media (min-width: 1001px) {
   #controls {
-    left: 305px;
+    left: 302px;
   }
   #search-icon {
-    left: 312px;
+    left: 7px;
   }
   .large-bar {
     display: inline;
@@ -1117,6 +1123,13 @@ input::-webkit-search-cancel-button {
   #comics-bar {
     width: 254px;
   }
+  #view-comics-container {
+    width: 255px;
+  }
+  #histogram-container {
+    left: 200px;
+    width: calc(100% - 453px);
+  }
   #comics-filter {
     display: none;
   }
@@ -1127,11 +1140,11 @@ input::-webkit-search-cancel-button {
   #explanations p, #node-extra {
     margin: 7px 8px;
   }
-  #histo-legend .hidable {
+  #histogram-legend .hidable {
     display: none;
   }
   #legend {
-    line-height: 14px;
+    line-height: 19px;
     font-size: 13px;
   }
   #loader {
@@ -1158,7 +1171,7 @@ input::-webkit-search-cancel-button {
   }
   .toggle {
     width: 93px;
-    height: 27px;
+    height: 30px;
   }
   .names > div {
     font-size: 14px;
@@ -1168,12 +1181,6 @@ input::-webkit-search-cancel-button {
   }
   #sidebar, #comics-bar {
     font-size: 13px;
-  }
-  #comics-bar h3 {
-    font-size: 14px;
-  }
-  #comics-subtitle-extra {
-    display: none!important;
   }
   #comics-list li {
     padding: 2px;
@@ -1190,18 +1197,17 @@ input::-webkit-search-cancel-button {
     transform-origin: left;
     bottom: 35px;
     height: calc(100% - 84px);
-    width: 254px;
     border: 1px solid #333;
     border-radius: 0 6px 6px 0;
   }
   #controls {
-    right: 5px;
+    right: 2px;
   }
   #legend {
-    transform: translateX(-171px);
+    transform: translateX(-168px);
   }
   #search-icon {
-    right: 148px;
+    right: 144px;
   }
 }
 
@@ -1213,18 +1219,8 @@ input::-webkit-search-cancel-button {
   #comic-details {
     height: calc(100% / 3);
   }
-  #comics-bar h3, #comics-list li {
+  #comics-list li {
     font-size: 13px!important;
-  }
-}
-
-@media (max-height: 400px) and (max-width: 1000px) {
-  h2 {
-    font-size: 12px!important;
-    padding: 0px 2px 2px 0!important;
-  }
-  .network-choice {
-    margin-bottom: 6px;
   }
 }
 
@@ -1239,6 +1235,9 @@ input::-webkit-search-cancel-button {
   .network-choice {
     height: 25px;
     margin-bottom: 8px;
+  }
+  .toggle {
+    height: 27px;
   }
   #choices {
     padding: 4px 0 6px 0
@@ -1310,9 +1309,6 @@ input::-webkit-search-cancel-button {
   }
   .mobiles-details {
     display: none;
-  }
-  #loader-comics img {
-    width: 25px;
   }
 }
 

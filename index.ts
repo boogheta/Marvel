@@ -1,8 +1,8 @@
 /* TODO:
 - left todo with full histo:
   - handle small sizes
-  - handle all kind of titles within bar
-- stick action buttons to bottom with switch
+  - add play timeline button
+  - clickable/selectable years url bound?
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
@@ -32,8 +32,8 @@
 - auto data updates
 - reorga dossiers
 IDEAS:
-- build gif of all versions of the app
 - add more cases to legend
+- build gif of all versions of the app
 - improve touch tooltips :
   - touchmove should follow across tooltips like histogram's
   - better positioning away from the finger
@@ -164,11 +164,15 @@ const container = document.getElementById("sigma-container") as HTMLElement,
   nodeImg = document.getElementById("node-img") as HTMLImageElement,
   nodeExtra = document.getElementById("node-extra") as HTMLElement,
   histogramContainer = document.getElementById("histogram-container") as HTMLElement,
+  histogramTitle = document.getElementById("histogram-title") as HTMLElement,
+  histogramDiv = document.getElementById("histogram") as HTMLElement,
+  histogramHover = document.getElementById("histogram-hover") as HTMLElement,
+  histogramLegend = document.getElementById("histogram-legend") as HTMLElement,
+  histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement,
   comicsBar = document.getElementById("comics-bar") as HTMLImageElement,
   comicsDiv = document.getElementById("comics") as HTMLImageElement,
   comicsTitle = document.getElementById("comics-title") as HTMLElement,
   comicsSubtitle = document.getElementById("comics-subtitle") as HTMLElement,
-  comicsSubtitleList = document.getElementById("comics-subtitle-list") as HTMLElement,
   comicsList = document.getElementById("comics-list") as HTMLElement,
   comicsCache = document.getElementById("comics-cache") as HTMLElement,
   comicTitle = document.getElementById("comic-title") as HTMLLinkElement,
@@ -782,7 +786,7 @@ function clickNode(node, updateURL = true, center = false) {
   const attrs = data.graph.getNodeAttributes(node);
   selectedNode = node;
   selectedNodeLabel = attrs.label;
-  nodeLabel.style.display = "inline";
+  nodeLabel.style.display = "inline-block";
   explanations.style.display = "none";
   nodeDetails.style.display = "block";
   if (!sameNode) {
@@ -826,7 +830,7 @@ function clickNode(node, updateURL = true, center = false) {
     else if (data.communities[attrs.community])
       nodeExtra.innerHTML += '<p>Attached to the <b style="color: ' + lightenColor(data.communities[attrs.community].color, 25) + '">' + data.communities[attrs.community].label + '</b> <i>family</i></p>';
   } else
-    nodeExtra.innerHTML += '<p>The size of the node reflects how often ' +
+    nodeExtra.innerHTML += '<p>The size of the nodes reflects how often ' +
       'the ' + entity + ' are ' +
       (nodeEntity === "creators"
         ? "featured in stories authored by"
@@ -969,13 +973,14 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   comicsCache.style.display = "none";
   setTimeout(() => resize(true), 300);
 
-  if (resetTitle) {
+  if (resetTitle && !comicsReady) {
     comicsTitle.innerHTML = "... comics";
     if (selectedNodeLabel)
-      comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
-    comicsSubtitleList.innerHTML = "";
+      comicsTitle.innerHTML += "&nbsp;" +
+      (selectedNodeType === "creators" ? "by" : "with") +
+      ' <span class="red">' + selectedNodeLabel.replace(/ /g, "&nbsp;") + '</span>';
   }
-  comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
+  comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline-block" : "none");
 
   comicsList.innerHTML = "";
   if (!comicsReady) {
@@ -1014,15 +1019,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
   setTimeout(() => {
     renderHistogram(selectedNode, comics);
 
-    comicsTitle.innerHTML = formatNumber(comics.length) + " comic" + (comics.length > 1 ? "s" : "");
-    if (selectedNodeLabel) comicsTitle.innerHTML += "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") + " " + selectedNodeLabel.replace(/ /g, "&nbsp;");
-    comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline" : "none");
-
-    if (selectedNodeLabel && creatorsComics[selectedNode])
-      comicsSubtitleList.innerHTML = Object.keys(creatorsRoles)
-        .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
-        .join("&nbsp;")
-        .replace(/&nbsp;([^&]+)$/, " or $1");
+    comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline-block" : "none");
 
     if (!comics.length) {
       comicsList.innerHTML = "<b>no comic-book found</b>";
@@ -1070,6 +1067,7 @@ function actuallyDisplayComics(node = null, autoReselect = false) {
 }
 
 viewComicsButton.onclick = () => {
+  if (hasClass(viewComicsButton, "selected")) return;
   setURL(entity, selectedNodeLabel, selectedNodeType, "", sortComics);
 };
 document.getElementById("close-bar").onclick =
@@ -1230,6 +1228,7 @@ function selectComic(comic, keep = false, autoReselect = false) {
 
 // Random node button
 viewNodeButton.onclick = () => {
+  if (hasClass(viewNodeButton, "selected")) return;
   const graph = networks[entity].graph;
   if (!graph || !renderer)
     return;
@@ -1716,60 +1715,69 @@ function buildHistogram(node, comics) {
   return histo;
 }
 
+histogramContainer.onmouseenter = e => {
+  if (!renderer) return;
+  currentReducers = {
+    nodes: renderer.getSetting("nodeReducer"),
+    edges: renderer.getSetting("edgeReducer")
+  };
+};
+histogramContainer.onmouseleave = e => {
+  if (!renderer) return;
+  renderer.setSetting("nodeReducer", currentReducers.nodes);
+  renderer.setSetting("edgeReducer", currentReducers.edges);
+};
+
 function renderHistogram(node = null, comics = null) {
   const histogram = buildHistogram(node, comics);
 
   const maxWidth = divWidth(comicsBarView ? "comics-bar" : "sidebar"),
-    heightRatio = 33 / Math.max.apply(Math, histogram.values),
+    heightRatio = 32 / Math.max.apply(Math, histogram.values),
     barWidth = Math.round(1000 * maxWidth / totalYears) / 1000;
 
-  document.getElementById("histogram-title").innerHTML = formatNumber(histogram.sum) + " comics between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end;
+  comicsTitle.innerHTML = formatNumber(histogram.sum) + " comic" + (histogram.sum > 1 ? "s" : "") +
+    (selectedNodeLabel
+      ? "&nbsp;" + (selectedNodeType === "creators" ? "by" : "with") +
+        ' <span class="red">' + selectedNodeLabel.replace(/ /g, "&nbsp;") + '</span>'
+      : '') +
+    " between " + histogram.start + "&nbsp;&amp;&nbsp;" + histogram.end +
+    (hasClass(filterComics, "selected") && filterInput.value ? " matching «<i>" + filterInput.value + "</i>»" : "");
 
-  histogramContainer.innerHTML = "";
-  let histogramDiv = '<div id="histogram">';
-  histogram.values.forEach((y, idx) => histogramDiv +=
+  let histo = "";
+  histogram.values.forEach((y, idx) => histo +=
     '<span class="histobar" ' +
       'style="width: ' + (100 / totalYears) + '%; ' +
         'height: ' + Math.round(y * heightRatio) + 'px">' +
     '</span>'
   );
+  histogramDiv.innerHTML = histo;
+  histogramDiv.style.opacity = "1";
 
-  histogramDiv += '</div><div id="histogram-hover">';
-  histogram.values.forEach((y, idx) => histogramDiv +=
+  let hover = "";
+  histogram.values.forEach((y, idx) => hover +=
     '<span class="histobar-hover" year="' + (startYear + idx) + '" ' +
       'tooltip="' + (y ? y + '&nbsp;comic' + (y > 1 ? 's' : '') + '&nbsp;in&nbsp;' : '') + (startYear + idx) + '" ' +
       'style="width: ' + (100 / totalYears) + '%">' +
     '</span>'
   );
-
-  histogramDiv += '</div><div id="histo-legend">';
+  histogramHover.innerHTML = hover;
+  histogramHover.style.opacity = "1";
 
   const legendYears = [startYear, 1960, 1980, 2000, curYear];
+  let legend = ""
   if (legendYears.indexOf(histogram.start) === -1)
     legendYears.push(histogram.start);
   legendYears.sort().forEach(y => {
     if (y + 12 < histogram.start)
-      histogramDiv += buildLegendItem(y, "old")
+      legend += buildLegendItem(y, "old")
     else if (y - 12 > histogram.start)
-      histogramDiv += buildLegendItem(y);
+      legend += buildLegendItem(y);
     else if (y === histogram.start)
-      histogramDiv += buildLegendItem(histogram.start,
+      legend += buildLegendItem(histogram.start,
         node === null && (!comics || comics.length === allComics.length)? "" : "start");
   });
-  histogramDiv += '</div><div id="histogram-tooltip">';
-  histogramContainer.innerHTML = histogramDiv;
+  histogramLegend.innerHTML = legend;
 
-  histogramContainer.onmouseenter = e => {
-    currentReducers = {
-      nodes: renderer.getSetting("nodeReducer"),
-      edges: renderer.getSetting("edgeReducer")
-    };
-  };
-  histogramContainer.onmouseleave = e => {
-    renderer.setSetting("nodeReducer", currentReducers.nodes);
-    renderer.setSetting("edgeReducer", currentReducers.edges);
-  };
-  const histoTooltip = document.getElementById("histogram-tooltip") as HTMLElement;
   (document.querySelectorAll(".histobar-hover") as NodeListOf<HTMLElement>).forEach(bar => {
     bar.onmouseenter = e => {
       const tooltip = bar.getAttribute("tooltip"),
@@ -1782,7 +1790,7 @@ function renderHistogram(node = null, comics = null) {
         tooltipWidth = divWidth("histogram-tooltip"),
         minLeft = histogramContainer.getBoundingClientRect().x,
         maxLeft = divWidth("sigma-container");
-      histoTooltip.style.left = Math.min(maxLeft - tooltipWidth - 1, Math.max(minLeft + 3, dims.x - tooltipWidth / 2)) + "px";
+      histoTooltip.style.left = Math.min(maxLeft - minLeft -tooltipWidth - 1, Math.max(3, dims.x - minLeft - tooltipWidth / 2)) + "px";
       if (histogram.entityYearMap[year]) {
         const comicsRatio = allComics.length / histogram.sum;
         renderer.setSetting(
@@ -1884,10 +1892,10 @@ function resize(fast = false) {
   sigmaDim = Math.min(sigmaDims.height, sigmaDims.width);
   updateShift();
 
-  const legendLeft = divWidth("sidebar") + divWidth("controls") + 10;
+  const legendLeft = divWidth("sidebar") + divWidth("controls") + 5;
   legend.style.left = legendLeft + "px";
   legend.style.width = "calc(100% - " +
-    (27 + legendLeft +
+    (25 + legendLeft +
       (comicsBarView && comicsBar.getBoundingClientRect().x !== 0
         ? divWidth("comics-bar")
         : 0)
@@ -1983,7 +1991,7 @@ function readURL() {
         : "casting")) + " ";
   document.querySelector("title").innerHTML = "MARVEL graphs &mdash; Map of " + title + (selectedNodeLabel || "");
   document.getElementById("title").innerHTML = title.replace(ent, '<span class="red">' + ent + '</span>');
-  nodeLabel.style.display = (selectedNodeLabel ? "inline" : "none");
+  nodeLabel.style.display = (selectedNodeLabel ? "inline-block" : "none");
   nodeLabel.innerHTML = selectedNodeLabel;
   resize(true);
 
@@ -2087,8 +2095,14 @@ function readURL() {
 
 /* -- Init app -- */
 
-// Collect algo's metadata to feed explanations
 disableSwitchButtons();
+
+comicsSubtitle.innerHTML = "as " + Object.keys(creatorsRoles)
+  .map(x => '<span style="color: ' + lightenColor(creatorsRoles[x]) + '">' + x + '</span>')
+  .join(",&nbsp;")
+  .replace(/,&nbsp;([^&]+)$/, " or $1");
+
+// Collect algo's metadata to feed explanations
 fetch("./config.yml.example")
 .then((res) => res.text())
 .then((confData) => {
