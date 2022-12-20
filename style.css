@@ -701,9 +701,9 @@ button.sort-button img {
 .sigma-container {
   position: absolute;
   top: 0px;
-  left: 300px;
-  height: calc(100% - 76px);
-  width: calc(100% - 300px);
+  left: 301px;
+  height: calc(100% - 77px);
+  width: calc(100% - 302px);
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -1119,6 +1119,10 @@ input::-webkit-search-cancel-button {
   }
   #sidebar, #choices, #credits {
     width: 198px;
+  }
+  .sigma-container {
+    left: 199px;
+    width: calc(100% - 200px)
   }
   #comics-bar {
     width: 254px;
