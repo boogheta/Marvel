@@ -53,7 +53,7 @@
         <h2>
           <span class="hide-small">Here is a map of</span>
           <span class="show-middle">Map of</span>
-          <span id="title"></span>
+          <span id="title"></span><br/>
           <span id="node-label" class="red"></span>
         </h2>
       </div>
@@ -64,15 +64,11 @@
         <p><span class="characters-details">Colors indicate which <i>family</i> each character belongs to: <span id="clusters-legend"></span>, etc.</span></p>
         <p><span class="creators-details">Colors indicate whether a creator is mainly a <b id="writer-color"></b>, an <b id="artist-color"></b> or really a bit of <b id="both-color"></b>.</span></p>
         <p>Marvel API's data is not always perfect and many comics miss some information, although it remains quite rich and results look good enough!</p>
-        <p id="view-node" class="tooltip" tooltip="focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
-        <p id="view-all-comics" class="tooltip hidden" tooltip="browse the list of all comics and their associated creators & characters"><span>Explore all comics</span></p>
-        <div id="full-histogram"></div>
+        <p id="view-node" class="button tooltip selected" tooltip="focus a random 'entity' in the graph"><span><span class="desktop-details">Click</span><span class="mobiles-details">Tap</span> a <span class="creators-details">creator</span><span class="characters-details">character</span></span></p>
       </div>
       <div id="node-details" class="sidebar-text">
         <img id="node-img"/>
         <div id="node-extra"></div>
-        <p id="view-comics" class="tooltip hidden"><span>Explore comics</span></p>
-        <div id="node-histogram"></div>
       </div>
       <div id="choices" class="selected">
         <h5>Switch to the graph of</h5>
@@ -130,7 +126,24 @@
       </div>
     </div>
     <div id="legend">
-      <p><span class="desktop-details">click</span><span class="mobiles-details">tap</span> on a picture to select a <span class="creators-details">creator</span><span class="characters-details">character</span> and see its links, details&nbsp;and&nbsp;comics</p>
+      <p><span class="desktop-details">click</span><span class="mobiles-details">tap</span> on a picture to select a <span class="creators-details">creator</span><span class="characters-details">character</span> and explore the associated links, details&nbsp;and&nbsp;comics</p>
+    </div>
+    <div id="histogram-container">
+      <div id="histogram-title">
+        <span id="comics-title"></span>
+      </div>
+      <div id="histogram"></div>
+      <div id="histogram-hover"></div>
+      <div id="histogram-legend"></div>
+      <div id="histogram-tooltip"></div>
+    </div>
+    <div id="view-comics-container">
+      <p id="view-comics" class="button tooltip selected">
+        <span>
+          Explore <span class="hide-small">the </span>comics
+          <img src="./images/left.svg" alt="open comics list" />
+        </span>
+      </p>
     </div>
     <div id="comics-bar">
       <div id="comics-header">
@@ -163,13 +176,8 @@
         <form id="filter-comics" autocomplete="off">
           <input type="search" id="filter-input" placeholder="search…" class="tooltip" tooltip="filter comics by title" />
         </form>
-        <h3 id="comics-title"></h3>
-        <h3 id="comics-subtitle">
-          <span id="comics-subtitle-extra">as </span>
-          <span id="comics-subtitle-list"></span>
-        </h3>
-        <div id="comics-histogram"></div>
       </div>
+      <span id="comics-subtitle"></span>
       <div id="comics">
         <ul id="comics-list"></ul>
         <div id="loader-list" class="tooltip" tooltip="loading list of comics…"><img src="./images/loader.gif"/></div>
