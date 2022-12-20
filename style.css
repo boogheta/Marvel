@@ -140,6 +140,9 @@ button img {
   color: #AAA;
   float: left;
   text-align: center;
+  box-shadow: 2px 0 5px #000;
+  z-index: 1;
+  position: absolute;
 }
 #sidebar a, #sidebar a:visited, #comics-bar a, #comics-bar a:visited {
   color: #af4f4f;
@@ -204,6 +207,7 @@ h2 {
 }
 #explanations {
   border-top: 1px dashed #444;
+  border-bottom: 1px dashed #444;
   opacity: 0;
   -webkit-transition: opacity 0.75s ease-in-out;
   -moz-transition: opacity 0.75s ease-in-out;
@@ -226,6 +230,7 @@ h2 {
   text-align: center;
   max-height: 60%;
   padding-top: 1px;
+  border-bottom: 1px dashed #444;
 }
 #node-img, #comic-img {
   max-width: 75%;
@@ -282,9 +287,9 @@ h5 {
   position: absolute;
   bottom: 36px;
   width: 300px;
-  padding: 8px 0 10px 0;
+  height: 64px;
+  padding: 8px 0 0 0;
   margin: 0;
-  border-top: 1px dashed #444;
 }
 .network-choice {
   display: flex;
@@ -424,11 +429,12 @@ h5 {
   bottom: 0;
   width: calc(100% - 598px);
   margin-left: -2px;
-  height: 76px;
+  height: 75px;
   float: left;
   background-color: #2B2B2B;
   color: #AAA;
   text-align: center;
+  box-shadow: 0px -2px 5px #000;
 }
 
 #histogram-title {
@@ -473,7 +479,7 @@ h5 {
   font-size: 12px;
   font-weight: bold;
   color: #AAA;
-  padding: 3px 0 0 2px;
+  padding: 3px 4px 0 4px;
   text-align: left;
 }
 #histogram-legend div {
@@ -505,7 +511,7 @@ h5 {
   right: 0;
   bottom: 0;
   width: 298px;
-  height: 76px;
+  height: 75px;
   float: left;
   background-color: #2B2B2B;
   color: #AAA;
@@ -514,7 +520,7 @@ h5 {
 #view-comics {
   margin-top: 20px!important;
 }
-#view-comics span {
+#view-comics > span {
   padding: 10px 5px 10px 15px
 }
 #view-comics img {
@@ -538,12 +544,14 @@ h5 {
   color: #AAA;
   float: left;
   text-align: center;
-  border-left: 1px solid #333;
+  box-shadow: -2px 0 5px #000;
+  transform: scaleY(0);
+  transform-origin: bottom;
   -webkit-transition: 0.3s ease-in-out;
   -moz-transition: 0.3s ease-in-out;
   -o-transition: 0.3s ease-in-out;
   transition: 0.3s ease-in-out;
-  z-index: 6;
+  z-index: 2;
 }
 
 #comics, #comic-details {
@@ -702,7 +710,7 @@ button.sort-button img {
   position: absolute;
   top: 0px;
   left: 301px;
-  height: calc(100% - 77px);
+  height: calc(100% - 76px);
   width: calc(100% - 302px);
   margin: 0;
   padding: 0;
@@ -983,7 +991,7 @@ input::-webkit-search-cancel-button {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 20;
+  z-index: 15;
   background-color: rgba(0, 0, 0, 0.85);
   text-align: center;
 }
@@ -1093,8 +1101,6 @@ input::-webkit-search-cancel-button {
   }
   #comics-bar {
     right: 0;
-    transform: scaleY(0);
-    transform-origin: bottom;
   }
 }
 
@@ -1122,7 +1128,7 @@ input::-webkit-search-cancel-button {
   }
   .sigma-container {
     left: 199px;
-    width: calc(100% - 200px)
+    width: calc(100% - 200px);
   }
   #comics-bar {
     width: 254px;
@@ -1173,6 +1179,10 @@ input::-webkit-search-cancel-button {
   .network-switch-label {
     width: 190px;
   }
+  #choices {
+    padding: 6px 0 0 0;
+    height: 56px;
+  }
   .toggle {
     width: 93px;
     height: 30px;
@@ -1195,14 +1205,17 @@ input::-webkit-search-cancel-button {
 }
 
 @media (max-width: 700px) {
+  #choices {
+    height: 100px!important;
+    padding: 0!important;
+  }
   #comics-bar {
     left: 0;
-    transform: scaleX(0);
-    transform-origin: left;
     bottom: 35px;
     height: calc(100% - 84px);
     border: 1px solid #333;
     border-radius: 0 6px 6px 0;
+    box-shadow: 2px 2px 5px #000;
   }
   #controls {
     right: 2px;
@@ -1213,8 +1226,49 @@ input::-webkit-search-cancel-button {
   #search-icon {
     right: 144px;
   }
+  #histogram-container {
+    width: calc(100% - 198px);
+  }
+  #view-comics-container {
+    position: fixed;
+    left: 0;
+    width: 198px;
+    height: 37px;
+    bottom: 36px;
+    background-color: #222;
+    padding-bottom: 4px;
+    z-index: 2;
+  }
+  #view-comics {
+    border-top: 1px dashed #444;
+    width: 100%;
+    padding: 0;
+    margin: 0!important;
+  }
+  #view-comics span {
+    padding: 5px 10px;
+    margin: 0
+  }
+  #view-comics img {
+    margin: 0;
+    top: 8px;
+  }
+  #loader-comics {
+    left: calc(50% + 84px); 
+  }
+  h5 {
+    padding-top: 6px;
+  }
+  .hide-small {
+    display: none;
+  }
 }
 
+@media (max-width: 700px) and (min-height: 600px) {
+  #choices {
+    height: 104px!important;
+  }
+}
 @media (max-height: 400px) {
   h2 {
     font-size: 14.6px;
@@ -1244,7 +1298,8 @@ input::-webkit-search-cancel-button {
     height: 27px;
   }
   #choices {
-    padding: 4px 0 6px 0
+    padding: 6px 0 0 0;
+    height: 56px;
   }
   h5 {
     font-size: 14px;
@@ -1347,13 +1402,5 @@ input::-webkit-search-cancel-button {
   }
   .mobiles-details {
     display: inline;
-  }
-}
-
-@media (pointer: coarse) and (max-height: 600px) and (max-width: 700px) {
-  #loader-comics {
-    bottom: 35px;
-    right: 8px;
-    padding: 0;
   }
 }

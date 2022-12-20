@@ -1,8 +1,9 @@
 /* TODO:
 - left todo with full histo:
-  - handle small sizes
   - add play timeline button
+  - adjust time legends choices
   - clickable/selectable years url bound?
+- homogeneize nodes sizes on time hover with small selection
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
@@ -965,9 +966,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
     selectedComic = "";
 
   comicsBarView = true;
-  if (window.innerWidth <= 700)
-    comicsBar.style.transform = "scaleX(1)";
-  else comicsBar.style.transform = "scaleY(1)";
+  comicsBar.style.transform = "scaleY(1)";
   resize(true);
   disableSwitchButtons();
   comicsCache.style.display = "none";
@@ -1352,9 +1351,7 @@ function hideComicsBar() {
   }
   comicsCache.style.display = "none";
   comicsBarView = false;
-  if (window.innerWidth <= 700)
-    comicsBar.style.transform = "scaleX(0)";
-  else comicsBar.style.transform = "scaleY(0)";
+  comicsBar.style.transform = "scaleY(0)";
   modalNext.style.opacity = "0";
   modalPrev.style.opacity = "0";
   unselectComic();
