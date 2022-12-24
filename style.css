@@ -869,11 +869,20 @@ input::-webkit-search-cancel-button {
 
 #loader-comics {
   bottom: 20px;
-  left: calc(50% - 14px);
-  display: block;
+  left: calc(50% - 68px);
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
 }
 #loader-comics img {
-  width: 30px;
+  width: 42px;
+}
+#loader-comics span {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #888;
+  margin-left: 10px;
 }
 
 #loader-list {
@@ -1259,7 +1268,7 @@ input::-webkit-search-cancel-button {
     top: 8px;
   }
   #loader-comics {
-    left: calc(50% + 84px); 
+    left: calc(50% + 14px);
   }
   h5 {
     padding-top: 6px;
@@ -1407,8 +1416,5 @@ input::-webkit-search-cancel-button {
   }
   .mobiles-details {
     display: inline;
-  }
-  #loader-comics {
-    width: 45px;
   }
 }

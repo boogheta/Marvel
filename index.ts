@@ -1,7 +1,6 @@
 /* TODO:
 - left todo with full histo:
   - reduce histogram height on small ?
-  - loader comics not centere on comicsbar opened
   - add play timeline button
   - adjust time legends choices
   - clickable/selectable years url bound?
@@ -9,7 +8,7 @@
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
-  - ugly comics loader back
+  - fix view comics button text shifted
   - main loader badly centered vertically
   - disabled buttons + legend appear bad
   - issues still on some slow browsers with pics
