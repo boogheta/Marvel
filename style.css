@@ -6,7 +6,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: "DejaVu Sans Mono", monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   background-color: black;
 }
 
@@ -30,7 +30,11 @@ html, body {
 
 @font-face {
   font-family: "ImpactLoad";
-  src: url(./impact.ttf) format("truetype");
+  src: url(./fonts/impact.ttf) format("truetype");
+}
+@font-face {
+  font-family: "DejaVuSansMono";
+  src: url(./fonts/LiberationMono-Regular.ttf) format("truetype");
 }
 
 /* Discrete selected texts */
@@ -177,6 +181,7 @@ h1 {
   font-size: 36px;
   letter-spacing: -1px;
   transform: scaleY(1.2);
+  transform-origin: middle;
   display: inline-block;
   padding-right: 10px;
   vertical-align: top;
@@ -608,7 +613,7 @@ button.sort-button img {
   width: calc(100% - 7px);
   margin: -1px 0px 4px 0px;
   padding: 0 10px;
-  font-family: "DejaVu Sans Mono", monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   font-size: 14px;
   color: #FFF;
   background: #333;
@@ -793,7 +798,7 @@ button.sort-button img {
   width: 100%;
   padding: 4px 5px 4px 27px;
   text-align: center;
-  font-family: "DejaVu Sans Mono", monospace;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   font-size: 14px;
   line-height: 19px;
   color: #FFF;
@@ -807,6 +812,7 @@ button.sort-button img {
 }
 #suggestions-select {
   display: none;
+  font-family: "DejaVu Sans Mono", "DejaVuSansMono", monospace;
   width: 164px;
   height: 28px;
   border: 1px solid #444;
@@ -1018,6 +1024,7 @@ input::-webkit-search-cancel-button {
 }
 #rotate-modal .marvel {
   font-size: 36px!important;
+  transform: scaleY(1.2)!important;
   padding-right: 15px!important;
 }
 
@@ -1187,6 +1194,7 @@ input::-webkit-search-cancel-button {
   }
   .marvel {
     font-size: 22px!important;
+    transform: scaleY(1.3);
     padding-right: 7px!important;
     letter-spacing: -0.5px!important;
   }
@@ -1333,6 +1341,7 @@ input::-webkit-search-cancel-button {
   }
   .marvel {
     font-size: 32px;
+    transform: scaleY(1.3);
   }
   #sidebar, #comics-bar {
     font-size: 13px;

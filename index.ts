@@ -1,7 +1,8 @@
 /* TODO:
+- adjust size of comicslist on first 
 - left todo with full histo:
   - add play timeline button
-  - adjust time legends choices
+  - adjust time legends choices (all decades ?)
   - clickable/selectable years url bound?
 - homogeneize nodes sizes on time hover with small selection
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
@@ -9,7 +10,6 @@
 - mobiles fixes:
   - reduce histogram height on small ?
   - issues still on some slow browsers with pics
-  - load good mono font on mobile
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
