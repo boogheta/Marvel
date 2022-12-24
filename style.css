@@ -862,7 +862,7 @@ input::-webkit-search-cancel-button {
 }
 
 #loader {
-  top: calc(50%);
+  top: calc(50% - 60px);
   left: calc(50% + 125px);
   opacity: 0;
 }
@@ -1064,7 +1064,7 @@ input::-webkit-search-cancel-button {
     padding: 5px;
     height: 44px;
   }
-  #sidebar, #controls, #comics-bar {
+  #sidebar, #controls, #comics-bar, #histogram-container, #view-comics-container {
     display: none!important;
   }
   #explanations, #node-details {
@@ -1072,7 +1072,12 @@ input::-webkit-search-cancel-button {
   }
   #loader {
     top: 20%;
-    left: calc(50% - 25px);
+    left: calc(50% - 25px)!important;
+  }
+  #sigma-container {
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -1402,5 +1407,8 @@ input::-webkit-search-cancel-button {
   }
   .mobiles-details {
     display: inline;
+  }
+  #loader-comics {
+    width: 45px;
   }
 }
