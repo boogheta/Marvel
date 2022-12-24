@@ -384,7 +384,7 @@ function buildComics(comicsData) {
     complete: function() {
       comicsReady = true;
       loaderComics.style.display = "none";
-      viewComicsButton.style.display = "block";
+      rmClass(viewComicsButton, "selected");
       renderHistogram(selectedNode);
       resize(true);
       ["creators", "characters"].forEach(
@@ -1286,9 +1286,10 @@ function disableSwitchButtons() {
 function enableSwitchButtons() {
   if (comicsBarView && !comicsReady) return;
   switchNodeType.disabled = false;
-  (document.querySelectorAll('#view-node, #view-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+  (document.querySelectorAll('#view-node, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => rmClass(el, "selected")
   );
+  if (comicsReady) rmClass(viewComicsButton, "selected");
 }
 
 switchNodeType.onchange = (event) => {
