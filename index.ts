@@ -1,5 +1,7 @@
 /* TODO:
 - left todo with full histo:
+  - reduce histogram height on small ?
+  - loader comics not centere on comicsbar opened
   - add play timeline button
   - adjust time legends choices
   - clickable/selectable years url bound?
@@ -7,6 +9,9 @@
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
+  - ugly comics loader back
+  - main loader badly centered vertically
+  - disabled buttons + legend appear bad
   - issues still on some slow browsers with pics
   - load good mono font on mobile
 - check bad data marvel :
@@ -256,7 +261,7 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
     });
 
     // Adjust nodes visual attributes for rendering (size, color)
-    data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
+    data.graph.forEachNode((node, {label, stories, image, artist, writer, community}) => {
       const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
         role = artist_ratio !== null
           ? (artist_ratio > 0.65
@@ -276,6 +281,8 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
       data.counts[key]++;
       const size = computeNodeSize(stories);
       data.graph.mergeNodeAttributes(node, {
+        name: label,
+        label: null,
         type: "circle",
         image: /available/i.test(image) ? "" : image,
         size: size,
@@ -600,9 +607,11 @@ function renderNetwork(shouldComicsBarView) {
       {ratio: sigmaWidth / (sigmaWidth - shift)},
       {duration: 1500},
       () => {
-        data.graph.forEachNode((node) =>
-          data.graph.setNodeAttribute(node, "type", "image")
-        );
+        data.graph.updateEachNodeAttributes((node, attrs) => ({
+          ...attrs,
+          type: "image",
+          label: attrs.name
+        }), {attributes: ['type', 'label']});
         finalizeGraph();
         // Load comics data after first network rendered
         if (comicsReady === null) {
@@ -1900,15 +1909,16 @@ function resize(fast = false) {
 
   if (!fast && renderer) {
     let maxSize = 0;
-    graph.forEachNode((node, {stories}) => {
-      const size = computeNodeSize(stories);
+    graph.updateEachNodeAttributes((node, attrs) => {
+      const size = computeNodeSize(attrs.stories);
       maxSize = Math.max(maxSize, size);
-      graph.mergeNodeAttributes(node, {
+      return {
+        ...attrs,
         size: size,
         borderSize: sigmaDim / 1500,
         haloSize: size * 5
-      });
-    });
+      };
+    }, {attributes: ['size', 'borderSize', 'haloSize']});
     renderer.setSetting("labelRenderedSizeThreshold", maxSize - 5);
   }
   if (!fast) resizing = false;
