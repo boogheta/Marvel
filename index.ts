@@ -7,6 +7,7 @@
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
+  - reduce histogram height on small ?
   - issues still on some slow browsers with pics
   - load good mono font on mobile
 - check bad data marvel :
@@ -130,7 +131,7 @@ const conf = {},
 
 // Useful DOM elements
 const container = document.getElementById("sigma-container") as HTMLElement,
-  legend = document.getElementById("legend") as HTMLElement,
+  legendDiv = document.getElementById("legend") as HTMLElement,
   controls = document.getElementById("controls") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
@@ -256,7 +257,7 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
     });
 
     // Adjust nodes visual attributes for rendering (size, color)
-    data.graph.forEachNode((node, {label, x, y, stories, image, artist, writer, community}) => {
+    data.graph.forEachNode((node, {label, stories, image, artist, writer, community}) => {
       const artist_ratio = (ent === "creators" ? artist / (writer + artist) : null),
         role = artist_ratio !== null
           ? (artist_ratio > 0.65
@@ -276,6 +277,8 @@ function buildNetwork(networkData, ent, callback, waitForComics) {
       data.counts[key]++;
       const size = computeNodeSize(stories);
       data.graph.mergeNodeAttributes(node, {
+        name: label,
+        label: null,
         type: "circle",
         image: /available/i.test(image) ? "" : image,
         size: size,
@@ -377,7 +380,7 @@ function buildComics(comicsData) {
     complete: function() {
       comicsReady = true;
       loaderComics.style.display = "none";
-      viewComicsButton.style.display = "block";
+      rmClass(viewComicsButton, "selected");
       renderHistogram(selectedNode);
       resize(true);
       ["creators", "characters"].forEach(
@@ -495,7 +498,7 @@ function renderNetwork(shouldComicsBarView) {
   allSuggestions = data.graph.nodes()
     .map((node) => ({
       node: node,
-      label: data.graph.getNodeAttribute(node, "label")
+      label: data.graph.getNodeAttribute(node, "name")
     }))
     .sort((a, b) => a.label < b.label ? -1 : 1);
   function feedAllSuggestions() {
@@ -600,9 +603,11 @@ function renderNetwork(shouldComicsBarView) {
       {ratio: sigmaWidth / (sigmaWidth - shift)},
       {duration: 1500},
       () => {
-        data.graph.forEachNode((node) =>
-          data.graph.setNodeAttribute(node, "type", "image")
-        );
+        data.graph.updateEachNodeAttributes((node, attrs) => ({
+          ...attrs,
+          type: "image",
+          label: attrs.name
+        }), {attributes: ['type', 'label']});
         finalizeGraph();
         // Load comics data after first network rendered
         if (comicsReady === null) {
@@ -779,7 +784,7 @@ function clickNode(node, updateURL = true, center = false) {
     return setURL(entity, null, null, selectedComic, sortComics);
 
   if (updateURL && !sameNode) {
-    legend.style.display = "none";
+    legendDiv.style.display = "none";
     setURL(entity, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
   }
 
@@ -973,7 +978,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   setTimeout(() => resize(true), 300);
 
   if (resetTitle && !comicsReady) {
-    comicsTitle.innerHTML = "... comics";
+    comicsTitle.innerHTML = "";
     if (selectedNodeLabel)
       comicsTitle.innerHTML += "&nbsp;" +
       (selectedNodeType === "creators" ? "by" : "with") +
@@ -1277,9 +1282,10 @@ function disableSwitchButtons() {
 function enableSwitchButtons() {
   if (comicsBarView && !comicsReady) return;
   switchNodeType.disabled = false;
-  (document.querySelectorAll('#view-node, #view-comics, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
+  (document.querySelectorAll('#view-node, #choices, .left, .right') as NodeListOf<HTMLElement>).forEach(
     el => rmClass(el, "selected")
   );
+  if (comicsReady) rmClass(viewComicsButton, "selected");
 }
 
 switchNodeType.onchange = (event) => {
@@ -1311,9 +1317,9 @@ function showCanvases(showClustersLayer = true) {
 function showLoader() {
   loader.style.display = "block";
   loader.style.opacity = "0.5";
-  controls.style.opacity = "0.25";
-  legend.style.opacity = "0.25";
-  comicsActions.style.opacity = "0.25";
+  controls.style.opacity = "0.15";
+  legendDiv.style.opacity = "0.15";
+  comicsActions.style.opacity = "0.15";
 }
 
 function hideLoader() {
@@ -1328,7 +1334,7 @@ function actuallyHideLoader() {
   loader.style.display = "none";
   loader.style.opacity = "0";
   controls.style.opacity = "1";
-  legend.style.opacity = "1";
+  legendDiv.style.opacity = "0.75";
   comicsActions.style.opacity = "1";
 }
 
@@ -1890,8 +1896,8 @@ function resize(fast = false) {
   updateShift();
 
   const legendLeft = divWidth("sidebar") + divWidth("controls") + 5;
-  legend.style.left = legendLeft + "px";
-  legend.style.width = "calc(100% - " +
+  legendDiv.style.left = legendLeft + "px";
+  legendDiv.style.width = "calc(100% - " +
     (25 + legendLeft +
       (comicsBarView && comicsBar.getBoundingClientRect().x !== 0
         ? divWidth("comics-bar")
@@ -1900,15 +1906,16 @@ function resize(fast = false) {
 
   if (!fast && renderer) {
     let maxSize = 0;
-    graph.forEachNode((node, {stories}) => {
-      const size = computeNodeSize(stories);
+    graph.updateEachNodeAttributes((node, attrs) => {
+      const size = computeNodeSize(attrs.stories);
       maxSize = Math.max(maxSize, size);
-      graph.mergeNodeAttributes(node, {
+      return {
+        ...attrs,
         size: size,
         borderSize: sigmaDim / 1500,
         haloSize: size * 5
-      });
-    });
+      };
+    }, {attributes: ['size', 'borderSize', 'haloSize']});
     renderer.setSetting("labelRenderedSizeThreshold", maxSize - 5);
   }
   if (!fast) resizing = false;
