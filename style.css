@@ -526,7 +526,7 @@ h5 {
 #view-comics img {
   transform: rotate(90deg);
   position: relative;
-  top: 5px;
+  top: 6px;
   margin-right: 5px;
 }
 
@@ -1265,7 +1265,7 @@ input::-webkit-search-cancel-button {
   }
   #view-comics img {
     margin: 0;
-    top: 8px;
+    top: 7px;
   }
   #loader-comics {
     left: calc(50% + 14px);
