@@ -21,10 +21,10 @@ interface NodeDisplayDataWithBorder extends NodeDisplayData {
 }
 
 // maximum size of single texture in atlas
-const MAX_TEXTURE_SIZE = 192;
+const MAX_TEXTURE_SIZE = 96;
 // maximum width of atlas texture (limited by browser)
 // low setting of 3072 works on phones & tablets
-const MAX_CANVAS_WIDTH = 3072;
+const MAX_CANVAS_WIDTH = 4096;
 
 type ImageLoading = { status: "loading" };
 type ImageError = { status: "error" };
@@ -37,7 +37,7 @@ type ImageType = ImageLoading | ImageError | ImagePending | ImageReady;
  * hovered nodes (to prevent some flickering, mostly), this program must be
  * "built" for each sigma instance:
  */
-export default function getNodeImageProgram(): NodeProgramConstructor {
+export default function getNodeProgramImage(maxTextureSize = MAX_TEXTURE_SIZE): NodeProgramConstructor {
   /**
    * These attributes are shared between all instances of this exact class,
    * returned by this call to getNodeProgramImage:
@@ -136,7 +136,7 @@ export default function getNodeImageProgram(): NodeProgramConstructor {
       }
 
       pendingImages.forEach(({ id, image, size }) => {
-        const imageSizeInTexture = Math.min(MAX_TEXTURE_SIZE, size);
+        const imageSizeInTexture = Math.min(maxTextureSize, size);
 
         // Crop image, to only keep the biggest square, centered:
         let dx = 0,
@@ -167,7 +167,7 @@ export default function getNodeImageProgram(): NodeProgramConstructor {
     let rowImages: PendingImage[] = [];
     pendingImages.forEach((image) => {
       const { size } = image;
-      const imageSizeInTexture = Math.min(size, MAX_TEXTURE_SIZE);
+      const imageSizeInTexture = Math.min(size, maxTextureSize);
 
       if (writePositionX + imageSizeInTexture > MAX_CANVAS_WIDTH) {
         // existing row is full: flush row and continue on next line

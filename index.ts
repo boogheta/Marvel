@@ -1,15 +1,13 @@
 /* TODO:
-- adjust size of comicslist on first 
+- mobiles fixes:
+  - reduce histogram height on small ?
 - left todo with full histo:
-  - add play timeline button
   - adjust time legends choices (all decades ?)
+  - add play timeline button
   - clickable/selectable years url bound?
 - homogeneize nodes sizes on time hover with small selection
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
-- mobiles fixes:
-  - reduce histogram height on small ?
-  - issues still on some slow browsers with pics
 - check bad data marvel :
   - http://gateway.marvel.com/v1/public/stories/186542/creators incoherent with https://www.marvel.com/comics/issue/84372/damage_control_2022_1
   - check why Tiomothy Truman has no comic
@@ -977,13 +975,11 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   comicsCache.style.display = "none";
   setTimeout(() => resize(true), 300);
 
-  if (resetTitle && !comicsReady) {
-    comicsTitle.innerHTML = "";
-    if (selectedNodeLabel)
-      comicsTitle.innerHTML += "&nbsp;" +
+  if (resetTitle && !comicsReady && selectedNodeLabel)
+    comicsTitle.innerHTML = "... comics" +
+      "&nbsp;" +
       (selectedNodeType === "creators" ? "by" : "with") +
       ' <span class="red">' + selectedNodeLabel.replace(/ /g, "&nbsp;") + '</span>';
-  }
   comicsSubtitle.style.display = (selectedNode && creatorsComics[selectedNode] ? "inline-block" : "none");
 
   comicsList.innerHTML = "";

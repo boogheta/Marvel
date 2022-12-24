@@ -100,7 +100,8 @@ const startYear = 1939,
     "#904f13",
     "#c45ecf"
   ],
-  NodeProgramImage = getNodeProgramImage(),
+  smallScreen = Math.min(window.innerWidth, window.innerHeight) < 600,
+  NodeProgramImage = getNodeProgramImage(smallScreen ? 96 : 192),
   sigmaSettings = {
     maxCameraRatio: 75,
     defaultEdgeColor: '#000',
