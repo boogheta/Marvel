@@ -441,6 +441,10 @@ h5 {
   font-size: 14px;
   font-weight: bold;
   padding-top: 2px;
+  white-space: nowrap;
+  position: sticky;
+  z-index: 10;
+  padding-left: 8px;
 }
 
 #histogram, #histogram-hover {
@@ -825,13 +829,13 @@ input::-webkit-search-cancel-button {
 
 #legend {
   position: absolute;
-  opacity: 0;
+  opacity: 0.15;
   top: 4px;
   line-height: 19px;
   font-size: 14px;
   padding: 5px 10px 8px 10px;
-  background-color: rgba(255, 255, 255, 0.13);
-  border-radius: 3px;
+  background-color: #444;
+  border-radius: 1px;
   text-align: center;
   color: white;
   -webkit-transition: opacity 0.25s ease-in-out;

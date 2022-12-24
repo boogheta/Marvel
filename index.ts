@@ -1,6 +1,5 @@
 /* TODO:
 - left todo with full histo:
-  - reduce histogram height on small ?
   - add play timeline button
   - adjust time legends choices
   - clickable/selectable years url bound?
@@ -8,9 +7,7 @@
 - fix switch entity on unselected node does not recenter graph / recenter not applied on reloading on comics
 - add star on family that focuses sentence in help
 - mobiles fixes:
-  - fix view comics button text shifted
-  - main loader badly centered vertically
-  - disabled buttons + legend appear bad
+  - reduce histogram height on small ?
   - issues still on some slow browsers with pics
   - load good mono font on mobile
 - check bad data marvel :
@@ -134,7 +131,7 @@ const conf = {},
 
 // Useful DOM elements
 const container = document.getElementById("sigma-container") as HTMLElement,
-  legend = document.getElementById("legend") as HTMLElement,
+  legendDiv = document.getElementById("legend") as HTMLElement,
   controls = document.getElementById("controls") as HTMLElement,
   loader = document.getElementById("loader") as HTMLElement,
   loaderComics = document.getElementById("loader-comics") as HTMLElement,
@@ -501,7 +498,7 @@ function renderNetwork(shouldComicsBarView) {
   allSuggestions = data.graph.nodes()
     .map((node) => ({
       node: node,
-      label: data.graph.getNodeAttribute(node, "label")
+      label: data.graph.getNodeAttribute(node, "name")
     }))
     .sort((a, b) => a.label < b.label ? -1 : 1);
   function feedAllSuggestions() {
@@ -787,7 +784,7 @@ function clickNode(node, updateURL = true, center = false) {
     return setURL(entity, null, null, selectedComic, sortComics);
 
   if (updateURL && !sameNode) {
-    legend.style.display = "none";
+    legendDiv.style.display = "none";
     setURL(entity, data.graph.getNodeAttribute(node, "label"), entity, selectedComic, sortComics);
   }
 
@@ -981,7 +978,7 @@ function displayComics(node = null, autoReselect = false, resetTitle = true) {
   setTimeout(() => resize(true), 300);
 
   if (resetTitle && !comicsReady) {
-    comicsTitle.innerHTML = "... comics";
+    comicsTitle.innerHTML = "";
     if (selectedNodeLabel)
       comicsTitle.innerHTML += "&nbsp;" +
       (selectedNodeType === "creators" ? "by" : "with") +
@@ -1320,9 +1317,9 @@ function showCanvases(showClustersLayer = true) {
 function showLoader() {
   loader.style.display = "block";
   loader.style.opacity = "0.5";
-  controls.style.opacity = "0.25";
-  legend.style.opacity = "0.25";
-  comicsActions.style.opacity = "0.25";
+  controls.style.opacity = "0.15";
+  legendDiv.style.opacity = "0.15";
+  comicsActions.style.opacity = "0.15";
 }
 
 function hideLoader() {
@@ -1337,7 +1334,7 @@ function actuallyHideLoader() {
   loader.style.display = "none";
   loader.style.opacity = "0";
   controls.style.opacity = "1";
-  legend.style.opacity = "1";
+  legendDiv.style.opacity = "0.75";
   comicsActions.style.opacity = "1";
 }
 
@@ -1899,8 +1896,8 @@ function resize(fast = false) {
   updateShift();
 
   const legendLeft = divWidth("sidebar") + divWidth("controls") + 5;
-  legend.style.left = legendLeft + "px";
-  legend.style.width = "calc(100% - " +
+  legendDiv.style.left = legendLeft + "px";
+  legendDiv.style.width = "calc(100% - " +
     (25 + legendLeft +
       (comicsBarView && comicsBar.getBoundingClientRect().x !== 0
         ? divWidth("comics-bar")
